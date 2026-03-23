@@ -51,7 +51,7 @@ echo ""
 
 # Create production config
 echo "⚙️  Updating API configuration..."
-cat > src/config.js << EOF
+cat > client/src/config.js << EOF
 // API Configuration - Auto-generated for production
 const API_BASE_URL = '${REACT_APP_API_URL}';
 export default API_BASE_URL;
@@ -61,7 +61,7 @@ echo ""
 
 # Build the project
 echo "🏗️  Building project..."
-npm run build
+cd client && npm run build
 echo "✓ Build complete"
 echo ""
 
@@ -72,7 +72,7 @@ echo ""
 
 # Restore development config
 echo "🔄 Restoring development configuration..."
-cat > src/config.js << 'EOF'
+cat > client/src/config.js << 'EOF'
 // API Configuration
 // Change this to your production backend URL when deploying
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5252';

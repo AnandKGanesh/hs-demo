@@ -1,9 +1,10 @@
 [build]
   command = "npm run build"
-  publish = "dist"
+  publish = "client/dist"
 
 [build.environment]
   NODE_VERSION = "18"
+  REACT_APP_API_URL = "https://hs-demo.onrender.com"
 
 [[redirects]]
   from = "/*"
@@ -13,4 +14,4 @@
 [dev]
   command = "npm start"
   port = 3000
-  publish = "dist"
+  publish = "client/dist"

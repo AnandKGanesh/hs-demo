@@ -21,12 +21,13 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
+.env.example
 
-# Logs
-logs/
+# Logs (keep folder, ignore contents)
+logs/*
+!logs/.gitkeep
 *.log
-server.log
-frontend.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -128,4 +129,24 @@ tmp/
 temp/
 *.tmp
 *.zip
+
+# Deployment and build artifacts
+backend.zip
+.netlify/
+
+# Documentation (can be generated or kept separately)
+docs/
+
+# Log files
+frontend.log
+server.log
+
+# Chat history
+chat_history.md
+
+
+# Large mapping files
+FLOW_MAPPINGS_V2.md
+
+# Deployment docs
 *DEPLOY*.md
