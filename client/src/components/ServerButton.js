@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { apiResponseState, captureCompleteState, demoModeState, debugCredentialsState } from '../utils/atoms';
 import { makeAuthenticatedRequest } from '../utils/api';
-import { filters } from '../utils/fieldMappings';
+import { filters, filterApiResponse } from '../utils/fieldMappings';
 import API_BASE_URL from '../config';
 
 const ServerButton = ({ paymentId, flow }) => {
@@ -90,8 +90,8 @@ const ServerButton = ({ paymentId, flow }) => {
               url: `/payments/${paymentId}`,
             },
             response: isPartialCapture
-              ? filters.filterApiResponse(data, 'payment', 'step5_retrieve_partial')
-              : filters.filterApiResponse(data, 'payment', 'step5_retrieve'),
+              ? filterApiResponse(data, 'payment', 'step5_retrieve_partial')
+              : filterApiResponse(data, 'payment', 'step5_retrieve'),
           },
         ],
         currentStep: 5,
