@@ -71,6 +71,14 @@ const flowCategories = [
     ],
   },
   {
+    id: 'customization',
+    name: 'Payment Experience',
+    icon: Palette,
+    flows: [
+      { id: 'sdk_customization', name: 'SDK Customization', description: 'Customize checkout appearance, layout, and behavior' },
+    ],
+  },
+  {
     id: 'smart_retry',
     name: 'Smart Retries',
     icon: Zap,

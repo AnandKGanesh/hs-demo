@@ -19,6 +19,7 @@ import RoutingSimulator from './flows/routing/RoutingSimulator';
 import ThreeDSDecisionManager from './flows/ThreeDSDecisionManager';
 import OrganizationManager from './flows/OrganizationManager';
 import DecisionEnginePlayground from './flows/decision-engine/DecisionEnginePlayground';
+import SDKCustomization from './flows/SDKCustomization';
 import { useRecoilState } from 'recoil';
 import { currentFlowState, apiResponseState, hyperState } from './utils/atoms';
 import API_BASE_URL from './config';
@@ -242,12 +243,14 @@ const App = () => {
                 <OrganizationManager key={currentFlow.id} />
               ) : currentFlow.id === 'decision_engine' ? (
                 <DecisionEnginePlayground key={currentFlow.id} />
+              ) : currentFlow.id === 'sdk_customization' ? (
+                <SDKCustomization key={currentFlow.id} />
               ) : (
                 <PaymentForm key={currentFlow.id} flow={currentFlow} />
               )}
             </div>
 
-            {currentFlow.id !== 'smart_retry_playground' && currentFlow.id !== 'routing_simulator' && currentFlow.id !== 'three_ds_decision' && (
+            {currentFlow.id !== 'smart_retry_playground' && currentFlow.id !== 'routing_simulator' && currentFlow.id !== 'three_ds_decision' && currentFlow.id !== 'sdk_customization' && (
               <div className="max-w-7xl mx-auto">
                 <APIResponsePanel />
               </div>
