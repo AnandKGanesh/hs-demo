@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { hyperState, apiResponseState, paymentStatusState, demoModeState, debugCredentialsState } from '../utils/atoms';
 import { makeAuthenticatedRequest } from '../utils/api';
+import { filters } from '../utils/fieldMappings';
 
 // Test data for Standalone 3DS
 const TEST_DATA = {
@@ -137,9 +138,7 @@ const Standalone3DS = () => {
                 method: 'POST',
                 url: '/customers',
               },
-              response: {
-                customer_id: customerId,
-              },
+              response: filters.customer({ customer_id: customerId }),
             },
             {
               title: 'Step 2: Create Payment Intent (3DS via PSP)',
@@ -154,11 +153,7 @@ const Standalone3DS = () => {
                   profile_id: 'pro_1ZrfdulAlyqvRf0CCROa',
                 },
               },
-              response: {
-                payment_id: data.paymentId,
-                client_secret: data.clientSecret,
-                status: data.status,
-              },
+              response: filters.paymentIntent(data),
             },
             {
               title: 'Step 3: SDK Payment Confirmation',
@@ -235,11 +230,7 @@ const Standalone3DS = () => {
         steps[2] = {
           title: 'Step 3: SDK Payment Confirmation',
           request: 'hyper.confirmPayment()',
-          response: {
-            status: paymentDetails.status,
-            payment_id: paymentDetails.payment_id,
-            authentication_type: paymentDetails.authentication_type || 'three_ds',
-          },
+          response: filters.threeDsSDK(paymentDetails),
         };
         return { steps, currentStep: 3 };
       });

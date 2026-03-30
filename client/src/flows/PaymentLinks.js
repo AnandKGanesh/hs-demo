@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { apiResponseState, demoModeState, debugCredentialsState } from '../utils/atoms';
 import { makeAuthenticatedRequest } from '../utils/api';
+import { filters } from '../utils/fieldMappings';
 
 const PaymentLinks = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -66,15 +67,7 @@ const PaymentLinks = () => {
                 },
               },
             },
-            response: {
-              payment_id: data.payment_id,
-              status: data.status,
-              payment_link: {
-                link: data.payment_link?.link,
-                secure_link: data.payment_link?.secure_link,
-                payment_link_id: data.payment_link?.payment_link_id,
-              },
-            },
+            response: filters.paymentLinks(data),
           },
         ],
         currentStep: 1,

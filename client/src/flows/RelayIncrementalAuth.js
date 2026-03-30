@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { apiResponseState, demoModeState, debugCredentialsState } from '../utils/atoms';
 import { makeAuthenticatedRequest } from '../utils/api';
+import { filters } from '../utils/fieldMappings';
 
 // Static card data
 const CARD_DATA = {
@@ -129,12 +130,13 @@ const RelayIncrementalAuth = () => {
                 },
               },
             },
-            response: {
-              relay_id: relayData.relayId,
+            response: filters.relay({
+              payment_id: relayData.relayId,
               status: relayData.status,
-              type: relayData.type,
-              adyen_transaction_id: relayData.adyenTransactionId,
-            },
+              amount: parseInt(additionalAmount, 10),
+              amount_capturable: parseInt(additionalAmount, 10),
+              amount_received: 0,
+            }),
           },
         ],
         currentStep: 2,

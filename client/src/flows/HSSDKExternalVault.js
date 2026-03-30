@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { apiResponseState, demoModeState, debugCredentialsState } from '../utils/atoms';
 import { makeAuthenticatedRequest } from '../utils/api';
+import { filters } from '../utils/fieldMappings';
 
 const HSSDKExternalVault = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -89,13 +90,7 @@ const HSSDKExternalVault = () => {
                 },
               },
             },
-            response: {
-              payment_id: data.payment_id,
-              status: data.status,
-              client_secret: data.client_secret,
-              amount: data.amount,
-              currency: data.currency,
-            },
+            response: filters.vaultSDK(data),
           },
         ],
         currentStep: 1,

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { apiResponseState, demoModeState, debugCredentialsState } from '../utils/atoms';
 import { makeAuthenticatedRequest } from '../utils/api';
+import { filters } from '../utils/fieldMappings';
 
 const CARD_DATA = {
   card_number: '4111111111111111',
@@ -127,12 +128,13 @@ const RelayRefund = () => {
                 },
               },
             },
-            response: {
-              relay_id: relayData.relayId,
+            response: filters.relay({
+              payment_id: relayData.relayId,
               status: relayData.status,
-              type: relayData.type,
-              adyen_transaction_id: relayData.adyenTransactionId,
-            },
+              amount: 10000,
+              amount_capturable: 0,
+              amount_received: 0,
+            }),
           },
         ],
         currentStep: 2,

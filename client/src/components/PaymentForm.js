@@ -45,6 +45,27 @@ const captureApiCall = (request, response, setApiResponse, stepTitle) => {
   });
 };
 
+const filterCustomerResponse = (response) => {
+  if (!response || !response.body) return response;
+  const body = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
+  return {
+    customer_id: body.customer_id,
+  };
+};
+
+const filterPaymentIntentResponse = (response) => {
+  if (!response || !response.body) return response;
+  const body = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
+  return {
+    payment_id: body.payment_id || body.paymentId,
+    client_secret: body.client_secret || body.clientSecret,
+    status: body.status,
+    capture_method: body.capture_method || body.captureMethod,
+    amount: body.amount,
+    customer_id: body.customer_id || body.customerId,
+  };
+};
+
 // Test data display component
 const TestDataPrompt = () => (
   <div className="absolute top-20 right-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 shadow-lg max-w-xs z-10">
@@ -177,7 +198,7 @@ const PaymentForm = ({ flow }) => {
 
         const onCustomerApiCall = (req, res) => {
           customerRequestDetails = req;
-          customerResponseDetails = res;
+          customerResponseDetails = filterCustomerResponse(res);
         };
 
         const onPaymentIntentApiCall = (req, res) => {
@@ -199,7 +220,7 @@ const PaymentForm = ({ flow }) => {
               headers: req.headers,
               body: getRequestBodyForFlow(flow),
             },
-            response: res,
+            response: filterPaymentIntentResponse(res),
           });
 
           steps.push({

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { apiResponseState, demoModeState, debugCredentialsState } from '../utils/atoms';
 import { makeAuthenticatedRequest } from '../utils/api';
+import { filters } from '../utils/fieldMappings';
 
 // Static 3DS data
 const THREE_DS_DATA = {
@@ -70,9 +71,7 @@ const Import3DSResults = () => {
               method: 'POST',
               url: '/customers',
             },
-            response: {
-              customer_id: customerId,
-            },
+            response: filters.customer({ customer_id: customerId }),
           },
           {
             title: 'Step 2: Server Payment with Imported 3DS Results',
@@ -99,11 +98,7 @@ const Import3DSResults = () => {
                 three_ds_data: THREE_DS_DATA,
               },
             },
-            response: {
-              status: data.status,
-              payment_id: data.paymentId,
-              authentication_type: data.authenticationType || 'three_ds',
-            },
+            response: filters.threeDsSDK(data),
           },
         ],
         currentStep: 2,

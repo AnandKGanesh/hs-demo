@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { apiResponseState, demoModeState, debugCredentialsState } from '../utils/atoms';
 import { makeAuthenticatedRequest } from '../utils/api';
+import { filters } from '../utils/fieldMappings';
 
 // Static values for PSP Token flow
 const STATIC_CUSTOMER_ID = 'cus_1773486075830';
@@ -71,14 +72,7 @@ const RecurringChargePSP = () => {
                 },
               },
             },
-            response: {
-              payment_id: chargeData.payment_id,
-              status: chargeData.status,
-              payment_method_id: chargeData.payment_method_id,
-              connector_mandate_id: chargeData.connector_mandate_id,
-              network_transaction_id: chargeData.network_transaction_id,
-              customer_id: STATIC_CUSTOMER_ID,
-            },
+            response: filters.recurringCharge(chargeData),
           },
         ],
         currentStep: 1,
