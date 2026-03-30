@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, Repeat, Shield, AlertTriangle, Database, ChevronRight, Lock, ChevronDown, ChevronUp, RefreshCw, Zap, GitBranch } from 'lucide-react';
+import { CreditCard, Repeat, Shield, AlertTriangle, Database, ChevronRight, Lock, ChevronDown, ChevronUp, RefreshCw, Zap, GitBranch, Palette } from 'lucide-react';
 
 const flowCategories = [
   {
