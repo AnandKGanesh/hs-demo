@@ -231,13 +231,13 @@ const PaymentForm = ({ flow }) => {
         }
 
         // Ensure client secret exists
-        if (!data.clientSecret) {
+        if (!data.client_secret) {
           console.error('Server response missing client_secret:', data);
           throw new Error('No client secret returned from server - the customer may not exist in Hyperswitch');
         }
 
-        setClientSecret(data.clientSecret);
-        setPaymentId(data.paymentId);
+        setClientSecret(data.client_secret);
+        setPaymentId(data.payment_id);
         setStatus(data.status);
 
       } catch (err) {

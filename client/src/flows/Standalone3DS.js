@@ -121,12 +121,12 @@ const Standalone3DS = () => {
           throw new Error(data.error.message || 'Unknown error from server');
         }
 
-        if (!data.clientSecret) {
+        if (!data.client_secret) {
           throw new Error('No client secret returned from server');
         }
 
-        setClientSecret(data.clientSecret);
-        setPaymentId(data.paymentId);
+        setClientSecret(data.client_secret);
+        setPaymentId(data.payment_id);
         setStatus(data.status);
 
         // Set API response steps
