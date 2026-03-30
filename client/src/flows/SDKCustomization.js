@@ -1,21 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { Palette, Layout, Type, Globe, Settings, Eye, Wallet, Languages, ChevronDown, ChevronUp } from 'lucide-react';
 import { makeAuthenticatedRequest } from '../utils/api';
-import { hyperState, demoModeState, debugCredentialsState } from '../utils/atoms';
+import { hyperState, demoModeState, debugCredentialsState, apiResponseState } from '../utils/atoms';
+import { filters } from '../utils/fieldMappings';
 
 const SDKCustomization = () => {
   const hyper = useRecoilValue(hyperState);
   const mode = useRecoilValue(demoModeState);
   const debugCreds = useRecoilValue(debugCredentialsState);
+  const setApiResponse = useSetRecoilState(apiResponseState);
+  const containerRef = useRef(null);
+  
   const [activeTab, setActiveTab] = useState('layout');
   const [isLoading, setIsLoading] = useState(false);
+  const [clientSecret, setClientSecret] = useState(null);
   const [error, setError] = useState(null);
   const [showCode, setShowCode] = useState(false);
-  const paymentElementRef = useRef(null);
-  const [paymentElement, setPaymentElement] = useState(null);
+  const [mounted, setMounted] = useState(false);
   
-  // Layout Options
   const [layoutType, setLayoutType] = useState('accordion');
   const [defaultCollapsed, setDefaultCollapsed] = useState(false);
   const [radios, setRadios] = useState(true);
@@ -24,7 +27,6 @@ const SDKCustomization = () => {
   const [paymentMethodsArrangement, setPaymentMethodsArrangement] = useState('default');
   const [displayOneClickOnTop, setDisplayOneClickOnTop] = useState(true);
   
-  // Appearance - Colors
   const [colorPrimary, setColorPrimary] = useState('#0066FF');
   const [colorBackground, setColorBackground] = useState('#FFFFFF');
   const [colorText, setColorText] = useState('#1A1A1A');
@@ -32,21 +34,17 @@ const SDKCustomization = () => {
   const [colorSuccess, setColorSuccess] = useState('#28A745');
   const [borderRadius, setBorderRadius] = useState(4);
   
-  // Typography
   const [fontFamily, setFontFamily] = useState('Inter');
   const [fontSizeBase, setFontSizeBase] = useState(16);
   const [spacingUnit, setSpacingUnit] = useState(4);
   
-  // Wallets
   const [applePay, setApplePay] = useState('auto');
   const [googlePay, setGooglePay] = useState('auto');
   const [walletTheme, setWalletTheme] = useState('dark');
   const [walletType, setWalletType] = useState('default');
   
-  // Language
   const [locale, setLocale] = useState('auto');
   
-  // Features
   const [branding, setBranding] = useState('always');
   const [displaySavedMethods, setDisplaySavedMethods] = useState(true);
   const [displaySaveCheckbox, setDisplaySaveCheckbox] = useState(true);
@@ -139,26 +137,37 @@ paymentElement.mount('#payment-element');`;
           }),
         }, mode, debugCreds);
 
+        if (intentData.error) {
+          throw new Error(intentData.error.message);
+        }
+
         if (!intentData.client_secret) {
-          throw new Error('No client_secret returned from server');
+          throw new Error('No client secret returned from server');
         }
 
-        const appearance = generateAppearance();
-        const elements = hyper.elements({
-          clientSecret: intentData.client_secret,
-          appearance,
-          locale: locale === 'auto' ? undefined : locale,
+        setClientSecret(intentData.client_secret);
+
+        setApiResponse({
+          steps: [
+            {
+              title: 'Step 1: Create Customer',
+              request: { method: 'POST', url: '/customers' },
+              response: filters.customer(customerData),
+            },
+            {
+              title: 'Step 2: Create Payment Intent',
+              request: { method: 'POST', url: '/payments', body: { amount: 10000, currency: 'USD' } },
+              response: filters.paymentIntent(intentData),
+            },
+            {
+              title: 'Step 3: SDK Payment Element',
+              request: 'elements.create("payment", options)',
+              response: 'SDK mounted with custom options',
+            },
+          ],
+          currentStep: 2,
         });
-
-        const paymentElementOptions = generateOptions();
-        const paymentEl = elements.create('payment', paymentElementOptions);
-
-        if (paymentElementRef.current) {
-          paymentEl.mount(paymentElementRef.current);
-          setPaymentElement(paymentEl);
-        }
       } catch (err) {
-        console.error('SDK Initialization error:', err);
         setError(err.message);
       } finally {
         setIsLoading(false);
@@ -166,9 +175,48 @@ paymentElement.mount('#payment-element');`;
     };
 
     initializeSDK();
-  }, [hyper, locale, mode, debugCreds]);
+  }, [hyper, mode, debugCreds, setApiResponse]);
 
   useEffect(() => {
+    if (!hyper || !clientSecret || !containerRef.current || mounted) {
+      console.log('SDK mount skipped - hyper:', !!hyper, 'clientSecret:', !!clientSecret, 'container:', !!containerRef.current, 'mounted:', mounted);
+      return;
+    }
+
+    console.log('Mounting payment element with clientSecret');
+
+    try {
+      const elements = hyper.elements({
+        clientSecret,
+        appearance: generateAppearance(),
+        locale: locale === 'auto' ? undefined : locale,
+      });
+
+      const paymentElementOptions = generateOptions();
+      console.log('Creating payment element with options:', paymentElementOptions);
+      
+      const paymentElement = elements.create('payment', paymentElementOptions);
+      paymentElement.mount(containerRef.current);
+      console.log('Payment element mounted successfully');
+      setMounted(true);
+
+      return () => {
+        console.log('Destroying payment element');
+        paymentElement.destroy();
+        setMounted(false);
+      };
+    } catch (err) {
+      console.error('Error mounting payment element:', err);
+      setError('Failed to mount payment element: ' + err.message);
+    }
+  }, [hyper, clientSecret, locale, mounted]);
+
+  useEffect(() => {
+    if (!hyper || !clientSecret) return;
+    
+    const elements = hyper.elements({ clientSecret });
+    const paymentElement = elements.getElement('payment');
+    
     if (paymentElement) {
       paymentElement.update({
         layout: layoutType === 'accordion' ? {
@@ -185,7 +233,7 @@ paymentElement.mount('#payment-element');`;
         },
       });
     }
-  }, [paymentElement, layoutType, defaultCollapsed, radios, spacedItems, visibleItemsCount, displayOneClickOnTop, paymentMethodsArrangement]);
+  }, [hyper, clientSecret, layoutType, defaultCollapsed, radios, spacedItems, visibleItemsCount, displayOneClickOnTop, paymentMethodsArrangement]);
 
   const tabs = [
     { id: 'layout', label: 'Layout', icon: Layout },
@@ -430,7 +478,7 @@ paymentElement.mount('#payment-element');`;
               </div>
             ) : (
               <>
-                <div ref={paymentElementRef} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 min-h-[400px]" />
+                <div ref={containerRef} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 min-h-[400px]" />
                 
                 {showCode && (
                   <div className="mt-4 bg-gray-900 rounded-lg p-4 overflow-x-auto">
