@@ -116,7 +116,7 @@ const APIResponsePanel = () => {
             </p>
           ) : (
             <pre className="text-xs text-gray-700 dark:text-gray-300 overflow-x-auto whitespace-pre">
-              <code>{formatJSON(step.response)}</code>
+              <code>{formatJSON(step.response.body || step.response)}</code>
             </pre>
           )}
         </div>
