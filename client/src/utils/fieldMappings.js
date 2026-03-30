@@ -10,8 +10,8 @@ export const FIELD_MAPPINGS = {
     step1_customer: ['customer_id'],
     step2_payment_intent: ['payment_id', 'client_secret', 'status', 'capture_method', 'amount', 'customer_id'],
     step3_sdk: ['status', 'payment_id'],
-    step4_capture: ['payment_id', 'status', 'amount_captured'],
-    step4_partial_capture: ['payment_id', 'status', 'amount_captured', 'remaining_capturable'],
+    step4_capture: ['payment_id', 'status'],
+    step4_partial_capture: ['payment_id', 'status'],
   },
 
   // Recurring Flows
