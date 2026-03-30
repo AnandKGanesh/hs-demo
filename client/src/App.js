@@ -69,6 +69,7 @@ const App = () => {
         { id: 'three_ds_decision', name: '3DS Decision Manager', description: 'Risk-based 3DS authentication decisions' },
         { id: 'organization_manager', name: 'Organization Manager', description: 'Mock organization structure and merchant management' },
         { id: 'decision_engine', name: 'Decision Engine', description: 'Success rate-based dynamic routing simulation' },
+        { id: 'sdk_customization', name: 'SDK Customization', description: 'Customize checkout appearance, layout, and behavior' },
       ];
       
       const flow = allFlows.find(f => f.id === flowId);
@@ -189,12 +190,14 @@ const App = () => {
 
   return (
     <Layout onFlowSelect={handleFlowSelect} currentFlow={currentFlow}>
-      {currentFlow?.id === 'organization_manager' || currentFlow?.id === 'decision_engine' ? (
+      {currentFlow?.id === 'organization_manager' || currentFlow?.id === 'decision_engine' || currentFlow?.id === 'sdk_customization' ? (
         <div className="w-full">
           {currentFlow.id === 'organization_manager' ? (
             <OrganizationManager key={currentFlow.id} />
-          ) : (
+          ) : currentFlow.id === 'decision_engine' ? (
             <DecisionEnginePlayground key={currentFlow.id} />
+          ) : (
+            <SDKCustomization key={currentFlow.id} hyper={hyper} />
           )}
         </div>
       ) : (

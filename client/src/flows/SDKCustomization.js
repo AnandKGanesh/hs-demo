@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRecoilValue } from 'recoil';
-import { hyperState } from '../utils/atoms';
-import { Palette, Layout, Type, CreditCard, Globe, Settings, Eye, Wallet, Languages, Button } from 'lucide-react';
+import { Palette, Layout, Type, Globe, Settings, Eye, Wallet, Languages, ChevronDown, ChevronUp } from 'lucide-react';
+import { makeAuthenticatedRequest } from '../utils/api';
+import { demoModeState, debugCredentialsState } from '../utils/atoms';
 
-const SDKCustomization = () => {
-  const hyper = useRecoilValue(hyperState);
+const SDKCustomization = ({ hyper }) => {
+  const mode = useRecoilValue(demoModeState);
+  const debugCreds = useRecoilValue(debugCredentialsState);
   const [activeTab, setActiveTab] = useState('layout');
+  const [isLoading, setIsLoading] = useState(false);
+  const [clientSecret, setClientSecret] = useState(null);
+  const [paymentElement, setPaymentElement] = useState(null);
+  const [error, setError] = useState(null);
+  const [showCode, setShowCode] = useState(false);
   
   // Layout Options
   const [layoutType, setLayoutType] = useState('accordion');
@@ -44,34 +51,37 @@ const SDKCustomization = () => {
   const [displaySaveCheckbox, setDisplaySaveCheckbox] = useState(true);
   const [paymentMethodsHeader, setPaymentMethodsHeader] = useState('Select Payment Method');
   const [savedMethodsHeader, setSavedMethodsHeader] = useState('Saved Payment Methods');
-  
-  const generateCode = () => {
-    const options = {
-      layout: layoutType === 'accordion' ? {
-        type: 'accordion',
-        defaultCollapsed,
-        radios,
-        spacedAccordionItems: spacedItems,
-        visibleAccordionItemsCount: visibleItemsCount,
-        displayOneClickPaymentMethodsOnTop: displayOneClickOnTop,
-      } : {
-        type: 'tabs',
-        paymentMethodsArrangementForTabs: paymentMethodsArrangement,
-        displayOneClickPaymentMethodsOnTop: displayOneClickOnTop,
-      },
-      appearance: {
-        variables: {
-          colorPrimary,
-          colorBackground,
-          colorText,
-          colorDanger,
-          colorSuccess,
-          borderRadius: `${borderRadius}px`,
-          fontFamily,
-          fontSizeBase: `${fontSizeBase}px`,
-          spacingUnit: `${spacingUnit}px`,
-        },
-      },
+
+  const generateAppearance = useCallback(() => ({
+    variables: {
+      colorPrimary,
+      colorBackground,
+      colorText,
+      colorDanger,
+      colorSuccess,
+      borderRadius: `${borderRadius}px`,
+      fontFamily,
+      fontSizeBase: `${fontSizeBase}px`,
+      spacingUnit: `${spacingUnit}px`,
+    },
+  }), [colorPrimary, colorBackground, colorText, colorDanger, colorSuccess, borderRadius, fontFamily, fontSizeBase, spacingUnit]);
+
+  const generateOptions = useCallback(() => {
+    const layout = layoutType === 'accordion' ? {
+      type: 'accordion',
+      defaultCollapsed,
+      radios,
+      spacedAccordionItems: spacedItems,
+      visibleAccordionItemsCount: visibleItemsCount,
+      displayOneClickPaymentMethodsOnTop: displayOneClickOnTop,
+    } : {
+      type: 'tabs',
+      paymentMethodsArrangementForTabs: paymentMethodsArrangement,
+      displayOneClickPaymentMethodsOnTop: displayOneClickOnTop,
+    };
+
+    return {
+      layout,
       wallets: {
         applePay,
         googlePay,
@@ -87,10 +97,104 @@ const SDKCustomization = () => {
       paymentMethodsHeaderText: paymentMethodsHeader,
       savedPaymentMethodsHeaderText: savedMethodsHeader,
     };
-    
-    return `const paymentElementOptions = ${JSON.stringify(options, null, 2)};
+  }, [layoutType, defaultCollapsed, radios, spacedItems, visibleItemsCount, displayOneClickOnTop, paymentMethodsArrangement, applePay, googlePay, walletTheme, walletType, locale, branding, displaySavedMethods, displaySaveCheckbox, paymentMethodsHeader, savedMethodsHeader]);
 
-<PaymentElement id="payment-element" options={paymentElementOptions} />`;
+  const initializeSDK = useCallback(async () => {
+    if (!hyper) {
+      setError('Hyperswitch SDK not loaded');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const customerData = await makeAuthenticatedRequest('/api/create-customer', {
+        method: 'POST',
+      }, mode, debugCreds);
+
+      const intentData = await makeAuthenticatedRequest('/api/create-intent', {
+        method: 'POST',
+        body: JSON.stringify({
+          flowType: 'automatic',
+          amount: 10000,
+          customer_id: customerData.customer_id,
+        }),
+      }, mode, debugCreds);
+      
+      if (!intentData.client_secret) {
+        throw new Error('No client_secret returned from server');
+      }
+      
+      setClientSecret(intentData.client_secret);
+
+      const appearance = generateAppearance();
+      const elements = hyper.elements({
+        clientSecret: intentData.client_secret,
+        appearance,
+        locale: locale === 'auto' ? undefined : locale,
+      });
+
+      const paymentElementOptions = generateOptions();
+      const paymentEl = elements.create('payment', paymentElementOptions);
+      
+      const container = document.getElementById('sdk-customization-payment-element');
+      if (container) {
+        container.innerHTML = '';
+        paymentEl.mount('#sdk-customization-payment-element');
+        setPaymentElement(paymentEl);
+      } else {
+        setError('Payment element container not found');
+      }
+    } catch (err) {
+      console.error('SDK Initialization error:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [hyper, generateAppearance, generateOptions, locale, mode, debugCreds]);
+
+  useEffect(() => {
+    if (hyper && !clientSecret) {
+      initializeSDK();
+    }
+  }, [hyper, clientSecret, initializeSDK]);
+
+  useEffect(() => {
+    if (paymentElement && hyper && clientSecret) {
+      paymentElement.update({
+        layout: layoutType === 'accordion' ? {
+          type: 'accordion',
+          defaultCollapsed,
+          radios,
+          spacedAccordionItems: spacedItems,
+          visibleAccordionItemsCount: visibleItemsCount,
+          displayOneClickPaymentMethodsOnTop: displayOneClickOnTop,
+        } : {
+          type: 'tabs',
+          paymentMethodsArrangementForTabs: paymentMethodsArrangement,
+          displayOneClickPaymentMethodsOnTop: displayOneClickOnTop,
+        },
+      });
+    }
+  }, [paymentElement, layoutType, defaultCollapsed, radios, spacedItems, visibleItemsCount, displayOneClickOnTop, paymentMethodsArrangement, hyper, clientSecret]);
+
+  const generateCode = () => {
+    const appearance = generateAppearance();
+    const options = generateOptions();
+    
+    return `const appearance = ${JSON.stringify(appearance, null, 2)};
+
+const paymentElementOptions = ${JSON.stringify(options, null, 2)};
+
+const elements = hyper.elements({ 
+  clientSecret, 
+  appearance,
+  locale: '${locale}'
+});
+
+const paymentElement = elements.create('payment', paymentElementOptions);
+paymentElement.mount('#payment-element');`;
   };
 
   const tabs = [
@@ -106,7 +210,7 @@ const SDKCustomization = () => {
     switch (activeTab) {
       case 'layout':
         return (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Layout Type
@@ -114,20 +218,20 @@ const SDKCustomization = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => setLayoutType('accordion')}
-                  className={`px-4 py-2 rounded-lg border transition-colors ${
+                  className={`flex-1 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                     layoutType === 'accordion'
                       ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
+                      : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
                   }`}
                 >
                   Accordion
                 </button>
                 <button
                   onClick={() => setLayoutType('tabs')}
-                  className={`px-4 py-2 rounded-lg border transition-colors ${
+                  className={`flex-1 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                     layoutType === 'tabs'
                       ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
+                      : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
                   }`}
                 >
                   Tabs
@@ -135,270 +239,117 @@ const SDKCustomization = () => {
               </div>
             </div>
             
-            {layoutType === 'accordion' && (
+            {layoutType === 'accordion' ? (
               <>
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Default Collapsed
-                  </label>
-                  <input
-                    type="checkbox"
-                    checked={defaultCollapsed}
-                    onChange={(e) => setDefaultCollapsed(e.target.checked)}
-                    className="w-5 h-5 rounded border-gray-300"
-                  />
+                <div className="flex items-center justify-between py-2">
+                  <label className="text-sm text-gray-700 dark:text-gray-300">Default Collapsed</label>
+                  <input type="checkbox" checked={defaultCollapsed} onChange={(e) => setDefaultCollapsed(e.target.checked)} className="w-5 h-5 rounded" />
                 </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Show Radios
-                  </label>
-                  <input
-                    type="checkbox"
-                    checked={radios}
-                    onChange={(e) => setRadios(e.target.checked)}
-                    className="w-5 h-5 rounded border-gray-300"
-                  />
+                <div className="flex items-center justify-between py-2">
+                  <label className="text-sm text-gray-700 dark:text-gray-300">Show Radios</label>
+                  <input type="checkbox" checked={radios} onChange={(e) => setRadios(e.target.checked)} className="w-5 h-5 rounded" />
                 </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Spaced Accordion Items
-                  </label>
-                  <input
-                    type="checkbox"
-                    checked={spacedItems}
-                    onChange={(e) => setSpacedItems(e.target.checked)}
-                    className="w-5 h-5 rounded border-gray-300"
-                  />
+                <div className="flex items-center justify-between py-2">
+                  <label className="text-sm text-gray-700 dark:text-gray-300">Spaced Items</label>
+                  <input type="checkbox" checked={spacedItems} onChange={(e) => setSpacedItems(e.target.checked)} className="w-5 h-5 rounded" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Visible Items Count (0 = all)
-                  </label>
-                  <input
-                    type="number"
-                    value={visibleItemsCount}
-                    onChange={(e) => setVisibleItemsCount(parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-                  />
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Visible Items (0 = all)</label>
+                  <input type="number" value={visibleItemsCount} onChange={(e) => setVisibleItemsCount(parseInt(e.target.value) || 0)} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
               </>
-            )}
-            
-            {layoutType === 'tabs' && (
+            ) : (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Payment Methods Arrangement
-                </label>
-                <select
-                  value={paymentMethodsArrangement}
-                  onChange={(e) => setPaymentMethodsArrangement(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-                >
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Arrangement</label>
+                <select value={paymentMethodsArrangement} onChange={(e) => setPaymentMethodsArrangement(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
                   <option value="default">Default (dropdown)</option>
                   <option value="grid">Grid</option>
                 </select>
               </div>
             )}
             
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Display One-Click Methods on Top
-              </label>
-              <input
-                type="checkbox"
-                checked={displayOneClickOnTop}
-                onChange={(e) => setDisplayOneClickOnTop(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300"
-              />
+            <div className="flex items-center justify-between py-2">
+              <label className="text-sm text-gray-700 dark:text-gray-300">One-Click Methods on Top</label>
+              <input type="checkbox" checked={displayOneClickOnTop} onChange={(e) => setDisplayOneClickOnTop(e.target.checked)} className="w-5 h-5 rounded" />
             </div>
           </div>
         );
         
       case 'appearance':
         return (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Primary Color
-              </label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={colorPrimary}
-                  onChange={(e) => setColorPrimary(e.target.value)}
-                  className="w-10 h-10 rounded border-0 cursor-pointer"
-                />
-                <input
-                  type="text"
-                  value={colorPrimary}
-                  onChange={(e) => setColorPrimary(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-                />
+          <div className="space-y-5">
+            {[
+              { label: 'Primary', value: colorPrimary, setter: setColorPrimary },
+              { label: 'Background', value: colorBackground, setter: setColorBackground },
+              { label: 'Text', value: colorText, setter: setColorText },
+              { label: 'Danger', value: colorDanger, setter: setColorDanger },
+              { label: 'Success', value: colorSuccess, setter: setColorSuccess },
+            ].map(({ label, value, setter }) => (
+              <div key={label}>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label} Color</label>
+                <div className="flex gap-2">
+                  <input type="color" value={value} onChange={(e) => setter(e.target.value)} className="w-10 h-10 rounded border-0 cursor-pointer" />
+                  <input type="text" value={value} onChange={(e) => setter(e.target.value)} className="flex-1 px-3 py-2 border rounded-lg text-sm uppercase" />
+                </div>
               </div>
-            </div>
+            ))}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Background Color
-              </label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={colorBackground}
-                  onChange={(e) => setColorBackground(e.target.value)}
-                  className="w-10 h-10 rounded border-0 cursor-pointer"
-                />
-                <input
-                  type="text"
-                  value={colorBackground}
-                  onChange={(e) => setColorBackground(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Text Color
-              </label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={colorText}
-                  onChange={(e) => setColorText(e.target.value)}
-                  className="w-10 h-10 rounded border-0 cursor-pointer"
-                />
-                <input
-                  type="text"
-                  value={colorText}
-                  onChange={(e) => setColorText(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Border Radius (px)
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="20"
-                value={borderRadius}
-                onChange={(e) => setBorderRadius(parseInt(e.target.value))}
-                className="w-full"
-              />
-              <span className="text-sm text-gray-500">{borderRadius}px</span>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Border Radius</label>
+              <input type="range" min="0" max="20" value={borderRadius} onChange={(e) => setBorderRadius(parseInt(e.target.value))} className="w-full" />
+              <span className="text-xs text-gray-500">{borderRadius}px</span>
             </div>
           </div>
         );
         
       case 'typography':
         return (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Font Family
-              </label>
-              <select
-                value={fontFamily}
-                onChange={(e) => setFontFamily(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-              >
-                <option value="Inter">Inter</option>
-                <option value="Roboto">Roboto</option>
-                <option value="Open Sans">Open Sans</option>
-                <option value="Poppins">Poppins</option>
-                <option value="SF Pro">SF Pro</option>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Font Family</label>
+              <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+                <option>Inter</option><option>Roboto</option><option>Open Sans</option><option>Poppins</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Base Font Size (px)
-              </label>
-              <input
-                type="range"
-                min="12"
-                max="20"
-                value={fontSizeBase}
-                onChange={(e) => setFontSizeBase(parseInt(e.target.value))}
-                className="w-full"
-              />
-              <span className="text-sm text-gray-500">{fontSizeBase}px</span>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Base Font Size</label>
+              <input type="range" min="12" max="20" value={fontSizeBase} onChange={(e) => setFontSizeBase(parseInt(e.target.value))} className="w-full" />
+              <span className="text-xs text-gray-500">{fontSizeBase}px</span>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Spacing Unit (px)
-              </label>
-              <input
-                type="range"
-                min="2"
-                max="8"
-                value={spacingUnit}
-                onChange={(e) => setSpacingUnit(parseInt(e.target.value))}
-                className="w-full"
-              />
-              <span className="text-sm text-gray-500">{spacingUnit}px</span>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Spacing Unit</label>
+              <input type="range" min="2" max="8" value={spacingUnit} onChange={(e) => setSpacingUnit(parseInt(e.target.value))} className="w-full" />
+              <span className="text-xs text-gray-500">{spacingUnit}px</span>
             </div>
           </div>
         );
         
       case 'wallets':
         return (
-          <div className="space-y-6">
+          <div className="space-y-5">
+            {[
+              { label: 'Apple Pay', value: applePay, setter: setApplePay },
+              { label: 'Google Pay', value: googlePay, setter: setGooglePay },
+            ].map(({ label, value, setter }) => (
+              <div key={label}>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
+                <select value={value} onChange={(e) => setter(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+                  <option value="auto">Auto</option>
+                  <option value="never">Never</option>
+                </select>
+              </div>
+            ))}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Apple Pay
-              </label>
-              <select
-                value={applePay}
-                onChange={(e) => setApplePay(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-              >
-                <option value="auto">Auto (display when supported)</option>
-                <option value="never">Never</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Google Pay
-              </label>
-              <select
-                value={googlePay}
-                onChange={(e) => setGooglePay(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-              >
-                <option value="auto">Auto (display when supported)</option>
-                <option value="never">Never</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Wallet Button Theme
-              </label>
-              <select
-                value={walletTheme}
-                onChange={(e) => setWalletTheme(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-              >
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Wallet Theme</label>
+              <select value={walletTheme} onChange={(e) => setWalletTheme(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
                 <option value="dark">Dark</option>
                 <option value="light">Light</option>
                 <option value="outline">Outline</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Wallet Button Type
-              </label>
-              <select
-                value={walletType}
-                onChange={(e) => setWalletType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-              >
-                <option value="default">Default</option>
-                <option value="checkout">Checkout</option>
-                <option value="pay">Pay</option>
-                <option value="buy">Buy</option>
-                <option value="donate">Donate</option>
-                <option value="subscribe">Subscribe</option>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Button Type</label>
+              <select value={walletType} onChange={(e) => setWalletType(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+                {['default', 'checkout', 'pay', 'buy', 'donate', 'subscribe'].map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
           </div>
@@ -406,92 +357,49 @@ const SDKCustomization = () => {
         
       case 'language':
         return (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Locale
-              </label>
-              <select
-                value={locale}
-                onChange={(e) => setLocale(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-              >
-                <option value="auto">Auto (detect browser)</option>
-                <option value="en">English</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
-                <option value="es">Spanish</option>
-                <option value="it">Italian</option>
-                <option value="ja">Japanese</option>
-                <option value="pt">Portuguese</option>
-                <option value="ru">Russian</option>
-                <option value="zh">Chinese</option>
-                <option value="ar">Arabic</option>
-                <option value="he">Hebrew</option>
-              </select>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Locale</label>
+            <select value={locale} onChange={(e) => setLocale(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+              <option value="auto">Auto (detect browser)</option>
+              <option value="en">English</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
+              <option value="es">Spanish</option>
+              <option value="it">Italian</option>
+              <option value="ja">Japanese</option>
+              <option value="pt">Portuguese</option>
+              <option value="ru">Russian</option>
+              <option value="zh">Chinese</option>
+              <option value="ar">Arabic</option>
+            </select>
           </div>
         );
         
       case 'features':
         return (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Branding
-              </label>
-              <select
-                value={branding}
-                onChange={(e) => setBranding(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-              >
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Branding</label>
+              <select value={branding} onChange={(e) => setBranding(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
                 <option value="always">Always show</option>
                 <option value="never">Never show</option>
               </select>
             </div>
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Display Saved Payment Methods
-              </label>
-              <input
-                type="checkbox"
-                checked={displaySavedMethods}
-                onChange={(e) => setDisplaySavedMethods(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300"
-              />
+            <div className="flex items-center justify-between py-2">
+              <label className="text-sm text-gray-700 dark:text-gray-300">Display Saved Methods</label>
+              <input type="checkbox" checked={displaySavedMethods} onChange={(e) => setDisplaySavedMethods(e.target.checked)} className="w-5 h-5 rounded" />
             </div>
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Display Save Payment Method Checkbox
-              </label>
-              <input
-                type="checkbox"
-                checked={displaySaveCheckbox}
-                onChange={(e) => setDisplaySaveCheckbox(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300"
-              />
+            <div className="flex items-center justify-between py-2">
+              <label className="text-sm text-gray-700 dark:text-gray-300">Save Card Checkbox</label>
+              <input type="checkbox" checked={displaySaveCheckbox} onChange={(e) => setDisplaySaveCheckbox(e.target.checked)} className="w-5 h-5 rounded" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Payment Methods Header Text
-              </label>
-              <input
-                type="text"
-                value={paymentMethodsHeader}
-                onChange={(e) => setPaymentMethodsHeader(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-              />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Methods Header</label>
+              <input type="text" value={paymentMethodsHeader} onChange={(e) => setPaymentMethodsHeader(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Saved Methods Header Text
-              </label>
-              <input
-                type="text"
-                value={savedMethodsHeader}
-                onChange={(e) => setSavedMethodsHeader(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-              />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Saved Methods Header</label>
+              <input type="text" value={savedMethodsHeader} onChange={(e) => setSavedMethodsHeader(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" />
             </div>
           </div>
         );
@@ -501,34 +409,36 @@ const SDKCustomization = () => {
     }
   };
 
-  return (
-    <div className="h-full flex flex-col">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          SDK Customization
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          Customize the payment experience to match your brand and UX requirements
-        </p>
+  if (!hyper) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Initializing Hyperswitch SDK...</p>
+        </div>
       </div>
+    );
+  }
 
-      <div className="flex-1 flex gap-6 overflow-hidden">
+  return (
+    <div className="h-[calc(100vh-80px)] flex flex-col">
+      <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Controls */}
-        <div className="w-1/3 flex flex-col bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="flex border-b border-gray-200 dark:border-gray-700">
+        <div className="w-80 flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+          <div className="flex border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex flex-col items-center gap-1 py-3 px-2 text-xs font-medium transition-colors ${
+                  className={`flex flex-col items-center gap-1 py-3 px-3 text-xs font-medium whitespace-nowrap transition-colors ${
                     activeTab === tab.id
-                      ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-600'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-600'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
                   }`}
                 >
-                  <Icon size={18} />
+                  <Icon size={16} />
                   {tab.label}
                 </button>
               );
@@ -540,228 +450,59 @@ const SDKCustomization = () => {
           </div>
         </div>
 
-        {/* Right Panel - Preview */}
-        <div className="flex-1 flex flex-col gap-4">
-          {/* SDK Preview */}
-          <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 overflow-y-auto">
+        {/* Right Panel - Live SDK */}
+        <div className="flex-1 bg-gray-50 dark:bg-gray-900 p-6 overflow-y-auto">
+          <div className="max-w-lg mx-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <Eye size={18} />
                 Live Preview
               </h3>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                The SDK will render with your selected options
-              </span>
-            </div>
-            
-            <div 
-              className="p-6 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600"
-              style={{ backgroundColor: colorBackground }}
-            >
-              <div className="max-w-md mx-auto">
-                {/* Mock Payment Element */}
-                <div 
-                  className="rounded-lg p-4 shadow-sm"
-                  style={{ 
-                    backgroundColor: colorBackground,
-                    borderRadius: `${borderRadius}px`,
-                    fontFamily,
-                    fontSize: `${fontSizeBase}px`,
-                    color: colorText,
-                    border: `1px solid ${colorPrimary}20`,
-                  }}
-                >
-                  {/* Saved Methods Section */}
-                  {displaySavedMethods && (
-                    <div className="mb-4">
-                      <h4 className="text-sm font-medium mb-2 opacity-80">{savedMethodsHeader}</h4>
-                      <div 
-                        className="p-3 rounded border cursor-pointer flex items-center gap-3"
-                        style={{ 
-                          borderRadius: `${borderRadius}px`,
-                          borderColor: `${colorPrimary}30`,
-                        }}
-                      >
-                        <CreditCard size={20} style={{ color: colorPrimary }} />
-                        <div className="flex-1">
-                          <div className="font-medium">•••• 4242</div>
-                          <div className="text-xs opacity-60">Expires 12/25</div>
-                        </div>
-                        <input type="radio" checked readOnly className="w-4 h-4" style={{ accentColor: colorPrimary }} />
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* One-Click Wallets */}
-                  {displayOneClickOnTop && (applePay !== 'never' || googlePay !== 'never') && (
-                    <div className="mb-4 space-y-2">
-                      {applePay !== 'never' && (
-                        <button
-                          className="w-full py-3 rounded font-medium text-white flex items-center justify-center gap-2"
-                          style={{ 
-                            backgroundColor: walletTheme === 'dark' ? '#000' : '#fff',
-                            color: walletTheme === 'dark' ? '#fff' : '#000',
-                            borderRadius: `${borderRadius}px`,
-                            border: walletTheme === 'outline' ? '1px solid #000' : 'none',
-                          }}
-                        >
-                          <span>Apple Pay</span>
-                        </button>
-                      )}
-                      {googlePay !== 'never' && (
-                        <button
-                          className="w-full py-3 rounded font-medium text-white flex items-center justify-center gap-2"
-                          style={{ 
-                            backgroundColor: walletTheme === 'dark' ? '#000' : '#fff',
-                            color: walletTheme === 'dark' ? '#fff' : '#000',
-                            borderRadius: `${borderRadius}px`,
-                            border: walletTheme === 'outline' ? '1px solid #000' : 'none',
-                          }}
-                        >
-                          <span>Google Pay</span>
-                        </button>
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Payment Methods Header */}
-                  <h4 className="text-sm font-medium mb-3 opacity-80">{paymentMethodsHeader}</h4>
-                  
-                  {/* Payment Method Tabs/Accordion */}
-                  <div className="space-y-2">
-                    <div 
-                      className="p-3 rounded border"
-                      style={{ 
-                        borderRadius: `${borderRadius}px`,
-                        borderColor: `${colorPrimary}40`,
-                        backgroundColor: `${colorPrimary}05`,
-                      }}
-                    >
-                      <div className="flex items-center gap-2">
-                        {radios && layoutType === 'accordion' && (
-                          <input 
-                            type="radio" 
-                            checked 
-                            readOnly 
-                            className="w-4 h-4" 
-                            style={{ accentColor: colorPrimary }}
-                          />
-                        )}
-                        <CreditCard size={18} style={{ color: colorPrimary }} />
-                        <span className="font-medium">Card</span>
-                      </div>
-                      
-                      {/* Card Form */}
-                      <div className="mt-3 space-y-2">
-                        <input
-                          type="text"
-                          placeholder="Card number"
-                          className="w-full p-2 rounded border text-sm"
-                          style={{ 
-                            borderRadius: `${borderRadius}px`,
-                            borderColor: `${colorPrimary}30`,
-                            backgroundColor: colorBackground,
-                            color: colorText,
-                          }}
-                          readOnly
-                        />
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            placeholder="MM / YY"
-                            className="flex-1 p-2 rounded border text-sm"
-                            style={{ 
-                              borderRadius: `${borderRadius}px`,
-                              borderColor: `${colorPrimary}30`,
-                              backgroundColor: colorBackground,
-                              color: colorText,
-                            }}
-                            readOnly
-                          />
-                          <input
-                            type="text"
-                            placeholder="CVC"
-                            className="w-20 p-2 rounded border text-sm"
-                            style={{ 
-                              borderRadius: `${borderRadius}px`,
-                              borderColor: `${colorPrimary}30`,
-                              backgroundColor: colorBackground,
-                              color: colorText,
-                            }}
-                            readOnly
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {spacedItems && layoutType === 'accordion' && <div className="h-2" />}
-                    
-                    <div 
-                      className="p-3 rounded border flex items-center gap-2 opacity-60"
-                      style={{ 
-                        borderRadius: `${borderRadius}px`,
-                        borderColor: `${colorPrimary}20`,
-                      }}
-                    >
-                      {radios && layoutType === 'accordion' && (
-                        <input 
-                          type="radio" 
-                          className="w-4 h-4" 
-                          style={{ accentColor: colorPrimary }}
-                        />
-                      )}
-                      <span className="font-medium">PayPal</span>
-                    </div>
-                  </div>
-                  
-                  {/* Save Card Checkbox */}
-                  {displaySaveCheckbox && (
-                    <div className="mt-4 flex items-center gap-2">
-                      <input 
-                        type="checkbox" 
-                        className="w-4 h-4 rounded"
-                        style={{ accentColor: colorPrimary }}
-                      />
-                      <span className="text-sm opacity-80">Save this card for future payments</span>
-                    </div>
-                  )}
-                  
-                  {/* Pay Button */}
-                  <button
-                    className="w-full mt-4 py-3 rounded font-medium text-white"
-                    style={{ 
-                      backgroundColor: colorPrimary,
-                      borderRadius: `${borderRadius}px`,
-                    }}
-                  >
-                    Pay $100.00
-                  </button>
-                  
-                  {/* Branding */}
-                  {branding === 'always' && (
-                    <div className="mt-3 text-center text-xs opacity-50">
-                      Powered by Hyperswitch
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Code Preview */}
-          <div className="h-1/3 bg-gray-900 rounded-lg p-4 overflow-hidden">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-white text-sm">Generated Code</h3>
-              <button 
-                className="text-xs text-gray-400 hover:text-white transition-colors"
-                onClick={() => navigator.clipboard.writeText(generateCode())}
+              <button
+                onClick={() => setShowCode(!showCode)}
+                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
               >
-                Copy to clipboard
+                {showCode ? 'Hide Code' : 'Show Code'}
+                {showCode ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
             </div>
-            <pre className="text-xs text-green-400 overflow-auto h-full pb-6 font-mono">
-              <code>{generateCode()}</code>
-            </pre>
+            
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
+                <button onClick={initializeSDK} className="mt-2 text-sm text-red-600 underline">Retry</button>
+              </div>
+            )}
+            
+            {isLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+            ) : (
+              <>
+                <div 
+                  id="sdk-customization-payment-element"
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 min-h-[400px]"
+                />
+                
+                {showCode && (
+                  <div className="mt-4 bg-gray-900 rounded-lg p-4 overflow-x-auto">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-gray-400">Generated Code</span>
+                      <button 
+                        onClick={() => navigator.clipboard.writeText(generateCode())}
+                        className="text-xs text-gray-400 hover:text-white"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                    <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap">
+                      <code>{generateCode()}</code>
+                    </pre>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
