@@ -12,6 +12,8 @@ export const FIELD_MAPPINGS = {
     step3_sdk: ['status', 'payment_id'],
     step4_capture: ['payment_id', 'status'],
     step4_partial_capture: ['payment_id', 'status'],
+    step5_retrieve: ['payment_id', 'status', 'amount_captured'],
+    step5_retrieve_partial: ['payment_id', 'status', 'amount_captured', 'remaining_capturable'],
   },
 
   // Recurring Flows
