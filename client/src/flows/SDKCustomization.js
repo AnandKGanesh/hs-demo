@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRecoilValue } from 'recoil';
 import { Palette, Layout, Type, Globe, Settings, Eye, Wallet, Languages, ChevronDown, ChevronUp } from 'lucide-react';
 import { makeAuthenticatedRequest } from '../utils/api';
-import { demoModeState, debugCredentialsState } from '../utils/atoms';
+import { hyperState, demoModeState, debugCredentialsState } from '../utils/atoms';
 
-const SDKCustomization = ({ hyper }) => {
+const SDKCustomization = () => {
+  const hyper = useRecoilValue(hyperState);
   const mode = useRecoilValue(demoModeState);
   const debugCreds = useRecoilValue(debugCredentialsState);
   const [activeTab, setActiveTab] = useState('layout');
   const [isLoading, setIsLoading] = useState(false);
-  const [clientSecret, setClientSecret] = useState(null);
-  const [paymentElement, setPaymentElement] = useState(null);
   const [error, setError] = useState(null);
   const [showCode, setShowCode] = useState(false);
+  const paymentElementRef = useRef(null);
+  const [paymentElement, setPaymentElement] = useState(null);
   
   // Layout Options
   const [layoutType, setLayoutType] = useState('accordion');
@@ -52,7 +53,7 @@ const SDKCustomization = ({ hyper }) => {
   const [paymentMethodsHeader, setPaymentMethodsHeader] = useState('Select Payment Method');
   const [savedMethodsHeader, setSavedMethodsHeader] = useState('Saved Payment Methods');
 
-  const generateAppearance = useCallback(() => ({
+  const generateAppearance = () => ({
     variables: {
       colorPrimary,
       colorBackground,
@@ -64,9 +65,9 @@ const SDKCustomization = ({ hyper }) => {
       fontSizeBase: `${fontSizeBase}px`,
       spacingUnit: `${spacingUnit}px`,
     },
-  }), [colorPrimary, colorBackground, colorText, colorDanger, colorSuccess, borderRadius, fontFamily, fontSizeBase, spacingUnit]);
+  });
 
-  const generateOptions = useCallback(() => {
+  const generateOptions = () => {
     const layout = layoutType === 'accordion' ? {
       type: 'accordion',
       defaultCollapsed,
@@ -97,87 +98,7 @@ const SDKCustomization = ({ hyper }) => {
       paymentMethodsHeaderText: paymentMethodsHeader,
       savedPaymentMethodsHeaderText: savedMethodsHeader,
     };
-  }, [layoutType, defaultCollapsed, radios, spacedItems, visibleItemsCount, displayOneClickOnTop, paymentMethodsArrangement, applePay, googlePay, walletTheme, walletType, locale, branding, displaySavedMethods, displaySaveCheckbox, paymentMethodsHeader, savedMethodsHeader]);
-
-  const initializeSDK = useCallback(async () => {
-    if (!hyper) {
-      setError('Hyperswitch SDK not loaded');
-      return;
-    }
-    
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const customerData = await makeAuthenticatedRequest('/api/create-customer', {
-        method: 'POST',
-      }, mode, debugCreds);
-
-      const intentData = await makeAuthenticatedRequest('/api/create-intent', {
-        method: 'POST',
-        body: JSON.stringify({
-          flowType: 'automatic',
-          amount: 10000,
-          customer_id: customerData.customer_id,
-        }),
-      }, mode, debugCreds);
-      
-      if (!intentData.client_secret) {
-        throw new Error('No client_secret returned from server');
-      }
-      
-      setClientSecret(intentData.client_secret);
-
-      const appearance = generateAppearance();
-      const elements = hyper.elements({
-        clientSecret: intentData.client_secret,
-        appearance,
-        locale: locale === 'auto' ? undefined : locale,
-      });
-
-      const paymentElementOptions = generateOptions();
-      const paymentEl = elements.create('payment', paymentElementOptions);
-      
-      const container = document.getElementById('sdk-customization-payment-element');
-      if (container) {
-        container.innerHTML = '';
-        paymentEl.mount('#sdk-customization-payment-element');
-        setPaymentElement(paymentEl);
-      } else {
-        setError('Payment element container not found');
-      }
-    } catch (err) {
-      console.error('SDK Initialization error:', err);
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [hyper, generateAppearance, generateOptions, locale, mode, debugCreds]);
-
-  useEffect(() => {
-    if (hyper && !clientSecret) {
-      initializeSDK();
-    }
-  }, [hyper, clientSecret, initializeSDK]);
-
-  useEffect(() => {
-    if (paymentElement && hyper && clientSecret) {
-      paymentElement.update({
-        layout: layoutType === 'accordion' ? {
-          type: 'accordion',
-          defaultCollapsed,
-          radios,
-          spacedAccordionItems: spacedItems,
-          visibleAccordionItemsCount: visibleItemsCount,
-          displayOneClickPaymentMethodsOnTop: displayOneClickOnTop,
-        } : {
-          type: 'tabs',
-          paymentMethodsArrangementForTabs: paymentMethodsArrangement,
-          displayOneClickPaymentMethodsOnTop: displayOneClickOnTop,
-        },
-      });
-    }
-  }, [paymentElement, layoutType, defaultCollapsed, radios, spacedItems, visibleItemsCount, displayOneClickOnTop, paymentMethodsArrangement, hyper, clientSecret]);
+  };
 
   const generateCode = () => {
     const appearance = generateAppearance();
@@ -197,6 +118,75 @@ const paymentElement = elements.create('payment', paymentElementOptions);
 paymentElement.mount('#payment-element');`;
   };
 
+  useEffect(() => {
+    if (!hyper) return;
+
+    const initializeSDK = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const customerData = await makeAuthenticatedRequest('/api/create-customer', {
+          method: 'POST',
+        }, mode, debugCreds);
+
+        const intentData = await makeAuthenticatedRequest('/api/create-intent', {
+          method: 'POST',
+          body: JSON.stringify({
+            flowType: 'automatic',
+            amount: 10000,
+            customer_id: customerData.customer_id,
+          }),
+        }, mode, debugCreds);
+
+        if (!intentData.client_secret) {
+          throw new Error('No client_secret returned from server');
+        }
+
+        const appearance = generateAppearance();
+        const elements = hyper.elements({
+          clientSecret: intentData.client_secret,
+          appearance,
+          locale: locale === 'auto' ? undefined : locale,
+        });
+
+        const paymentElementOptions = generateOptions();
+        const paymentEl = elements.create('payment', paymentElementOptions);
+
+        if (paymentElementRef.current) {
+          paymentEl.mount(paymentElementRef.current);
+          setPaymentElement(paymentEl);
+        }
+      } catch (err) {
+        console.error('SDK Initialization error:', err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeSDK();
+  }, [hyper, locale, mode, debugCreds]);
+
+  useEffect(() => {
+    if (paymentElement) {
+      paymentElement.update({
+        layout: layoutType === 'accordion' ? {
+          type: 'accordion',
+          defaultCollapsed,
+          radios,
+          spacedAccordionItems: spacedItems,
+          visibleAccordionItemsCount: visibleItemsCount,
+          displayOneClickPaymentMethodsOnTop: displayOneClickOnTop,
+        } : {
+          type: 'tabs',
+          paymentMethodsArrangementForTabs: paymentMethodsArrangement,
+          displayOneClickPaymentMethodsOnTop: displayOneClickOnTop,
+        },
+      });
+    }
+  }, [paymentElement, layoutType, defaultCollapsed, radios, spacedItems, visibleItemsCount, displayOneClickOnTop, paymentMethodsArrangement]);
+
   const tabs = [
     { id: 'layout', label: 'Layout', icon: Layout },
     { id: 'appearance', label: 'Appearance', icon: Palette },
@@ -212,33 +202,12 @@ paymentElement.mount('#payment-element');`;
         return (
           <div className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Layout Type
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Layout Type</label>
               <div className="flex gap-2">
-                <button
-                  onClick={() => setLayoutType('accordion')}
-                  className={`flex-1 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                    layoutType === 'accordion'
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  Accordion
-                </button>
-                <button
-                  onClick={() => setLayoutType('tabs')}
-                  className={`flex-1 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                    layoutType === 'tabs'
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  Tabs
-                </button>
+                <button onClick={() => setLayoutType('accordion')} className={`flex-1 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${layoutType === 'accordion' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'}`}>Accordion</button>
+                <button onClick={() => setLayoutType('tabs')} className={`flex-1 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${layoutType === 'tabs' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'}`}>Tabs</button>
               </div>
             </div>
-            
             {layoutType === 'accordion' ? (
               <>
                 <div className="flex items-center justify-between py-2">
@@ -267,14 +236,12 @@ paymentElement.mount('#payment-element');`;
                 </select>
               </div>
             )}
-            
             <div className="flex items-center justify-between py-2">
               <label className="text-sm text-gray-700 dark:text-gray-300">One-Click Methods on Top</label>
               <input type="checkbox" checked={displayOneClickOnTop} onChange={(e) => setDisplayOneClickOnTop(e.target.checked)} className="w-5 h-5 rounded" />
             </div>
           </div>
         );
-        
       case 'appearance':
         return (
           <div className="space-y-5">
@@ -300,7 +267,6 @@ paymentElement.mount('#payment-element');`;
             </div>
           </div>
         );
-        
       case 'typography':
         return (
           <div className="space-y-5">
@@ -322,22 +288,23 @@ paymentElement.mount('#payment-element');`;
             </div>
           </div>
         );
-        
       case 'wallets':
         return (
           <div className="space-y-5">
-            {[
-              { label: 'Apple Pay', value: applePay, setter: setApplePay },
-              { label: 'Google Pay', value: googlePay, setter: setGooglePay },
-            ].map(({ label, value, setter }) => (
-              <div key={label}>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
-                <select value={value} onChange={(e) => setter(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
-                  <option value="auto">Auto</option>
-                  <option value="never">Never</option>
-                </select>
-              </div>
-            ))}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Apple Pay</label>
+              <select value={applePay} onChange={(e) => setApplePay(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+                <option value="auto">Auto</option>
+                <option value="never">Never</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Google Pay</label>
+              <select value={googlePay} onChange={(e) => setGooglePay(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+                <option value="auto">Auto</option>
+                <option value="never">Never</option>
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Wallet Theme</label>
               <select value={walletTheme} onChange={(e) => setWalletTheme(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
@@ -354,7 +321,6 @@ paymentElement.mount('#payment-element');`;
             </div>
           </div>
         );
-        
       case 'language':
         return (
           <div>
@@ -374,7 +340,6 @@ paymentElement.mount('#payment-element');`;
             </select>
           </div>
         );
-        
       case 'features':
         return (
           <div className="space-y-5">
@@ -403,7 +368,6 @@ paymentElement.mount('#payment-element');`;
             </div>
           </div>
         );
-        
       default:
         return null;
     }
@@ -423,34 +387,23 @@ paymentElement.mount('#payment-element');`;
   return (
     <div className="h-[calc(100vh-80px)] flex flex-col">
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Controls */}
         <div className="w-80 flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
           <div className="flex border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex flex-col items-center gap-1 py-3 px-3 text-xs font-medium whitespace-nowrap transition-colors ${
-                    activeTab === tab.id
-                      ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-600'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
-                  }`}
-                >
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex flex-col items-center gap-1 py-3 px-3 text-xs font-medium whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-600' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'}`}>
                   <Icon size={16} />
                   {tab.label}
                 </button>
               );
             })}
           </div>
-          
           <div className="flex-1 overflow-y-auto p-4">
             {renderControls()}
           </div>
         </div>
 
-        {/* Right Panel - Live SDK */}
         <div className="flex-1 bg-gray-50 dark:bg-gray-900 p-6 overflow-y-auto">
           <div className="max-w-lg mx-auto">
             <div className="flex items-center justify-between mb-4">
@@ -458,10 +411,7 @@ paymentElement.mount('#payment-element');`;
                 <Eye size={18} />
                 Live Preview
               </h3>
-              <button
-                onClick={() => setShowCode(!showCode)}
-                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
+              <button onClick={() => setShowCode(!showCode)} className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1">
                 {showCode ? 'Hide Code' : 'Show Code'}
                 {showCode ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
@@ -470,7 +420,7 @@ paymentElement.mount('#payment-element');`;
             {error && (
               <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <p className="text-sm text-red-600">{error}</p>
-                <button onClick={initializeSDK} className="mt-2 text-sm text-red-600 underline">Retry</button>
+                <button onClick={() => window.location.reload()} className="mt-2 text-sm text-red-600 underline">Retry</button>
               </div>
             )}
             
@@ -480,25 +430,15 @@ paymentElement.mount('#payment-element');`;
               </div>
             ) : (
               <>
-                <div 
-                  id="sdk-customization-payment-element"
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 min-h-[400px]"
-                />
+                <div ref={paymentElementRef} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 min-h-[400px]" />
                 
                 {showCode && (
                   <div className="mt-4 bg-gray-900 rounded-lg p-4 overflow-x-auto">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs text-gray-400">Generated Code</span>
-                      <button 
-                        onClick={() => navigator.clipboard.writeText(generateCode())}
-                        className="text-xs text-gray-400 hover:text-white"
-                      >
-                        Copy
-                      </button>
+                      <button onClick={() => navigator.clipboard.writeText(generateCode())} className="text-xs text-gray-400 hover:text-white">Copy</button>
                     </div>
-                    <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap">
-                      <code>{generateCode()}</code>
-                    </pre>
+                    <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap"><code>{generateCode()}</code></pre>
                   </div>
                 )}
               </>
