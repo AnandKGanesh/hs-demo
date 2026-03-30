@@ -9,18 +9,56 @@ const PORT = process.env.PORT || 5252;
 app.use(cors());
 app.use(express.json());
 
+const getCredentials = (req) => {
+  const isDebugMode = req.headers['x-debug-mode'] === 'true';
+  
+  if (isDebugMode) {
+    const debugCreds = {
+      publishableKey: req.headers['x-publishable-key'],
+      secretKey: req.headers['x-secret-key'],
+      profileId: req.headers['x-profile-id'],
+      merchantId: req.headers['x-merchant-id'],
+      serverUrl: process.env.HYPERSWITCH_SERVER_URL,
+    };
+    
+    if (!debugCreds.secretKey || !debugCreds.profileId) {
+      return null;
+    }
+    
+    return { ...debugCreds, isDebugMode: true };
+  }
+  
+  return {
+    publishableKey: process.env.HYPERSWITCH_PUBLISHABLE_KEY,
+    secretKey: process.env.HYPERSWITCH_SECRET_KEY,
+    profileId: process.env.PROFILE_ID,
+    merchantId: null,
+    serverUrl: process.env.HYPERSWITCH_SERVER_URL,
+    isDebugMode: false,
+  };
+};
+
 // Config endpoint
 app.get('/config', (req, res) => {
+  const creds = getCredentials(req);
+  
+  if (creds.isDebugMode && !creds.publishableKey) {
+    return res.status(400).json({ error: 'Debug credentials not provided' });
+  }
+  
   res.json({
-    publishableKey: process.env.HYPERSWITCH_PUBLISHABLE_KEY,
-    profileId: process.env.PROFILE_ID,
+    publishableKey: creds.publishableKey,
+    profileId: creds.profileId,
+    isDebugMode: creds.isDebugMode,
   });
 });
 
 // URLs endpoint
 app.get('/urls', (req, res) => {
+  const creds = getCredentials(req);
+  
   res.json({
-    serverUrl: process.env.HYPERSWITCH_SERVER_URL,
+    serverUrl: creds.serverUrl || process.env.HYPERSWITCH_SERVER_URL,
     clientUrl: process.env.HYPERSWITCH_CLIENT_URL,
   });
 });
@@ -28,6 +66,12 @@ app.get('/urls', (req, res) => {
 // Create customer endpoint
 app.post('/api/create-customer', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const customerData = {
       name: 'Customer ' + Date.now(),
       email: 'customer' + Date.now() + '@example.com',
@@ -35,12 +79,12 @@ app.post('/api/create-customer', async (req, res) => {
       phone_country_code: '+1',
     };
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/customers`, {
+    const response = await fetch(`${creds.serverUrl}/customers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
+        'api-key': creds.secretKey,
       },
       body: JSON.stringify(customerData),
     });
@@ -56,18 +100,26 @@ app.post('/api/create-customer', async (req, res) => {
 // Create payment intent endpoint
 app.post('/api/create-intent', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { flowType, amount = 10000, currency = 'USD', customer_id } = req.body;
     
-    // Use external vault profile ID for vault_3 flow
-    const profileId = flowType === 'vault_3' 
-      ? 'pro_ukJVFiPH0bzYFZwBPi9j' 
-      : process.env.PROFILE_ID;
+    // Use external vault profile ID for vault_3 flow, or debug profile_id if in debug mode
+    const profileId = creds.isDebugMode 
+      ? creds.profileId
+      : flowType === 'vault_3' 
+        ? 'pro_ukJVFiPH0bzYFZwBPi9j' 
+        : process.env.PROFILE_ID;
     
     let paymentData = {
       amount: amount,
       currency: currency,
       confirm: false,
-      customer_id: customer_id || process.env.CUSTOMER_ID,
+      customer_id: customer_id || (creds.isDebugMode ? null : process.env.CUSTOMER_ID),
       profile_id: profileId,
       capture_method: 'automatic',
       authentication_type: flowType === 'three_ds_psp' ? 'three_ds' : 'no_three_ds',
@@ -78,12 +130,12 @@ app.post('/api/create-intent', async (req, res) => {
       paymentData.capture_method = 'manual';
     }
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/payments`, {
+    const response = await fetch(`${creds.serverUrl}/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
+        'api-key': creds.secretKey,
         ...(flowType === 'vault_3' && { 'X-Profile-Id': 'pro_ukJVFiPH0bzYFZwBPi9j' }),
       },
       body: JSON.stringify(paymentData),
@@ -113,6 +165,12 @@ app.post('/api/create-intent', async (req, res) => {
 // Capture payment endpoint
 app.post('/api/capture-payment/:id', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { id } = req.params;
     const { amount_to_capture } = req.body;
 
@@ -120,12 +178,12 @@ app.post('/api/capture-payment/:id', async (req, res) => {
       amount_to_capture: amount_to_capture,
     };
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/payments/${id}/capture`, {
+    const response = await fetch(`${creds.serverUrl}/payments/${id}/capture`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
+        'api-key': creds.secretKey,
       },
       body: JSON.stringify(captureData),
     });
@@ -141,13 +199,19 @@ app.post('/api/capture-payment/:id', async (req, res) => {
 // Get payment details endpoint
 app.get('/api/payment/:id', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { id } = req.params;
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/payments/${id}`, {
+    const response = await fetch(`${creds.serverUrl}/payments/${id}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
+        'api-key': creds.secretKey,
       },
     });
 
@@ -162,6 +226,12 @@ app.get('/api/payment/:id', async (req, res) => {
 // Create customer endpoint (simplified)
 app.post('/api/create-customer', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const customerData = {
       name: 'Customer ' + Date.now(),
       email: 'customer' + Date.now() + '@example.com',
@@ -169,12 +239,12 @@ app.post('/api/create-customer', async (req, res) => {
       phone_country_code: '+1',
     };
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/customers`, {
+    const response = await fetch(`${creds.serverUrl}/customers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
+        'api-key': creds.secretKey,
       },
       body: JSON.stringify(customerData),
     });
@@ -190,6 +260,12 @@ app.post('/api/create-customer', async (req, res) => {
 // Create recurring charge (server-side, no SDK)
 app.post('/api/create-recurring-charge', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { customer_id, payment_method_id, amount = 10000 } = req.body;
 
     const paymentData = {
@@ -197,7 +273,7 @@ app.post('/api/create-recurring-charge', async (req, res) => {
       currency: 'USD',
       confirm: true,
       customer_id: customer_id,
-      profile_id: process.env.PROFILE_ID,
+      profile_id: creds.profileId,
       capture_method: 'automatic',
       authentication_type: 'no_three_ds',
       off_session: true,
@@ -207,12 +283,12 @@ app.post('/api/create-recurring-charge', async (req, res) => {
       },
     };
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/payments`, {
+    const response = await fetch(`${creds.serverUrl}/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
+        'api-key': creds.secretKey,
       },
       body: JSON.stringify(paymentData),
     });
@@ -234,6 +310,12 @@ app.post('/api/create-recurring-charge', async (req, res) => {
 // Create recurring charge with Network Transaction ID (server-side, no SDK)
 app.post('/api/create-recurring-charge-ntid', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { customer_id, network_transaction_id, amount = 10000, card_data } = req.body;
 
     const paymentData = {
@@ -241,7 +323,7 @@ app.post('/api/create-recurring-charge-ntid', async (req, res) => {
       currency: 'USD',
       confirm: true,
       customer_id: customer_id,
-      profile_id: process.env.PROFILE_ID,
+      profile_id: creds.profileId,
       capture_method: 'automatic',
       authentication_type: 'no_three_ds',
       off_session: true,
@@ -258,12 +340,12 @@ app.post('/api/create-recurring-charge-ntid', async (req, res) => {
 
     console.log('Creating recurring charge with NTID:', { customer_id, network_transaction_id });
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/payments`, {
+    const response = await fetch(`${creds.serverUrl}/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
+        'api-key': creds.secretKey,
       },
       body: JSON.stringify(paymentData),
     });
@@ -285,23 +367,29 @@ app.post('/api/create-recurring-charge-ntid', async (req, res) => {
 // Create recurring charge with PSP Token (server-side, no SDK)
 app.post('/api/create-recurring-charge-psp', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     // Frontend now sends the full payment payload with recurring_details
     const paymentData = {
       ...req.body,
       confirm: true,
-      profile_id: process.env.PROFILE_ID,
+      profile_id: creds.profileId,
       capture_method: 'automatic',
       authentication_type: 'no_three_ds',
     };
 
     console.log('Creating recurring charge with PSP token:', paymentData.recurring_details);
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/payments`, {
+    const response = await fetch(`${creds.serverUrl}/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
+        'api-key': creds.secretKey,
       },
       body: JSON.stringify(paymentData),
     });
@@ -327,6 +415,12 @@ app.post('/api/create-recurring-charge-psp', async (req, res) => {
 // Step 1: Adyen Authorization (authorize only - for Capture, Void, Incremental Auth)
 app.post('/api/adyen/authorize', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { amount = 10000, card_data } = req.body;
     
     const adyenPayload = {
@@ -381,6 +475,12 @@ app.post('/api/adyen/authorize', async (req, res) => {
 // Step 1b: Adyen Authorization + Capture (for Refund)
 app.post('/api/adyen/authorize-capture', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { amount = 10000, card_data } = req.body;
     
     const adyenPayload = {
@@ -436,6 +536,12 @@ app.post('/api/adyen/authorize-capture', async (req, res) => {
 // Step 2: Relay - Capture
 app.post('/api/relay/capture', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { adyen_transaction_id, amount = 10000 } = req.body;
     
     const relayPayload = {
@@ -454,13 +560,13 @@ app.post('/api/relay/capture', async (req, res) => {
 
     console.log('Step 2: Relay Capture - Using Adyen Transaction ID:', adyen_transaction_id);
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/relay`, {
+    const response = await fetch(`${creds.serverUrl}/relay`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
-        'X-Profile-Id': process.env.PROFILE_ID,
+        'api-key': creds.secretKey,
+        'X-Profile-Id': creds.profileId,
       },
       body: JSON.stringify(relayPayload),
     });
@@ -491,6 +597,12 @@ app.post('/api/relay/capture', async (req, res) => {
 // Step 2: Relay - Refund
 app.post('/api/relay/refund', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { adyen_transaction_id, amount = 10000 } = req.body;
     
     const relayPayload = {
@@ -508,13 +620,13 @@ app.post('/api/relay/refund', async (req, res) => {
 
     console.log('Step 2: Relay Refund - Using Adyen Transaction ID:', adyen_transaction_id);
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/relay`, {
+    const response = await fetch(`${creds.serverUrl}/relay`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
-        'X-Profile-Id': process.env.PROFILE_ID,
+        'api-key': creds.secretKey,
+        'X-Profile-Id': creds.profileId,
       },
       body: JSON.stringify(relayPayload),
     });
@@ -545,6 +657,12 @@ app.post('/api/relay/refund', async (req, res) => {
 // Step 2: Relay - Void
 app.post('/api/relay/void', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { adyen_transaction_id } = req.body;
     
     const relayPayload = {
@@ -558,13 +676,13 @@ app.post('/api/relay/void', async (req, res) => {
 
     console.log('Step 2: Relay Void - Using Adyen Transaction ID:', adyen_transaction_id);
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/relay`, {
+    const response = await fetch(`${creds.serverUrl}/relay`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
-        'X-Profile-Id': process.env.PROFILE_ID,
+        'api-key': creds.secretKey,
+        'X-Profile-Id': creds.profileId,
       },
       body: JSON.stringify(relayPayload),
     });
@@ -595,6 +713,12 @@ app.post('/api/relay/void', async (req, res) => {
 // Step 2: Relay - Incremental Authorization
 app.post('/api/relay/incremental-auth', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { adyen_transaction_id, additional_amount = 5000 } = req.body;
     
     const relayPayload = {
@@ -612,13 +736,13 @@ app.post('/api/relay/incremental-auth', async (req, res) => {
 
     console.log('Step 2: Relay Incremental Auth - Using Adyen Transaction ID:', adyen_transaction_id);
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/relay`, {
+    const response = await fetch(`${creds.serverUrl}/relay`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
-        'X-Profile-Id': process.env.PROFILE_ID,
+        'api-key': creds.secretKey,
+        'X-Profile-Id': creds.profileId,
       },
       body: JSON.stringify(relayPayload),
     });
@@ -649,16 +773,22 @@ app.post('/api/relay/incremental-auth', async (req, res) => {
 // Standalone 3DS Payment endpoint
 app.post('/api/create-intent-3ds', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const paymentData = req.body;
 
     console.log('Creating standalone 3DS payment intent...');
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/payments`, {
+    const response = await fetch(`${creds.serverUrl}/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
+        'api-key': creds.secretKey,
       },
       body: JSON.stringify(paymentData),
     });
@@ -686,14 +816,20 @@ app.post('/api/create-intent-3ds', async (req, res) => {
 // Import 3DS Results - server-side payment with confirm: true
 app.post('/api/import-3ds-results', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { amount = 10000, currency = 'USD', customer_id, three_ds_data, card_data } = req.body;
     
     let paymentData = {
       amount: amount,
       currency: currency,
       confirm: true,
-      customer_id: customer_id || process.env.CUSTOMER_ID,
-      profile_id: process.env.PROFILE_ID,
+      customer_id: customer_id || (creds.isDebugMode ? null : process.env.CUSTOMER_ID),
+      profile_id: creds.profileId,
       capture_method: 'automatic',
       authentication_type: 'three_ds',
       three_ds_data: three_ds_data,
@@ -723,12 +859,12 @@ app.post('/api/import-3ds-results', async (req, res) => {
 
     console.log('Importing 3DS results and creating payment:', { customer_id, three_ds_data });
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/payments`, {
+    const response = await fetch(`${creds.serverUrl}/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
+        'api-key': creds.secretKey,
       },
       body: JSON.stringify(paymentData),
     });
@@ -752,13 +888,19 @@ app.post('/api/import-3ds-results', async (req, res) => {
 // Payment Links endpoint
 app.post('/api/create-payment-link', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { amount = 10000, currency = 'USD', description = 'Payment Link' } = req.body;
 
     const paymentData = {
       amount: amount,
       currency: currency,
       confirm: false,
-      profile_id: process.env.PROFILE_ID,
+      profile_id: creds.profileId,
       capture_method: 'automatic',
       authentication_type: 'no_three_ds',
       payment_link: true,
@@ -783,12 +925,12 @@ app.post('/api/create-payment-link', async (req, res) => {
 
     console.log('Creating payment link...');
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/payments`, {
+    const response = await fetch(`${creds.serverUrl}/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
+        'api-key': creds.secretKey,
       },
       body: JSON.stringify(paymentData),
     });
@@ -814,14 +956,20 @@ app.post('/api/create-payment-link', async (req, res) => {
 // Disputes - List endpoint
 app.get('/api/list-disputes', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     console.log('Fetching disputes list...');
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/disputes/list`, {
+    const response = await fetch(`${creds.serverUrl}/disputes/list`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
+        'api-key': creds.secretKey,
       },
     });
 
@@ -842,12 +990,23 @@ app.get('/api/list-disputes', async (req, res) => {
 // HS SDK + External Vault Storage endpoint
 app.post('/api/create-external-vault-payment', async (req, res) => {
   try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
     const { amount = 10000, currency = 'USD', description = 'Default value' } = req.body;
+
+    // Use external vault profile ID for non-debug mode, or debug profile_id if in debug mode
+    const profileId = creds.isDebugMode 
+      ? creds.profileId
+      : 'pro_ukJVFiPH0bzYFZwBPi9j';
 
     const paymentData = {
       amount: amount,
       currency: currency,
-      profile_id: 'pro_ukJVFiPH0bzYFZwBPi9j',
+      profile_id: profileId,
       customer_id: 'hyperswitch_sdk_demo_id',
       description: description,
       capture_method: 'automatic',
@@ -890,13 +1049,13 @@ app.post('/api/create-external-vault-payment', async (req, res) => {
 
     console.log('Creating payment with external vault...');
 
-    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/payments`, {
+    const response = await fetch(`${creds.serverUrl}/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
-        'X-Profile-Id': 'pro_ukJVFiPH0bzYFZwBPi9j',
+        'api-key': creds.secretKey,
+        'X-Profile-Id': profileId,
       },
       body: JSON.stringify(paymentData),
     });
@@ -920,6 +1079,565 @@ app.post('/api/create-external-vault-payment', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// ============================================
+// DECISION ENGINE PROXY ENDPOINTS
+// ============================================
+
+// Decision Engine - Gateway decision evaluate
+app.post('/api/de-proxy/routing/evaluate', async (req, res) => {
+  try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
+    const baseUrl = req.headers['x-base-url'] || creds.serverUrl || process.env.HYPERSWITCH_BASE_URL || 'https://sandbox.hyperswitch.io';
+    const profileId = req.headers['x-profile-id'] || creds.profileId;
+    
+    console.log('DE Proxy: Routing evaluate');
+
+    const response = await fetch(`${baseUrl}/routing/evaluate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'api-key': creds.secretKey,
+        ...(profileId && { 'X-Profile-Id': profileId }),
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('Hyperswitch DE error:', data.error);
+      return res.status(response.status).json({ error: data.error });
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error in DE routing evaluate:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Decision Engine - Update success rate window feedback
+app.post('/api/de-proxy/routing/feedback', async (req, res) => {
+  try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
+    const baseUrl = req.headers['x-base-url'] || creds.serverUrl || process.env.HYPERSWITCH_BASE_URL || 'https://sandbox.hyperswitch.io';
+    const profileId = req.headers['x-profile-id'] || creds.profileId;
+    
+    console.log('DE Proxy: Routing feedback');
+
+    const response = await fetch(`${baseUrl}/routing/feedback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'api-key': creds.secretKey,
+        ...(profileId && { 'X-Profile-Id': profileId }),
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('Hyperswitch DE error:', data.error);
+      return res.status(response.status).json({ error: data.error });
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error in DE routing feedback:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Decision Engine - Activate routing algorithm
+app.post('/api/de-proxy/routing/:id/activate', async (req, res) => {
+  try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
+    const baseUrl = req.headers['x-base-url'] || creds.serverUrl || process.env.HYPERSWITCH_BASE_URL || 'https://sandbox.hyperswitch.io';
+    const profileId = req.headers['x-profile-id'] || creds.profileId;
+    const { id } = req.params;
+    
+    console.log('DE Proxy: Activate routing algorithm', id);
+
+    const response = await fetch(`${baseUrl}/routing/${id}/activate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'api-key': creds.secretKey,
+        ...(profileId && { 'X-Profile-Id': profileId }),
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('Hyperswitch DE error:', data.error);
+      return res.status(response.status).json({ error: data.error });
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error in DE routing activate:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Decision Engine - Fetch connectors
+app.get('/api/de-proxy/account/:merchantId/profile/connectors', async (req, res) => {
+  try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
+    const baseUrl = req.headers['x-base-url'] || creds.serverUrl || process.env.HYPERSWITCH_BASE_URL || 'https://sandbox.hyperswitch.io';
+    const profileId = req.headers['x-profile-id'] || creds.profileId;
+    const { merchantId } = req.params;
+    
+    console.log('DE Proxy: Fetch connectors for merchant', merchantId);
+
+    const response = await fetch(`${baseUrl}/account/${merchantId}/profile/connectors`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'api-key': creds.secretKey,
+        ...(profileId && { 'X-Profile-Id': profileId }),
+      },
+    });
+
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('Hyperswitch DE error:', data.error);
+      return res.status(response.status).json({ error: data.error });
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error in DE fetch connectors:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Decision Engine - Update SR config
+app.patch('/api/de-proxy/account/:merchantId/business_profile/:profileId/dynamic_routing/success_based/config/:routingId', async (req, res) => {
+  try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
+    const baseUrl = req.headers['x-base-url'] || creds.serverUrl || process.env.HYPERSWITCH_BASE_URL || 'https://sandbox.hyperswitch.io';
+    const headerProfileId = req.headers['x-profile-id'] || creds.profileId;
+    const { merchantId, profileId, routingId } = req.params;
+    
+    console.log('DE Proxy: Update SR config', { merchantId, profileId, routingId });
+
+    const response = await fetch(`${baseUrl}/account/${merchantId}/business_profile/${profileId}/dynamic_routing/success_based/config/${routingId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'api-key': creds.secretKey,
+        ...(headerProfileId && { 'X-Profile-Id': headerProfileId }),
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('Hyperswitch DE error:', data.error);
+      return res.status(response.status).json({ error: data.error });
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error in DE update SR config:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Decision Engine - Toggle SBR
+app.post('/api/de-proxy/account/:merchantId/business_profile/:profileId/dynamic_routing/success_based/toggle', async (req, res) => {
+  try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
+    const baseUrl = req.headers['x-base-url'] || creds.serverUrl || process.env.HYPERSWITCH_BASE_URL || 'https://sandbox.hyperswitch.io';
+    const headerProfileId = req.headers['x-profile-id'] || creds.profileId;
+    const { merchantId, profileId } = req.params;
+    
+    console.log('DE Proxy: Toggle SBR', { merchantId, profileId });
+
+    const response = await fetch(`${baseUrl}/account/${merchantId}/business_profile/${profileId}/dynamic_routing/success_based/toggle`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'api-key': creds.secretKey,
+        ...(headerProfileId && { 'X-Profile-Id': headerProfileId }),
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('Hyperswitch DE error:', data.error);
+      return res.status(response.status).json({ error: data.error });
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error in DE toggle SBR:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Decision Engine - Set volume split
+app.post('/api/de-proxy/account/:merchantId/business_profile/:profileId/dynamic_routing/set_volume_split', async (req, res) => {
+  try {
+    const creds = getCredentials(req);
+    
+    if (creds.isDebugMode && !creds.secretKey) {
+      return res.status(400).json({ error: 'Debug credentials not provided' });
+    }
+    
+    const baseUrl = req.headers['x-base-url'] || creds.serverUrl || process.env.HYPERSWITCH_BASE_URL || 'https://sandbox.hyperswitch.io';
+    const headerProfileId = req.headers['x-profile-id'] || creds.profileId;
+    const { merchantId, profileId } = req.params;
+    
+    console.log('DE Proxy: Set volume split', { merchantId, profileId });
+
+    const response = await fetch(`${baseUrl}/account/${merchantId}/business_profile/${profileId}/dynamic_routing/set_volume_split`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'api-key': creds.secretKey,
+        ...(headerProfileId && { 'X-Profile-Id': headerProfileId }),
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('Hyperswitch DE error:', data.error);
+      return res.status(response.status).json({ error: data.error });
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error in DE set volume split:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/3ds-decision-rules', async (req, res) => {
+  const creds = getCredentials(req);
+  
+  if (!creds || !creds.secretKey) {
+    return res.status(401).json({ error: 'Credentials not configured' });
+  }
+  
+  try {
+    const url = `${creds.serverUrl}/routing/active?transaction_type=three_ds_authentication&limit=100`;
+    
+    console.log('Fetching 3DS decision rules from:', url);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'api-key': creds.secretKey,
+        ...(creds.profileId && { 'X-Profile-Id': creds.profileId }),
+      },
+    });
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('Hyperswitch 3DS rules error:', data.error);
+      return res.status(response.status).json({ error: data.error });
+    }
+    
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching 3DS decision rules:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/3ds-decision-rules/:id', async (req, res) => {
+  const creds = getCredentials(req);
+  const { id } = req.params;
+  
+  if (!creds || !creds.secretKey) {
+    return res.status(401).json({ error: 'Credentials not configured' });
+  }
+  
+  try {
+    const url = `${creds.serverUrl}/routing/${id}`;
+    
+    console.log('Fetching 3DS decision rule:', id);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'api-key': creds.secretKey,
+        ...(creds.profileId && { 'X-Profile-Id': creds.profileId }),
+      },
+    });
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('Hyperswitch 3DS rule error:', data.error);
+      return res.status(response.status).json({ error: data.error });
+    }
+    
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching 3DS decision rule:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/3ds-decision-rules', async (req, res) => {
+  const creds = getCredentials(req);
+  
+  if (!creds || !creds.secretKey) {
+    return res.status(401).json({ error: 'Credentials not configured' });
+  }
+  
+  try {
+    const url = `${creds.serverUrl}/routing`;
+    
+    const ruleData = {
+      ...req.body,
+      transaction_type: 'three_ds_authentication',
+      algorithm: {
+        type: 'three_ds_decision_rule',
+        data: req.body.algorithm?.data || {
+          defaultSelection: { decision: 'no_three_ds' },
+          rules: [],
+          metadata: {}
+        }
+      }
+    };
+    
+    console.log('Creating 3DS decision rule:', ruleData.name);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'api-key': creds.secretKey,
+        ...(creds.profileId && { 'X-Profile-Id': creds.profileId }),
+      },
+      body: JSON.stringify(ruleData),
+    });
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('Hyperswitch create 3DS rule error:', data.error);
+      return res.status(response.status).json({ error: data.error });
+    }
+    
+    res.json(data);
+  } catch (error) {
+    console.error('Error creating 3DS decision rule:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/3ds-decision-rules/:id/activate', async (req, res) => {
+  const creds = getCredentials(req);
+  const { id } = req.params;
+  
+  if (!creds || !creds.secretKey) {
+    return res.status(401).json({ error: 'Credentials not configured' });
+  }
+  
+  try {
+    const url = `${creds.serverUrl}/routing/${id}/activate`;
+    
+    console.log('Activating 3DS decision rule:', id);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'api-key': creds.secretKey,
+        ...(creds.profileId && { 'X-Profile-Id': creds.profileId }),
+      },
+      body: JSON.stringify({}),
+    });
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('Hyperswitch activate 3DS rule error:', data.error);
+      return res.status(response.status).json({ error: data.error });
+    }
+    
+    res.json(data);
+  } catch (error) {
+    console.error('Error activating 3DS decision rule:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/3ds-decision-rules/:id/deactivate', async (req, res) => {
+  const creds = getCredentials(req);
+  const { id } = req.params;
+  
+  if (!creds || !creds.secretKey) {
+    return res.status(401).json({ error: 'Credentials not configured' });
+  }
+  
+  try {
+    const url = `${creds.serverUrl}/routing/deactivate`;
+    
+    console.log('Deactivating 3DS decision rule:', id);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'api-key': creds.secretKey,
+        ...(creds.profileId && { 'X-Profile-Id': creds.profileId }),
+      },
+      body: JSON.stringify({ routing_id: id }),
+    });
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('Hyperswitch deactivate 3DS rule error:', data.error);
+      return res.status(response.status).json({ error: data.error });
+    }
+    
+    res.json(data);
+  } catch (error) {
+    console.error('Error deactivating 3DS decision rule:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/3ds-decision-rules/test', async (req, res) => {
+  const creds = getCredentials(req);
+  
+  if (!creds || !creds.secretKey) {
+    return res.status(401).json({ error: 'Credentials not configured' });
+  }
+  
+  try {
+    const { rules, testTransaction } = req.body;
+    
+    console.log('Testing 3DS decision rules:', rules.length, 'rules');
+    let finalDecision = 'no_three_ds';
+    let matchedRule = null;
+    
+    for (const rule of rules) {
+      if (!rule.enabled) continue;
+      
+      let ruleMatched = true;
+      let firstCondition = true;
+      
+      for (const condition of rule.conditions) {
+        const txValue = testTransaction[condition.field];
+        let conditionMatched = false;
+        
+        switch (condition.operator) {
+          case 'EQUAL_TO':
+            conditionMatched = txValue == condition.value;
+            break;
+          case 'GREATER_THAN':
+            conditionMatched = parseFloat(txValue) > parseFloat(condition.value);
+            break;
+          case 'LESS_THAN':
+            conditionMatched = parseFloat(txValue) < parseFloat(condition.value);
+            break;
+          case 'IS':
+            conditionMatched = txValue === condition.value;
+            break;
+          case 'IS_NOT':
+            conditionMatched = txValue !== condition.value;
+            break;
+          case 'CONTAINS':
+            conditionMatched = String(txValue).includes(condition.value);
+            break;
+          case 'NOT_CONTAINS':
+            conditionMatched = !String(txValue).includes(condition.value);
+            break;
+          default:
+            conditionMatched = txValue == condition.value;
+        }
+        
+        if (firstCondition) {
+          ruleMatched = conditionMatched;
+          firstCondition = false;
+        } else if (condition.logicalOperator === 'AND') {
+          ruleMatched = ruleMatched && conditionMatched;
+        } else if (condition.logicalOperator === 'OR') {
+          ruleMatched = ruleMatched || conditionMatched;
+        }
+      }
+      
+      if (ruleMatched) {
+        finalDecision = rule.decision;
+        matchedRule = rule.name;
+        break;
+      }
+    }
+    
+    res.json({
+      decision: finalDecision,
+      matchedRule,
+      testTransaction,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error testing 3DS decision rules:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==========================================
 
 // Serve static files from client/dist
 app.use(express.static(path.join(__dirname, '../client/dist')));

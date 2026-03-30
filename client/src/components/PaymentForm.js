@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { hyperState, apiResponseState, paymentStatusState, customerState, captureCompleteState } from '../utils/atoms';
+import { hyperState, apiResponseState, paymentStatusState, customerState, captureCompleteState, demoModeState, debugCredentialsState } from '../utils/atoms';
 import ServerButton from './ServerButton';
 import API_BASE_URL from '../config';
+import { createCustomer, createPaymentIntent } from '../utils/api';
 
 // Test card data for all SDK flows
 const TEST_CARD_DATA = {
@@ -11,6 +12,37 @@ const TEST_CARD_DATA = {
   card_exp_year: '30',
   card_cvc: '737',
   card_holder_name: 'John Doe',
+};
+
+const captureApiCall = (request, response, setApiResponse, stepTitle) => {
+  setApiResponse(prev => {
+    const steps = [...(prev.steps || [])];
+    const existingIndex = steps.findIndex(s => s.title.includes(stepTitle));
+    
+    const newStep = {
+      title: stepTitle,
+      request: {
+        method: request.method,
+        url: request.url,
+        headers: request.headers,
+        body: request.body,
+      },
+      response: {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+        body: response.body,
+      },
+    };
+    
+    if (existingIndex >= 0) {
+      steps[existingIndex] = newStep;
+    } else {
+      steps.push(newStep);
+    }
+    
+    return { steps, currentStep: steps.length };
+  });
 };
 
 // Test data display component
@@ -116,6 +148,8 @@ const PaymentForm = ({ flow }) => {
   const setPaymentStatus = useSetRecoilState(paymentStatusState);
   const setCustomer = useSetRecoilState(customerState);
   const captureComplete = useRecoilValue(captureCompleteState);
+  const mode = useRecoilValue(demoModeState);
+  const debugCreds = useRecoilValue(debugCredentialsState);
   
   const [clientSecret, setClientSecret] = useState(null);
   const [paymentId, setPaymentId] = useState(null);
@@ -137,46 +171,57 @@ const PaymentForm = ({ flow }) => {
       setStatus(null);
 
       try {
-        let customerId = 'cus_demo_001'; // Default customer for non-recurring flows
+        let customerId = 'cus_demo_001';
+        let customerRequestDetails = null;
+        let customerResponseDetails = null;
 
-        // For Payment Flows and Recurring flows, create a new customer first
-        if (['automatic', 'manual', 'manual_partial', 'three_ds_psp', 'frm_pre', 'vault_3'].includes(flow.id)) {
-          // Payment flows: Create new customer
-          const customerRes = await fetch(`${API_BASE_URL}/api/create-customer`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        const onCustomerApiCall = (req, res) => {
+          customerRequestDetails = req;
+          customerResponseDetails = res;
+        };
+
+        const onPaymentIntentApiCall = (req, res) => {
+          const steps = [];
+          
+          if (customerRequestDetails) {
+            steps.push({
+              title: 'Step 1: Create Customer',
+              request: customerRequestDetails,
+              response: customerResponseDetails,
+            });
+          }
+          
+          steps.push({
+            title: customerRequestDetails ? 'Step 2: Create Payment Intent' : 'Step 1: Create Payment Intent',
+            request: {
+              method: req.method,
+              url: req.url,
+              headers: req.headers,
+              body: getRequestBodyForFlow(flow),
+            },
+            response: res,
           });
-          const customerData = await customerRes.json();
+
+          steps.push({
+            title: customerRequestDetails ? 'Step 3: SDK Payment Confirmation' : 'Step 2: SDK Payment Confirmation',
+            request: '[SDK Placeholder - User enters card details]',
+            response: 'Waiting for user...',
+          });
+
+          setApiResponse({ steps, currentStep: 1 });
+        };
+
+        if (['automatic', 'manual', 'manual_partial', 'three_ds_psp', 'frm_pre', 'vault_3'].includes(flow.id)) {
+          const customerData = await createCustomer(mode, debugCreds, onCustomerApiCall);
           customerId = customerData.customer_id;
         } else if (flow.id === 'repeat_user') {
-          // Repeat User: Use static customer ID
           customerId = 'cus_RT2Uq7JI8Z8fRcg8lDOo';
         } else if (flow.id === 'zero_setup' || flow.id === 'setup_and_charge') {
-          // Recurring flows: Create new customer
-          const customerRes = await fetch(`${API_BASE_URL}/api/create-customer`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-          });
-          const customerData = await customerRes.json();
+          const customerData = await createCustomer(mode, debugCreds, onCustomerApiCall);
           customerId = customerData.customer_id;
         }
 
-        const response = await fetch(`${API_BASE_URL}/api/create-intent`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            flowType: flow.id,
-            amount: flow.id === 'zero_setup' ? 0 : 10000,
-            customer_id: customerId,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error?.message || `Server error: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = await createPaymentIntent(flow.id, flow.id === 'zero_setup' ? 0 : 10000, customerId, mode, debugCreds, onPaymentIntentApiCall);
 
         if (data.error) {
           throw new Error(data.error.message || 'Unknown error from server');
@@ -191,60 +236,6 @@ const PaymentForm = ({ flow }) => {
         setClientSecret(data.clientSecret);
         setPaymentId(data.paymentId);
         setStatus(data.status);
-
-        // Build steps array
-        const steps = [];
-        
-        // Add customer creation step for flows that create new customers
-        if (['automatic', 'manual', 'manual_partial', 'three_ds_psp', 'frm_pre', 'vault_3', 'zero_setup', 'setup_and_charge'].includes(flow.id)) {
-          steps.push({
-            title: 'Step 1: Create Customer',
-            request: {
-              method: 'POST',
-              url: '/customers',
-            },
-            response: {
-              customer_id: customerId,
-            },
-          });
-        }
-
-        // Calculate step numbers based on whether Step 1 exists
-        const hasStep1 = ['automatic', 'manual', 'manual_partial', 'repeat_user', 'three_ds_psp', 'frm_pre', 'vault_3', 'zero_setup', 'setup_and_charge'].includes(flow.id);
-        const step2Number = hasStep1 ? 2 : 2; // Repeat user starts at Step 2
-        const step3Number = hasStep1 ? 3 : 3;
-        
-        steps.push({
-          title: `Step ${step2Number}: Create Payment Intent`,
-          request: {
-            method: 'POST',
-            url: '/payments',
-            body: {
-              ...getRequestBodyForFlow(flow),
-              ...(flow.id === 'vault_3' && { profile_id: 'pro_ukJVFiPH0bzYFZwBPi9j' }),
-            },
-          },
-          response: {
-            payment_id: data.paymentId,
-            client_secret: data.clientSecret,
-            status: data.status,
-            capture_method: data.captureMethod,
-            amount: data.amount,
-            customer_id: data.customerId,
-            profile_id: data.profileId || (flow.id === 'vault_3' ? 'pro_ukJVFiPH0bzYFZwBPi9j' : 'default'),
-          },
-        });
-
-        steps.push({
-          title: `Step ${step3Number}: SDK Payment Confirmation`,
-          request: '[SDK Placeholder - User enters card details]',
-          response: 'Waiting for user...',
-        });
-
-        setApiResponse({
-          steps,
-          currentStep: 1,
-        });
 
       } catch (err) {
         setError(err.message);

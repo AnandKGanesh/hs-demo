@@ -1,0 +1,187 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+/* Juspay Hyperswitch Brand Colors */
+:root {
+  /* Primary Blue */
+  --juspay-blue: #0066FF;
+  --juspay-blue-dark: #0052CC;
+  --juspay-blue-light: #3385FF;
+  --juspay-blue-50: #E6F0FF;
+  --juspay-blue-100: #CCE0FF;
+  
+  /* Secondary Colors */
+  --juspay-indigo: #4F46E5;
+  --juspay-purple: #7C3AED;
+  --juspay-teal: #14B8A6;
+  
+  /* Semantic Colors */
+  --success-green: #10B981;
+  --error-red: #EF4444;
+  --warning-orange: #F59E0B;
+  --info-cyan: #06B6D4;
+  
+  /* Neutrals */
+  --gray-900: #111827;
+  --gray-800: #1F2937;
+  --gray-700: #374151;
+  --gray-600: #4B5563;
+  --gray-500: #6B7280;
+  --gray-400: #9CA3AF;
+  --gray-300: #D1D5DB;
+  --gray-200: #E5E7EB;
+  --gray-100: #F3F4F6;
+  --gray-50: #F9FAFB;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar for dark mode */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--gray-800);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--gray-600);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-500);
+}
+
+/* Animation for loading spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Code block styling */
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Smooth transitions */
+.transition-colors {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Juspay Brand Button Styles */
+.btn-primary {
+  background-color: var(--juspay-blue);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--juspay-blue-dark);
+}
+
+.btn-secondary {
+  background-color: var(--gray-100);
+  color: var(--gray-700);
+}
+
+.btn-secondary:hover {
+  background-color: var(--gray-200);
+}
+
+/* Dark mode adjustments */
+.dark .btn-secondary {
+  background-color: var(--gray-700);
+  color: var(--gray-300);
+}
+
+.dark .btn-secondary:hover {
+  background-color: var(--gray-600);
+}
+
+/* Glowing effect for active states */
+.glow-blue {
+  box-shadow: 0 0 20px rgba(0, 102, 255, 0.4);
+}
+
+/* Mechanism indicator active state */
+.mechanism-active {
+  background: linear-gradient(135deg, var(--juspay-blue) 0%, var(--juspay-indigo) 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(0, 102, 255, 0.4);
+}
+
+/* Pulse animation for active indicators */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 102, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(0, 102, 255, 0);
+  }
+}
+
+.pulse-active {
+  animation: pulse-glow 2s infinite;
+}
+
+/* Highlight card */
+.highlight-card {
+  border: 2px solid var(--juspay-blue);
+  box-shadow: 0 0 20px rgba(0, 102, 255, 0.3);
+  transform: scale(1.02);
+}
+
+/* Tailwind Custom Colors - Juspay Blue */
+.bg-primary {
+  background-color: var(--juspay-blue);
+}
+
+.bg-primary-dark {
+  background-color: var(--juspay-blue-dark);
+}
+
+.bg-primary-light {
+  background-color: var(--juspay-blue-light);
+}
+
+.bg-primary-50 {
+  background-color: var(--juspay-blue-50);
+}
+
+.border-primary {
+  border-color: var(--juspay-blue);
+}
+
+.border-primary-light {
+  border-color: var(--juspay-blue-100);
+}
+
+.text-primary {
+  color: var(--juspay-blue);
+}
+
+.ring-primary-light {
+  --tw-ring-color: var(--juspay-blue-100);
+}

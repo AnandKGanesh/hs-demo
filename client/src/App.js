@@ -17,6 +17,8 @@ import RelayIncrementalAuth from './flows/RelayIncrementalAuth';
 import SmartRetry from './flows/SmartRetry';
 import RoutingSimulator from './flows/routing/RoutingSimulator';
 import ThreeDSDecisionManager from './flows/ThreeDSDecisionManager';
+import OrganizationManager from './flows/OrganizationManager';
+import DecisionEnginePlayground from './flows/decision-engine/DecisionEnginePlayground';
 import { useRecoilState } from 'recoil';
 import { currentFlowState, apiResponseState, hyperState } from './utils/atoms';
 import API_BASE_URL from './config';
@@ -64,6 +66,8 @@ const App = () => {
         { id: 'smart_retry_playground', name: 'Smart Retry Playground', description: 'Simulate intelligent retry strategies' },
         { id: 'routing_simulator', name: 'Routing Simulator', description: 'Watch transactions flow through eligibility, rules, and overrides' },
         { id: 'three_ds_decision', name: '3DS Decision Manager', description: 'Risk-based 3DS authentication decisions' },
+        { id: 'organization_manager', name: 'Organization Manager', description: 'Mock organization structure and merchant management' },
+        { id: 'decision_engine', name: 'Decision Engine', description: 'Success rate-based dynamic routing simulation' },
       ];
       
       const flow = allFlows.find(f => f.id === flowId);
@@ -184,19 +188,28 @@ const App = () => {
 
   return (
     <Layout onFlowSelect={handleFlowSelect} currentFlow={currentFlow}>
-      <div className={`${currentFlow?.id === 'routing_simulator' ? 'max-w-7xl' : 'max-w-4xl'} mx-auto`}>
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            {currentFlow?.name || 'Select a Flow'}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {currentFlow?.description || 'Choose a payment flow from the sidebar to begin'}
-          </p>
+      {currentFlow?.id === 'organization_manager' || currentFlow?.id === 'decision_engine' ? (
+        <div className="w-full">
+          {currentFlow.id === 'organization_manager' ? (
+            <OrganizationManager key={currentFlow.id} />
+          ) : (
+            <DecisionEnginePlayground key={currentFlow.id} />
+          )}
         </div>
+      ) : (
+        <div className={`${currentFlow?.id === 'routing_simulator' || currentFlow?.id === 'three_ds_decision' ? 'max-w-7xl' : 'max-w-4xl'} mx-auto`}>
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              {currentFlow?.name || 'Select a Flow'}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              {currentFlow?.description || 'Choose a payment flow from the sidebar to begin'}
+            </p>
+          </div>
 
-        {currentFlow && (
-          <>
-            <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 ${currentFlow.id === 'chargeback_unification' || currentFlow.id === 'routing_simulator' ? 'w-full max-w-none' : 'max-w-2xl mx-auto'}`}>
+          {currentFlow && (
+            <>
+              <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 ${currentFlow.id === 'chargeback_unification' || currentFlow.id === 'routing_simulator' || currentFlow.id === 'three_ds_decision' ? 'w-full max-w-none' : 'max-w-2xl mx-auto'}`}>
               {currentFlow.id === 'recurring_charge' ? (
                 <RecurringCharge key={currentFlow.id} />
               ) : currentFlow.id === 'recurring_charge_ntid' ? (
@@ -225,6 +238,10 @@ const App = () => {
                 <RoutingSimulator key={currentFlow.id} />
               ) : currentFlow.id === 'three_ds_decision' ? (
                 <ThreeDSDecisionManager key={currentFlow.id} />
+              ) : currentFlow.id === 'organization_manager' ? (
+                <OrganizationManager key={currentFlow.id} />
+              ) : currentFlow.id === 'decision_engine' ? (
+                <DecisionEnginePlayground key={currentFlow.id} />
               ) : (
                 <PaymentForm key={currentFlow.id} flow={currentFlow} />
               )}
@@ -250,6 +267,7 @@ const App = () => {
           </div>
         )}
       </div>
+      )}
     </Layout>
   );
 };

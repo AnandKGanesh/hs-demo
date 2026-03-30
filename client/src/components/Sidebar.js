@@ -84,6 +84,7 @@ const flowCategories = [
     icon: GitBranch,
     flows: [
       { id: 'routing_simulator', name: 'Routing Simulator', description: 'Watch transactions flow through eligibility, rules, and overrides' },
+      { id: 'decision_engine', name: 'Decision Engine', description: 'Success rate-based dynamic routing simulation' },
     ],
   },
   {
@@ -91,7 +92,15 @@ const flowCategories = [
     name: 'Decision Manager',
     icon: Shield,
     flows: [
-      { id: 'three_ds_decision', name: '3DS Decision Manager', description: 'Balance fraud prevention with checkout friction. See how risk scores determine when to challenge, skip, or block transactions using smart 3DS authentication rules.', disabled: true },
+      { id: 'three_ds_decision', name: '3DS Decision Manager', description: 'Balance fraud prevention with checkout friction. See how risk scores determine when to challenge, skip, or block transactions using smart 3DS authentication rules.' },
+    ],
+  },
+  {
+    id: 'organization',
+    name: 'Organization',
+    icon: Database,
+    flows: [
+      { id: 'organization_manager', name: 'Organization Manager', description: 'Mock organization structure and merchant management' },
     ],
   },
 ];
@@ -119,6 +128,7 @@ const Sidebar = ({ onFlowSelect, currentFlow }) => {
       smart_retry: currentCategory === 'smart_retry',
       intelligent_routing: currentCategory === 'intelligent_routing',
       decision_manager: currentCategory === 'decision_manager',
+      organization: currentCategory === 'organization',
     };
   });
 

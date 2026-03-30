@@ -1,363 +1,522 @@
 import React, { useState } from 'react';
-import { Play, RotateCcw, Shield, ShieldAlert, ShieldCheck, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { 
+  Plus, 
+  X, 
+  ChevronDown, 
+  ChevronUp, 
+  Play,
+  Shield,
+  ShieldCheck,
+  ShieldAlert,
+  RotateCcw,
+  CheckCircle,
+  XCircle
+} from 'lucide-react';
 
-const scenarios = [
-  {
-    id: 'low_risk',
-    name: 'Low Risk Transaction',
-    transaction: { amount: 50, currency: 'USD', cardNetwork: 'visa', cardType: 'credit', country: 'USA', isRecurring: false, merchantRiskProfile: 'low' },
-    riskFactors: { amountRisk: 10, geoRisk: 5, deviceRisk: 10, behaviorRisk: 5, merchantRisk: 10 },
-    totalRiskScore: 40,
-    decision: 'skip',
-    reason: 'Risk score below threshold (40 < 100)',
-    outcome: { authSuccess: true, friction: 'none', fraudPrevented: false }
-  },
-  {
-    id: 'medium_risk',
-    name: 'Medium Risk Transaction',
-    transaction: { amount: 250, currency: 'USD', cardNetwork: 'mastercard', cardType: 'credit', country: 'USA', isRecurring: false, merchantRiskProfile: 'medium' },
-    riskFactors: { amountRisk: 25, geoRisk: 10, deviceRisk: 15, behaviorRisk: 20, merchantRisk: 30 },
-    totalRiskScore: 100,
-    decision: 'challenge',
-    reason: 'Risk score at threshold (100) - Challenge triggered',
-    outcome: { authSuccess: true, friction: 'challenge', fraudPrevented: true }
-  },
-  {
-    id: 'high_risk',
-    name: 'High Risk Transaction',
-    transaction: { amount: 1500, currency: 'USD', cardNetwork: 'visa', cardType: 'credit', country: 'Nigeria', isRecurring: false, merchantRiskProfile: 'high' },
-    riskFactors: { amountRisk: 40, geoRisk: 35, deviceRisk: 20, behaviorRisk: 25, merchantRisk: 40 },
-    totalRiskScore: 160,
-    decision: 'challenge',
-    reason: 'High risk score (160) - Mandatory challenge required',
-    outcome: { authSuccess: true, friction: 'challenge', fraudPrevented: true }
-  },
-  {
-    id: 'recurring_exemption',
-    name: 'Recurring Payment Exemption',
-    transaction: { amount: 100, currency: 'USD', cardNetwork: 'visa', cardType: 'credit', country: 'USA', isRecurring: true, merchantRiskProfile: 'low' },
-    riskFactors: { amountRisk: 15, geoRisk: 5, deviceRisk: 10, behaviorRisk: 5, merchantRisk: 10 },
-    totalRiskScore: 45,
-    decision: 'skip',
-    reason: 'Recurring payment with established credential - 3DS exempted',
-    outcome: { authSuccess: true, friction: 'none', fraudPrevented: false }
-  },
-  {
-    id: 'challenge_failure',
-    name: 'Challenge Authentication Failure',
-    transaction: { amount: 800, currency: 'USD', cardNetwork: 'mastercard', cardType: 'credit', country: 'Russia', isRecurring: false, merchantRiskProfile: 'high' },
-    riskFactors: { amountRisk: 35, geoRisk: 30, deviceRisk: 25, behaviorRisk: 30, merchantRisk: 40 },
-    totalRiskScore: 160,
-    decision: 'challenge',
-    reason: 'High risk geography and amount - Challenge required',
-    outcome: { authSuccess: false, friction: 'challenge', fraudPrevented: true, failureReason: 'Customer failed authentication' }
-  },
-];
-
-const RiskScoreBar = ({ score, maxScore = 200 }) => {
-  const percentage = (score / maxScore) * 100;
-  let colorClass = 'bg-green-500';
-  if (score >= 100) colorClass = 'bg-amber-500';
-  if (score >= 150) colorClass = 'bg-red-500';
-  
-  return (
-    <div className="w-full">
-      <div className="flex justify-between text-sm text-gray-600 mb-2">
-        <span className="font-medium">Risk Score</span>
-        <span className="font-bold text-gray-900">{score}/200</span>
-      </div>
-      <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
-        <div className={`h-full ${colorClass} transition-all duration-1000`} style={{ width: `${percentage}%` }} />
-      </div>
-      <div className="flex justify-between text-xs text-gray-400 mt-1">
-        <span>Safe (0)</span>
-        <span className="font-medium text-gray-500">Threshold: 100</span>
-        <span>High Risk (200)</span>
-      </div>
-    </div>
-  );
+const FIELD_CATEGORIES = {
+  '3DS Decision': [
+    { id: 'issuer_name', label: 'issuer_name', type: 'string', info: 'Name of the card issuing bank' },
+    { id: 'issuer_country', label: 'issuer_country', type: 'string', info: 'Country code of the issuer' },
+    { id: 'acquirer_country', label: 'acquirer_country', type: 'string', info: 'Country code of the acquirer' },
+    { id: 'customer_device_platform', label: 'customer_device_platform', type: 'enum', info: 'Device platform (Web, Android, iOS)' },
+  ],
+  'Payment Methods': [
+    { id: 'card_network', label: 'card_network', type: 'enum', info: 'Card network (Visa, Mastercard, Amex)' },
+  ],
+  'Payments': [
+    { id: 'amount', label: 'amount', type: 'number', info: 'Transaction amount in minor units (cents)' },
+    { id: 'currency', label: 'currency', type: 'string', info: 'ISO currency code (USD, EUR, etc.)' },
+  ]
 };
 
-const RiskFactorRow = ({ name, score }) => {
-  const percentage = (score / 50) * 100;
-  return (
-    <div className="flex items-center gap-4 py-2">
-      <span className="text-sm text-gray-600 w-40">{name}</span>
-      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-        <div className={`h-full ${score > 30 ? 'bg-amber-500' : 'bg-primary'} transition-all duration-700`} style={{ width: `${percentage}%` }} />
-      </div>
-      <span className="text-sm font-semibold text-gray-700 w-8 text-right">{score}</span>
-    </div>
-  );
-};
-
-const DecisionBadge = ({ decision }) => {
-  const styles = {
-    skip: 'bg-green-100 text-green-700 border-green-300',
-    challenge: 'bg-amber-100 text-amber-700 border-amber-300',
-    block: 'bg-red-100 text-red-700 border-red-300',
-  };
-  const labels = { skip: 'Skip 3DS', challenge: 'Challenge Required', block: 'Block Transaction' };
-  return (
-    <span className={`px-4 py-2 text-base font-bold rounded-full border-2 ${styles[decision]}`}>
-      {labels[decision]}
-    </span>
-  );
-};
-
-const StepCard = ({ stepNumber, title, icon: Icon, isActive, children }) => (
-  <div className={`rounded-xl border-2 p-6 transition-all duration-500 ${isActive ? 'border-primary shadow-lg bg-white' : 'border-gray-200 bg-gray-50'}`}>
-    <div className="flex items-center gap-3 mb-4">
-      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isActive ? 'bg-primary text-white' : 'bg-gray-200 text-gray-400'}`}>
-        <Icon className="w-5 h-5" />
-      </div>
-      <div>
-        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Step {stepNumber}</span>
-        <h3 className={`text-lg font-bold ${isActive ? 'text-gray-900' : 'text-gray-400'}`}>{title}</h3>
-      </div>
-    </div>
-    {isActive && <div className="mt-4">{children}</div>}
-  </div>
+const ALL_FIELDS = Object.entries(FIELD_CATEGORIES).flatMap(([category, fields]) =>
+  fields.map(field => ({ ...field, category }))
 );
 
+const OPERATORS = {
+  number: [
+    { id: 'EQUAL_TO', label: 'EQUAL TO', color: 'text-red-500' },
+    { id: 'GREATER_THAN', label: 'GREATER THAN', color: 'text-red-500' },
+    { id: 'LESS_THAN', label: 'LESS THAN', color: 'text-red-500' },
+  ],
+  string: [
+    { id: 'IS', label: 'IS', color: 'text-gray-700' },
+    { id: 'IS_NOT', label: 'IS_NOT', color: 'text-red-500' },
+  ],
+  enum: [
+    { id: 'IS', label: 'IS', color: 'text-gray-700' },
+    { id: 'IS_NOT', label: 'IS_NOT', color: 'text-red-500' },
+  ]
+};
+
+const THREE_DS_DECISIONS = [
+  { id: 'no_three_ds', label: 'Request No-3DS', description: 'Skip 3DS authentication' },
+  { id: 'challenge_requested', label: 'Mandate 3DS Challenge', description: 'Always require challenge' },
+  { id: 'challenge_preferred', label: 'Prefer 3DS Challenge', description: 'Prefer challenge when possible' },
+  { id: 'three_ds_exemption_requested_tra', label: 'Request 3DS Exemption, Type: TRA', description: 'Transaction Risk Analysis exemption' },
+  { id: 'three_ds_exemption_requested_low_value', label: 'Request 3DS Exemption, Type: Low Value Transaction', description: 'Low value transaction exemption' },
+  { id: 'issuer_three_ds_exemption_requested', label: 'No challenge requested', description: 'Proceed without challenge' },
+];
+
+const ENUM_VALUES = {
+  card_network: ['Visa', 'Mastercard', 'American Express'],
+  customer_device_platform: ['Web', 'Android', 'iOS'],
+};
+
+const SIMULATION_SCENARIOS = [
+  {
+    id: 'scenario-1',
+    name: 'High Value Transaction',
+    description: 'Amount > $100 triggers mandatory 3DS',
+    transaction: { amount: 15000, currency: 'USD', card_network: 'Visa', issuer_country: 'US', customer_device_platform: 'Web' }
+  },
+  {
+    id: 'scenario-2', 
+    name: 'Low Value Transaction',
+    description: 'Amount < $50 exempts from 3DS',
+    transaction: { amount: 2500, currency: 'USD', card_network: 'Mastercard', issuer_country: 'US', customer_device_platform: 'Mobile' }
+  },
+  {
+    id: 'scenario-3',
+    name: 'High Risk Country',
+    description: 'Transaction from high-risk country mandates 3DS',
+    transaction: { amount: 5000, currency: 'USD', card_network: 'Visa', issuer_country: 'NG', customer_device_platform: 'Web' }
+  },
+  {
+    id: 'scenario-4',
+    name: 'Mobile UK Transaction',
+    description: 'Mobile transactions from UK require 3DS',
+    transaction: { amount: 10000, currency: 'GBP', card_network: 'Visa', issuer_country: 'GB', customer_device_platform: 'iOS' }
+  },
+  {
+    id: 'scenario-5',
+    name: 'Corporate Card',
+    description: 'Corporate Mastercard prefer 3DS',
+    transaction: { amount: 20000, currency: 'USD', card_network: 'Mastercard', issuer_country: 'CA', customer_device_platform: 'Web' }
+  }
+];
+
 const ThreeDSDecisionManager = () => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
-  const [showScenario, setShowScenario] = useState(false);
-  
-  const currentScenario = scenarios[currentScenarioIndex];
-  
-  const runSimulation = async () => {
-    if (currentStep === 3) {
-      setCurrentScenarioIndex((prev) => (prev + 1) % scenarios.length);
-      setCurrentStep(0);
-      setShowScenario(false);
-      await new Promise(resolve => setTimeout(resolve, 100));
+  const [rules, setRules] = useState([
+    {
+      id: 'rule-1',
+      name: 'High Amount Rule',
+      expanded: false,
+      enabled: true,
+      conditions: [{ id: 'cond-1', field: 'amount', operator: 'GREATER_THAN', value: '10000', logicalOperator: 'AND' }],
+      decision: 'challenge_requested'
+    },
+    {
+      id: 'rule-2',
+      name: 'High Risk Country',
+      expanded: false,
+      enabled: true,
+      conditions: [{ id: 'cond-1', field: 'issuer_country', operator: 'IS', value: 'NG', logicalOperator: 'AND' }],
+      decision: 'challenge_requested'
+    },
+    {
+      id: 'rule-3',
+      name: 'Mobile UK Transactions',
+      expanded: false,
+      enabled: true,
+      conditions: [
+        { id: 'cond-1', field: 'customer_device_platform', operator: 'IS', value: 'iOS', logicalOperator: 'AND' },
+        { id: 'cond-2', field: 'issuer_country', operator: 'IS', value: 'GB', logicalOperator: 'AND' }
+      ],
+      decision: 'challenge_requested'
     }
+  ]);
+  
+  const [showFieldDropdown, setShowFieldDropdown] = useState(null);
+  const [showOperatorDropdown, setShowOperatorDropdown] = useState(null);
+  const [showDecisionDropdown, setShowDecisionDropdown] = useState(null);
+  const [currentScenario, setCurrentScenario] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [evaluatingRuleId, setEvaluatingRuleId] = useState(null);
+  const [matchedRuleId, setMatchedRuleId] = useState(null);
+  const [simulationResults, setSimulationResults] = useState([]);
+
+  const filteredFields = ALL_FIELDS;
+
+  const groupedFields = filteredFields.reduce((acc, field) => {
+    if (!acc[field.category]) acc[field.category] = [];
+    acc[field.category].push(field);
+    return acc;
+  }, {});
+
+  const getFieldType = (fieldId) => ALL_FIELDS.find(f => f.id === fieldId)?.type || 'string';
+  const getFieldLabel = (fieldId) => ALL_FIELDS.find(f => f.id === fieldId)?.label || fieldId;
+  const getOperatorsForField = (fieldId) => OPERATORS[getFieldType(fieldId)] || OPERATORS.string;
+  const getDecisionDetails = (decisionId) => THREE_DS_DECISIONS.find(d => d.id === decisionId) || THREE_DS_DECISIONS[0];
+
+  const addRule = () => {
+    const newRule = {
+      id: `rule-${rules.length + 1}`,
+      name: `Rule ${rules.length + 1}`,
+      expanded: false,
+      enabled: true,
+      conditions: [{ id: `cond-${Date.now()}`, field: 'amount', operator: 'EQUAL_TO', value: '', logicalOperator: 'AND' }],
+      decision: 'no_three_ds'
+    };
+    setRules([...rules, newRule]);
+  };
+
+  const removeRule = (ruleId) => rules.length > 1 && setRules(rules.filter(r => r.id !== ruleId));
+
+  const addCondition = (ruleId) => {
+    setRules(rules.map(rule => 
+      rule.id === ruleId 
+        ? { ...rule, conditions: [...rule.conditions, { id: `cond-${Date.now()}`, field: 'issuer_country', operator: 'IS', value: '', logicalOperator: 'AND' }] }
+        : rule
+    ));
+  };
+
+  const removeCondition = (ruleId, conditionId) => {
+    setRules(rules.map(rule => 
+      rule.id === ruleId 
+        ? { ...rule, conditions: rule.conditions.filter(c => c.id !== conditionId) }
+        : rule
+    ));
+  };
+
+  const updateCondition = (ruleId, conditionId, updates) => {
+    setRules(rules.map(rule => 
+      rule.id === ruleId 
+        ? { ...rule, conditions: rule.conditions.map(cond => cond.id === conditionId ? { ...cond, ...updates } : cond) }
+        : rule
+    ));
+  };
+
+  const updateRuleDecision = (ruleId, decision) => {
+    setRules(rules.map(rule => rule.id === ruleId ? { ...rule, decision } : rule));
+  };
+
+  const toggleRuleExpanded = (ruleId) => {
+    setRules(rules.map(rule => rule.id === ruleId ? { ...rule, expanded: !rule.expanded } : rule));
+  };
+
+  const handleFieldSelect = (ruleId, conditionId, fieldId) => {
+    const field = ALL_FIELDS.find(f => f.id === fieldId);
+    const operators = OPERATORS[field.type] || OPERATORS.string;
+    updateCondition(ruleId, conditionId, { field: fieldId, operator: operators[0].id, value: '' });
+    setShowFieldDropdown(null);
+  };
+
+  const evaluateRule = (rule, transaction) => {
+    let matched = true;
+    let first = true;
+    
+    for (const condition of rule.conditions) {
+      const txValue = transaction[condition.field];
+      let conditionMatched = false;
+      
+      switch (condition.operator) {
+        case 'EQUAL_TO': conditionMatched = parseFloat(txValue) === parseFloat(condition.value); break;
+        case 'GREATER_THAN': conditionMatched = parseFloat(txValue) > parseFloat(condition.value); break;
+        case 'LESS_THAN': conditionMatched = parseFloat(txValue) < parseFloat(condition.value); break;
+        case 'IS': conditionMatched = String(txValue).toLowerCase() === String(condition.value).toLowerCase(); break;
+        case 'IS_NOT': conditionMatched = String(txValue).toLowerCase() !== String(condition.value).toLowerCase(); break;
+        default: conditionMatched = String(txValue) === String(condition.value);
+      }
+      
+      if (first) {
+        matched = conditionMatched;
+        first = false;
+      } else if (condition.logicalOperator === 'AND') {
+        matched = matched && conditionMatched;
+      } else if (condition.logicalOperator === 'OR') {
+        matched = matched || conditionMatched;
+      }
+    }
+    
+    return matched;
+  };
+
+  const runScenario = async () => {
     setIsRunning(true);
-    setCurrentStep(0);
-    setShowScenario(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setCurrentStep(1);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setCurrentStep(2);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setCurrentStep(3);
+    setEvaluatingRuleId(null);
+    setMatchedRuleId(null);
+    
+    const scenario = SIMULATION_SCENARIOS[currentScenario];
+    const transaction = scenario.transaction;
+    
+    let matchedRule = null;
+    
+    for (let i = 0; i < rules.length; i++) {
+      const rule = rules[i];
+      setEvaluatingRuleId(rule.id);
+      
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const isMatch = evaluateRule(rule, transaction);
+      
+      if (isMatch) {
+        matchedRule = rule;
+        setMatchedRuleId(rule.id);
+        break;
+      }
+    }
+    
+    setEvaluatingRuleId(null);
+    
+    const result = {
+      scenario: scenario,
+      matchedRule: matchedRule,
+      decision: matchedRule ? matchedRule.decision : 'no_three_ds'
+    };
+    
+    setSimulationResults(prev => [...prev, result]);
+    
+    setCurrentScenario((prev) => (prev + 1) % SIMULATION_SCENARIOS.length);
+    
     setIsRunning(false);
   };
-  
-  const reset = () => {
+
+  const resetAll = () => {
+    setCurrentScenario(0);
+    setSimulationResults([]);
+    setEvaluatingRuleId(null);
+    setMatchedRuleId(null);
     setIsRunning(false);
-    setCurrentStep(0);
-    setShowScenario(false);
   };
-  
+
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="bg-primary-50 rounded-xl border border-primary-light p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Current Transaction</span>
-            <div className="flex items-center gap-6 bg-white rounded-lg px-6 py-3 border border-primary-light shadow-sm">
-              <div className="text-center">
-                <p className="text-xs text-gray-400 uppercase mb-1">Amount</p>
-                <p className="font-bold text-gray-900 text-lg">${currentScenario.transaction.amount} <span className="text-sm font-normal text-gray-500">{currentScenario.transaction.currency}</span></p>
-              </div>
-              <div className="h-10 w-px bg-gray-200" />
-              <div className="text-center">
-                <p className="text-xs text-gray-400 uppercase mb-1">Card</p>
-                <p className="font-bold text-gray-900 text-lg uppercase">{currentScenario.transaction.cardNetwork}</p>
-              </div>
-              <div className="h-10 w-px bg-gray-200" />
-              <div className="text-center">
-                <p className="text-xs text-gray-400 uppercase mb-1">Country</p>
-                <p className="font-bold text-gray-900 text-lg">{currentScenario.transaction.country}</p>
-              </div>
-              {currentScenario.transaction.isRecurring && (
-                <>
-                  <div className="h-10 w-px bg-gray-200" />
-                  <div className="text-center">
-                    <p className="text-xs text-gray-400 uppercase mb-1">Type</p>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary text-white">
-                      Recurring
-                    </span>
+    <div className="w-full space-y-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="p-4 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+          <h2 className="text-lg font-semibold text-gray-900">Rule Assignment Template</h2>
+          <p className="text-sm text-gray-600">Define rules to determine 3DS authentication requirements</p>
+        </div>
+        
+        <div className="p-6 space-y-4">
+          {rules.map((rule, index) => {
+            const isEvaluating = evaluatingRuleId === rule.id;
+            const isMatched = matchedRuleId === rule.id;
+            
+            return (
+              <div 
+                key={rule.id} 
+                className={`bg-white rounded-lg border-2 transition-all ${
+                  isEvaluating ? 'border-blue-500 shadow-lg ring-2 ring-blue-200' : 
+                  isMatched ? 'border-green-500 bg-green-50' : 
+                  'border-gray-200'
+                }`}
+              >
+                <div 
+                  className="flex items-center justify-between px-4 py-3 cursor-pointer"
+                  onClick={() => !isRunning && toggleRuleExpanded(rule.id)}
+                >
+                  <div className="flex items-center gap-3">
+                    {isEvaluating && <RotateCcw className="w-5 h-5 text-blue-500 animate-spin" />}
+                    {isMatched && <CheckCircle className="w-5 h-5 text-green-500" />}
+                    {!isEvaluating && !isMatched && <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium">{index + 1}</div>}
+                    <span className="text-sm font-medium text-gray-700">{rule.name}</span>
                   </div>
-                </>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            {!isRunning ? (
-              <button onClick={runSimulation} className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-semibold transition-colors shadow-sm">
-                <Play className="w-5 h-5" />
-                Run Simulation ({currentScenarioIndex + 1}/{scenarios.length})
-              </button>
-            ) : (
-              <div className="flex items-center gap-2 text-gray-600 px-4 py-3 bg-gray-100 rounded-lg">
-                <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
-                <span className="font-medium">Analyzing Step {currentStep}/3...</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); !isRunning && removeRule(rule.id); }}
+                      className="p-1 hover:bg-red-100 rounded text-red-500"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <button className="p-1 hover:bg-gray-200 rounded">
+                      {rule.expanded ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
+                    </button>
+                  </div>
+                </div>
+                
+                {rule.expanded && (
+                  <div className="px-4 pb-4 space-y-3">
+                    {rule.conditions.map((condition, idx) => (
+                      <div key={condition.id} className="flex items-center gap-2">
+                        {idx > 0 && (
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => updateCondition(rule.id, condition.id, { logicalOperator: condition.logicalOperator === 'AND' ? 'OR' : 'AND' })}
+                              className={`px-2 py-1 rounded text-xs font-medium ${condition.logicalOperator === 'AND' ? 'text-blue-600 bg-blue-50' : 'text-gray-600 bg-gray-100'}`}
+                            >
+                              AND
+                            </button>
+                            <button
+                              onClick={() => updateCondition(rule.id, condition.id, { logicalOperator: condition.logicalOperator === 'OR' ? 'AND' : 'OR' })}
+                              className={`px-2 py-1 rounded text-xs font-medium ${condition.logicalOperator === 'OR' ? 'text-blue-600 bg-blue-50' : 'text-gray-600 bg-gray-100'}`}
+                            >
+                              OR
+                            </button>
+                          </div>
+                        )}
+
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowFieldDropdown(showFieldDropdown === `${rule.id}-${condition.id}` ? null : `${rule.id}-${condition.id}`)}
+                            className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:border-gray-400 text-sm"
+                          >
+                            <span>{getFieldLabel(condition.field)}</span>
+                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                          </button>
+                          {showFieldDropdown === `${rule.id}-${condition.id}` && (
+                            <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                              {Object.entries(groupedFields).map(([category, fields]) => (
+                                <div key={category}>
+                                  <div className="px-3 py-1 text-xs font-semibold text-gray-500 bg-gray-50">{category}</div>
+                                  {fields.map(field => (
+                                    <button key={field.id} onClick={() => handleFieldSelect(rule.id, condition.id, field.id)} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100">
+                                      {field.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowOperatorDropdown(showOperatorDropdown === `${rule.id}-${condition.id}` ? null : `${rule.id}-${condition.id}`)}
+                            className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:border-gray-400 text-sm"
+                          >
+                            <span className={getOperatorsForField(condition.field).find(o => o.id === condition.operator)?.color}>
+                              {getOperatorsForField(condition.field).find(o => o.id === condition.operator)?.label}
+                            </span>
+                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                          </button>
+                          {showOperatorDropdown === `${rule.id}-${condition.id}` && (
+                            <div className="absolute top-full left-0 mt-2 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                              {getOperatorsForField(condition.field).map(op => (
+                                <button
+                                  key={op.id}
+                                  onClick={() => { updateCondition(rule.id, condition.id, { operator: op.id }); setShowOperatorDropdown(null); }}
+                                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
+                                >
+                                  <span className={op.color}>{op.label}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {ENUM_VALUES[condition.field] ? (
+                          <select
+                            value={condition.value}
+                            onChange={(e) => updateCondition(rule.id, condition.id, { value: e.target.value })}
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          >
+                            <option value="">Select</option>
+                            {ENUM_VALUES[condition.field].map(val => <option key={val} value={val}>{val}</option>)}
+                          </select>
+                        ) : (
+                          <input
+                            type={getFieldType(condition.field) === 'number' ? 'number' : 'text'}
+                            value={condition.value}
+                            onChange={(e) => updateCondition(rule.id, condition.id, { value: e.target.value })}
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm w-28"
+                            placeholder="Value"
+                          />
+                        )}
+
+                        {rule.conditions.length > 1 && (
+                          <button onClick={() => removeCondition(rule.id, condition.id)} className="p-1 text-red-500 hover:bg-red-100 rounded">
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button onClick={() => addCondition(rule.id)} className="p-1 text-gray-400 hover:text-gray-600">
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+
+                    <div className="pt-3 border-t border-gray-200">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">3DS Decision</label>
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowDecisionDropdown(showDecisionDropdown === rule.id ? null : rule.id)}
+                          className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:border-gray-400 w-full max-w-md"
+                        >
+                          <Shield className="w-4 h-4 text-blue-500" />
+                          <span className="text-sm">{getDecisionDetails(rule.decision).label}</span>
+                          <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" />
+                        </button>
+                        {showDecisionDropdown === rule.id && (
+                          <div className="absolute top-full left-0 mt-2 w-full max-w-md bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                            {THREE_DS_DECISIONS.map(decision => (
+                              <button
+                                key={decision.id}
+                                onClick={() => { updateRuleDecision(rule.id, decision.id); setShowDecisionDropdown(null); }}
+                                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 border-b last:border-0"
+                              >
+                                <div className="font-medium">{decision.label}</div>
+                                <div className="text-xs text-gray-500">{decision.description}</div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-            <button onClick={reset} className="flex items-center gap-2 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">
-              <RotateCcw className="w-4 h-4" />
-              Reset
-            </button>
-          </div>
+            );
+          })}
+
+          <button onClick={addRule} className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg" disabled={isRunning}>
+            <Plus className="w-5 h-5" />
+            <span className="font-medium">Add Rule</span>
+          </button>
         </div>
       </div>
-      
-      {showScenario ? (
-        <div className="space-y-6">
-          {/* Step 1: Risk Assessment */}
-          <StepCard stepNumber={1} title="Risk Assessment" icon={Shield} isActive={currentStep >= 1}>
-            <div className="space-y-6">
-              <RiskScoreBar score={currentScenario.totalRiskScore} />
-              <div className="bg-gray-50 rounded-xl p-5">
-                <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Risk Factor Breakdown</h4>
-                <div className="space-y-1">
-                  <RiskFactorRow name="Transaction Amount" score={currentScenario.riskFactors.amountRisk} />
-                  <RiskFactorRow name="Geographic Risk" score={currentScenario.riskFactors.geoRisk} />
-                  <RiskFactorRow name="Device Risk" score={currentScenario.riskFactors.deviceRisk} />
-                  <RiskFactorRow name="Behavioral Risk" score={currentScenario.riskFactors.behaviorRisk} />
-                  <RiskFactorRow name="Merchant Profile" score={currentScenario.riskFactors.merchantRisk} />
-                </div>
-              </div>
-            </div>
-          </StepCard>
-          
-          {/* Step 2: 3DS Decision */}
-          <StepCard stepNumber={2} title="3DS Authentication Decision" icon={ShieldAlert} isActive={currentStep >= 2}>
-            <div className="space-y-6">
-              <div className="flex items-center justify-center py-4">
-                <DecisionBadge decision={currentScenario.decision} />
-              </div>
-              <div className="bg-gray-50 rounded-xl p-5">
-                <p className="text-gray-700">
-                  <span className="font-semibold text-gray-900">Decision Logic: </span>
-                  {currentScenario.reason}
-                </p>
-              </div>
-              {currentScenario.transaction.isRecurring && currentScenario.decision === 'skip' && (
-                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <span className="text-green-800 font-medium">Recurring payment exemption applied (TRA - Transaction Risk Analysis)</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </StepCard>
-          
-          {/* Step 3: Transaction Outcome */}
-          <StepCard stepNumber={3} title="Transaction Outcome" icon={ShieldCheck} isActive={currentStep >= 3}>
-            <div className="grid grid-cols-2 gap-6">
-              {/* Transaction Result */}
-              <div className="bg-gray-50 rounded-xl p-5">
-                <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Payment Result</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    {currentScenario.outcome.authSuccess ? (
-                      <CheckCircle className="w-6 h-6 text-green-500" />
-                    ) : (
-                      <XCircle className="w-6 h-6 text-red-500" />
-                    )}
-                    <span className="text-gray-900 font-medium">
-                      {currentScenario.outcome.authSuccess ? 'Payment Successful' : 'Payment Failed'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {currentScenario.outcome.friction === 'none' ? (
-                      <CheckCircle className="w-6 h-6 text-green-500" />
-                    ) : (
-                      <AlertTriangle className="w-6 h-6 text-amber-500" />
-                    )}
-                    <span className="text-gray-700">
-                      {currentScenario.outcome.friction === 'none' ? 'No customer friction' : '3DS Challenge completed'}
-                    </span>
-                  </div>
-                  {currentScenario.outcome.fraudPrevented && (
-                    <div className="flex items-center gap-3">
-                      <Shield className="w-6 h-6 text-primary" />
-                      <span className="text-primary font-medium">Fraud prevented</span>
-                    </div>
-                  )}
-                  {currentScenario.outcome.failureReason && (
-                    <div className="mt-3 p-3 bg-red-100 rounded-lg">
-                      <p className="text-red-700 text-sm font-medium">{currentScenario.outcome.failureReason}</p>
-                    </div>
-                  )}
-                </div>
+
+      <div className="flex items-center gap-4">
+        <button
+          onClick={runScenario}
+          disabled={isRunning}
+          className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium disabled:opacity-50"
+        >
+          {isRunning ? <RotateCcw className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />}
+          Run Scenario {currentScenario + 1}/{SIMULATION_SCENARIOS.length}
+        </button>
+        {simulationResults.length > 0 && (
+          <button onClick={resetAll} className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1">
+            <RotateCcw className="w-4 h-4" /> Reset All
+          </button>
+        )}
+      </div>
+
+      {simulationResults.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900">Simulation Results</h3>
+          {simulationResults.map((result, idx) => (
+            <div key={idx} className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-gray-900">{result.scenario.name}</h4>
+                <span className="text-sm text-gray-500">Scenario {SIMULATION_SCENARIOS.findIndex(s => s.id === result.scenario.id) + 1}</span>
               </div>
               
-              {/* Impact Analysis */}
-              <div className="bg-gray-50 rounded-xl p-5">
-                <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Impact Analysis</h4>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                    <span className="text-gray-600">Customer Friction</span>
-                    <span className={`font-semibold ${currentScenario.outcome.friction === 'none' ? 'text-green-600' : 'text-amber-600'}`}>
-                      {currentScenario.outcome.friction === 'none' ? 'Low' : 'Medium'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                    <span className="text-gray-600">Fraud Prevention</span>
-                    <span className={`font-semibold ${currentScenario.outcome.fraudPrevented ? 'text-green-600' : 'text-gray-500'}`}>
-                      {currentScenario.outcome.fraudPrevented ? 'Active' : 'Standard'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                    <span className="text-gray-600">Conversion Impact</span>
-                    <span className={`font-semibold ${currentScenario.decision === 'skip' ? 'text-green-600' : 'text-amber-600'}`}>
-                      {currentScenario.decision === 'skip' ? 'Optimized' : 'Slight Reduction'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-gray-600">Liability Shift</span>
-                    <span className={`font-semibold ${currentScenario.decision === 'challenge' && currentScenario.outcome.authSuccess ? 'text-green-600' : 'text-gray-500'}`}>
-                      {currentScenario.decision === 'challenge' && currentScenario.outcome.authSuccess ? 'Yes (3DS)' : 'No'}
-                    </span>
+              <div className="bg-blue-50 rounded-lg border border-blue-200 p-3 mb-3">
+                <div className="flex items-center gap-6 text-sm">
+                  <div><span className="text-gray-500">Amount:</span> <span className="font-medium">${result.scenario.transaction.amount / 100}</span></div>
+                  <div><span className="text-gray-500">Card:</span> <span className="font-medium">{result.scenario.transaction.card_network}</span></div>
+                  <div><span className="text-gray-500">Country:</span> <span className="font-medium">{result.scenario.transaction.issuer_country}</span></div>
+                </div>
+              </div>
+
+              <div className={`rounded-lg border-2 p-3 ${result.matchedRule ? 'border-amber-500 bg-amber-50' : 'border-green-500 bg-green-50'}`}>
+                <div className="flex items-center gap-3">
+                  {result.matchedRule ? <ShieldAlert className="w-6 h-6 text-amber-500" /> : <ShieldCheck className="w-6 h-6 text-green-500" />}
+                  <div>
+                    <p className="font-semibold text-gray-900">{getDecisionDetails(result.decision).label}</p>
+                    <p className="text-sm text-gray-600">
+                      {result.matchedRule ? `Matched: ${result.matchedRule.name}` : 'No rules matched - default applied'}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-          </StepCard>
-          
-          {/* Final Status */}
-          {currentStep === 3 && (
-            <div className={`rounded-xl p-6 text-center ${currentScenario.outcome.authSuccess ? 'bg-green-50 border-2 border-green-400' : 'bg-red-50 border-2 border-red-400'}`}>
-              <div className="flex items-center justify-center gap-4">
-                {currentScenario.outcome.authSuccess ? (
-                  <CheckCircle className="w-10 h-10 text-green-500" />
-                ) : (
-                  <XCircle className="w-10 h-10 text-red-500" />
-                )}
-                <div className="text-left">
-                  <p className={`text-xl font-bold ${currentScenario.outcome.authSuccess ? 'text-green-800' : 'text-red-800'}`}>
-                    {currentScenario.outcome.authSuccess ? 'Transaction Complete' : 'Transaction Declined'}
-                  </p>
-                  <p className={`text-sm ${currentScenario.outcome.authSuccess ? 'text-green-600' : 'text-red-600'}`}>
-                    {currentScenario.outcome.authSuccess 
-                      ? `Payment processed${currentScenario.decision === 'challenge' ? ' with 3DS authentication' : ' without friction'}`
-                      : currentScenario.outcome.failureReason
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+          ))}
         </div>
-      ) : (
-        /* Empty State */
-        <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
-          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Shield className="w-8 h-8 text-white" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">3DS Decision Manager</h3>
-          <p className="text-gray-600 mb-1">Click "Run Simulation" to see how risk scores determine 3DS authentication decisions</p>
-          <p className="text-sm text-gray-400">Scenario: {currentScenario.name}</p>
-        </div>
+      )}
+
+      {(showFieldDropdown || showOperatorDropdown || showDecisionDropdown) && (
+        <div className="fixed inset-0 z-40" onClick={() => { setShowFieldDropdown(null); setShowOperatorDropdown(null); setShowDecisionDropdown(null); }} />
       )}
     </div>
   );
