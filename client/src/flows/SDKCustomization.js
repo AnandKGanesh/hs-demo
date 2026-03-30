@@ -107,20 +107,7 @@ const SDKCustomization = () => {
       locale: locale === 'auto' ? undefined : locale,
     });
 
-    const paymentElement = elements.create('payment', {
-      layout: {
-        type: layoutType,
-        defaultCollapsed,
-        radios,
-        spacedAccordionItems: spacedItems,
-        visibleAccordionItemsCount: visibleItemsCount,
-        displayOneClickPaymentMethodsOnTop: displayOneClickOnTop,
-      },
-      wallets: {
-        applePay,
-        googlePay,
-      },
-    });
+    const paymentElement = elements.create('payment');
     
     paymentElement.mount('#sdk-customization-payment-element');
 
