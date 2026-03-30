@@ -4,6 +4,7 @@ import { hyperState, apiResponseState, paymentStatusState, customerState, captur
 import ServerButton from './ServerButton';
 import API_BASE_URL from '../config';
 import { createCustomer, createPaymentIntent } from '../utils/api';
+import { filters } from '../utils/fieldMappings';
 
 // Test card data for all SDK flows
 const TEST_CARD_DATA = {
@@ -45,26 +46,7 @@ const captureApiCall = (request, response, setApiResponse, stepTitle) => {
   });
 };
 
-const filterCustomerResponse = (response) => {
-  if (!response || !response.body) return response;
-  const body = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
-  return {
-    customer_id: body.customer_id,
-  };
-};
 
-const filterPaymentIntentResponse = (response) => {
-  if (!response || !response.body) return response;
-  const body = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
-  return {
-    payment_id: body.payment_id || body.paymentId,
-    client_secret: body.client_secret || body.clientSecret,
-    status: body.status,
-    capture_method: body.capture_method || body.captureMethod,
-    amount: body.amount,
-    customer_id: body.customer_id || body.customerId,
-  };
-};
 
 // Test data display component
 const TestDataPrompt = () => (
@@ -198,7 +180,7 @@ const PaymentForm = ({ flow }) => {
 
         const onCustomerApiCall = (req, res) => {
           customerRequestDetails = req;
-          customerResponseDetails = filterCustomerResponse(res);
+          customerResponseDetails = filters.customer(res);
         };
 
         const onPaymentIntentApiCall = (req, res) => {
@@ -220,7 +202,7 @@ const PaymentForm = ({ flow }) => {
               headers: req.headers,
               body: getRequestBodyForFlow(flow),
             },
-            response: filterPaymentIntentResponse(res),
+            response: filters.paymentIntent(res),
           });
 
           steps.push({

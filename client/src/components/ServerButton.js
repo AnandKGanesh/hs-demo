@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { apiResponseState, captureCompleteState, demoModeState, debugCredentialsState } from '../utils/atoms';
 import { makeAuthenticatedRequest } from '../utils/api';
+import { filters } from '../utils/fieldMappings';
 
 const ServerButton = ({ paymentId, flow }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -57,14 +58,7 @@ const ServerButton = ({ paymentId, flow }) => {
                 amount_to_capture: captureAmount,
               },
             },
-            response: {
-              payment_id: data.payment_id,
-              status: data.status,
-              amount_captured: amountCaptured,
-              ...(isPartialCapture && {
-                remaining_capturable: remainingCapturable,
-              }),
-            },
+            response: filters.capture(data, isPartialCapture),
           },
         ],
         currentStep: 4,
