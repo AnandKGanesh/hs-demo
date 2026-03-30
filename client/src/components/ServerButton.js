@@ -63,7 +63,6 @@ const ServerButton = ({ paymentId, flow }) => {
               amount_captured: amountCaptured,
               ...(isPartialCapture && {
                 remaining_capturable: remainingCapturable,
-                total_authorized: totalAuthorized,
               }),
             },
           },

@@ -301,13 +301,17 @@ const PaymentForm = ({ flow }) => {
         const sdkStepIndex = hasStep1 ? 2 : 1;
         
         // Build response object based on flow type - matching FLOW_MAPPINGS_V1.md exactly
-        let responseData = {
-          status: paymentStatus,
-          payment_id: paymentId,
-        };
-        
+        let responseData;
+
+        // Payment Flows (Automatic, Manual, Manual Partial, Repeat User): Show ONLY key fields per FLOW_MAPPINGS_V1.md
+        if (['automatic', 'manual', 'manual_partial', 'repeat_user'].includes(flow.id)) {
+          responseData = {
+            status: paymentStatus,
+            payment_id: paymentId,
+          };
+        }
         // Vault Flow: Show specific fields for external vault storage
-        if (flow.id === 'vault_3') {
+        else if (flow.id === 'vault_3') {
           responseData = {
             status: paymentStatus,
             payment_id: paymentId,
@@ -316,23 +320,47 @@ const PaymentForm = ({ flow }) => {
             network_transaction_id: paymentDetails.network_transaction_id,
           };
         }
-        
         // Recurring Flows: Show mandate fields
-        if (['zero_setup', 'setup_and_charge'].includes(flow.id)) {
-          responseData.payment_method_id = paymentDetails.payment_method_id;
-          responseData.mandate_id = paymentDetails.mandate_id;
-          responseData.connector_mandate_id = paymentDetails.connector_mandate_id;
-          responseData.network_transaction_id = paymentDetails.network_transaction_id;
+        else if (['zero_setup', 'setup_and_charge'].includes(flow.id)) {
+          responseData = {
+            status: paymentStatus,
+            payment_id: paymentId,
+            payment_method_id: paymentDetails.payment_method_id,
+            mandate_id: paymentDetails.mandate_id,
+            connector_mandate_id: paymentDetails.connector_mandate_id,
+            network_transaction_id: paymentDetails.network_transaction_id,
+          };
         }
-        
         // 3DS Flows: Show authentication_type
-        if (flow.id === 'three_ds_psp') {
-          responseData.authentication_type = paymentDetails.authentication_type;
+        else if (flow.id === 'three_ds_psp') {
+          responseData = {
+            status: paymentStatus,
+            payment_id: paymentId,
+            authentication_type: paymentDetails.authentication_type,
+          };
         }
-        
-        // FRM Flows: Show frm_message
-        if (flow.id === 'frm_pre') {
-          responseData.frm_message = paymentDetails.frm_message;
+        // FRM Flows: Show frm_message with specific fields
+        else if (flow.id === 'frm_pre') {
+          responseData = {
+            status: paymentStatus,
+            payment_id: paymentId,
+            frm_message: paymentDetails.frm_message ? {
+              frm_name: paymentDetails.frm_message.frm_name,
+              frm_transaction_id: paymentDetails.frm_message.frm_transaction_id,
+              frm_transaction_type: paymentDetails.frm_message.frm_transaction_type,
+              frm_status: paymentDetails.frm_message.frm_status,
+              frm_score: paymentDetails.frm_message.frm_score,
+              frm_reason: paymentDetails.frm_message.frm_reason,
+              frm_error: paymentDetails.frm_message.frm_error,
+            } : undefined,
+          };
+        }
+        // Default fallback
+        else {
+          responseData = {
+            status: paymentStatus,
+            payment_id: paymentId,
+          };
         }
         
         steps[sdkStepIndex] = {

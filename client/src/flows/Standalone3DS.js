@@ -236,12 +236,9 @@ const Standalone3DS = () => {
           title: 'Step 3: SDK Payment Confirmation',
           request: 'hyper.confirmPayment()',
           response: {
-            payment_id: paymentDetails.payment_id,
             status: paymentDetails.status,
-            amount: paymentDetails.amount,
-            merchant_id: paymentDetails.merchant_id,
-            external_authentication_details: paymentDetails.external_authentication_details,
-            external_3ds_authentication_attempted: paymentDetails.external_3ds_authentication_attempted,
+            payment_id: paymentDetails.payment_id,
+            authentication_type: paymentDetails.authentication_type || 'three_ds',
           },
         };
         return { steps, currentStep: 3 };

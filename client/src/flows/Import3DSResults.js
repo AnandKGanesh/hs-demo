@@ -100,12 +100,9 @@ const Import3DSResults = () => {
               },
             },
             response: {
-              payment_id: data.paymentId,
               status: data.status,
+              payment_id: data.paymentId,
               authentication_type: data.authenticationType || 'three_ds',
-              capture_method: data.captureMethod,
-              amount: data.amount,
-              customer_id: data.customerId,
             },
           },
         ],
