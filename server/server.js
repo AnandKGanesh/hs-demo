@@ -148,13 +148,13 @@ app.post('/api/create-intent', async (req, res) => {
     }
 
     res.json({
-      clientSecret: data.client_secret,
-      paymentId: data.payment_id,
+      client_secret: data.client_secret,
+      payment_id: data.payment_id,
       status: data.status,
       amount: data.amount,
       currency: data.currency,
-      captureMethod: data.capture_method,
-      customerId: data.customer_id,
+      capture_method: data.capture_method,
+      customer_id: data.customer_id,
     });
   } catch (error) {
     console.error('Error creating payment intent:', error);
@@ -463,8 +463,8 @@ app.post('/api/adyen/authorize', async (req, res) => {
     console.log('Step 1 Complete - Adyen Transaction ID:', data.pspReference);
     
     res.json({
-      adyenTransactionId: data.pspReference,
-      adyenResponse: data,
+      adyen_transaction_id: data.pspReference,
+      adyen_response: data,
     });
   } catch (error) {
     console.error('Error creating Adyen authorization:', error);
@@ -524,8 +524,8 @@ app.post('/api/adyen/authorize-capture', async (req, res) => {
     console.log('Step 1 Complete - Adyen Transaction ID:', data.pspReference);
     
     res.json({
-      adyenTransactionId: data.pspReference,
-      adyenResponse: data,
+      adyen_transaction_id: data.pspReference,
+      adyen_response: data,
     });
   } catch (error) {
     console.error('Error creating Adyen auth+capture:', error);
@@ -581,12 +581,12 @@ app.post('/api/relay/capture', async (req, res) => {
     }
 
     res.json({
-      relayId: data.relay_id,
+      relay_id: data.relay_id,
       status: data.status,
       type: data.type,
-      connectorId: data.connector_id,
-      connectorResourceId: data.connector_resource_id,
-      adyenTransactionId: adyen_transaction_id,
+      connector_id: data.connector_id,
+      connector_resource_id: data.connector_resource_id,
+      adyen_transaction_id: adyen_transaction_id,
     });
   } catch (error) {
     console.error('Error in Relay Capture:', error);
@@ -641,12 +641,12 @@ app.post('/api/relay/refund', async (req, res) => {
     }
 
     res.json({
-      relayId: data.relay_id,
+      relay_id: data.relay_id,
       status: data.status,
       type: data.type,
-      connectorId: data.connector_id,
-      connectorResourceId: data.connector_resource_id,
-      adyenTransactionId: adyen_transaction_id,
+      connector_id: data.connector_id,
+      connector_resource_id: data.connector_resource_id,
+      adyen_transaction_id: adyen_transaction_id,
     });
   } catch (error) {
     console.error('Error in Relay Refund:', error);
@@ -697,12 +697,12 @@ app.post('/api/relay/void', async (req, res) => {
     }
 
     res.json({
-      relayId: data.relay_id,
+      relay_id: data.relay_id,
       status: data.status,
       type: data.type,
-      connectorId: data.connector_id,
-      connectorResourceId: data.connector_resource_id,
-      adyenTransactionId: adyen_transaction_id,
+      connector_id: data.connector_id,
+      connector_resource_id: data.connector_resource_id,
+      adyen_transaction_id: adyen_transaction_id,
     });
   } catch (error) {
     console.error('Error in Relay Void:', error);
@@ -757,12 +757,12 @@ app.post('/api/relay/incremental-auth', async (req, res) => {
     }
 
     res.json({
-      relayId: data.relay_id,
+      relay_id: data.relay_id,
       status: data.status,
       type: data.type,
-      connectorId: data.connector_id,
-      connectorResourceId: data.connector_resource_id,
-      adyenTransactionId: adyen_transaction_id,
+      connector_id: data.connector_id,
+      connector_resource_id: data.connector_resource_id,
+      adyen_transaction_id: adyen_transaction_id,
     });
   } catch (error) {
     console.error('Error in Relay Incremental Auth:', error);
@@ -801,8 +801,8 @@ app.post('/api/create-intent-3ds', async (req, res) => {
     }
 
     res.json({
-      clientSecret: data.client_secret,
-      paymentId: data.payment_id,
+      client_secret: data.client_secret,
+      payment_id: data.payment_id,
       status: data.status,
       amount: data.amount,
       currency: data.currency,
