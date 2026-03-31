@@ -139,6 +139,38 @@ const SDKCustomization = () => {
 
   const [paymentMethodOrder, setPaymentMethodOrder] = useState('card, ideal, sepaDebit, sofort, bancontact');
 
+  const availablePaymentMethods = [
+    'card',
+    'ideal',
+    'sepaDebit',
+    'sofort',
+    'bancontact',
+    'klarna',
+    'affirm',
+    'afterpay_clearpay',
+    'eps',
+    'giropay',
+    'paypal',
+    'applePay',
+    'googlePay',
+  ];
+
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState(['card', 'ideal', 'sepaDebit', 'sofort', 'bancontact']);
+
+  const togglePaymentMethod = (method) => {
+    setSelectedPaymentMethods(prev => {
+      const exists = prev.includes(method);
+      let newMethods;
+      if (exists) {
+        newMethods = prev.filter(m => m !== method);
+      } else {
+        newMethods = [...prev, method];
+      }
+      setPaymentMethodOrder(newMethods.join(', '));
+      return newMethods;
+    });
+  };
+
   const [rules, setRules] = useState({
     '.Tab--selected': {
       background: '',
@@ -188,6 +220,9 @@ const SDKCustomization = () => {
     more: false,
     rules: false,
   });
+
+  const [inspectorMode, setInspectorMode] = useState(false);
+  const [inspectorMessage, setInspectorMessage] = useState(null);
 
   const locales = [
     { code: 'auto', label: 'Auto-detect' },
@@ -1047,14 +1082,30 @@ paymentElement.mount('#payment-element');`;
       
       <div>
         <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Method Order</label>
-        <input 
-          type="text" 
-          value={paymentMethodOrder} 
-          onChange={(e) => setPaymentMethodOrder(e.target.value)}
-          placeholder='card, ideal, sepaDebit, sofort, bancontact'
-          className="w-full px-3 py-2 border rounded-lg text-sm"
-        />
-        <p className="text-sm text-gray-500 mt-1">Comma-separated list without quotes. Card must be first. Example: card, klarna, affirm</p>
+        <p className="text-sm text-gray-500 mb-2">Select methods to display (drag order coming soon)</p>
+        <div className="grid grid-cols-2 gap-2">
+          {availablePaymentMethods.map(method => (
+            <button
+              key={method}
+              onClick={() => togglePaymentMethod(method)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm border transition-colors ${
+                selectedPaymentMethods.includes(method)
+                  ? 'bg-blue-50 border-blue-300 text-blue-700'
+                  : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+              }`}
+            >
+              <span className={`w-4 h-4 rounded flex items-center justify-center text-xs ${
+                selectedPaymentMethods.includes(method) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-400'
+              }`}>
+                {selectedPaymentMethods.includes(method) ? '✓' : ''}
+              </span>
+              <span className="capitalize">{method.replace(/([A-Z])/g, ' $1').trim()}</span>
+            </button>
+          ))}
+        </div>
+        <p className="text-sm text-gray-500 mt-2">
+          Current order: <span className="font-mono text-blue-600">{paymentMethodOrder || 'none selected'}</span>
+        </p>
       </div>
       
       <div className="space-y-2 pt-2 border-t">
@@ -1109,7 +1160,28 @@ paymentElement.mount('#payment-element');`;
 
   const renderRulesSection = () => (
     <div className="space-y-3">
-      <p className="text-sm text-gray-500 mb-2">Custom CSS rules for granular styling (CSS property names in camelCase)</p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-gray-500">Custom CSS rules for granular styling</p>
+        <button
+          onClick={() => setInspectorMode(!inspectorMode)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors ${
+            inspectorMode
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          <Eye size={14} />
+          {inspectorMode ? 'Exit Inspector' : 'Element Inspector'}
+        </button>
+      </div>
+
+      {inspectorMode && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <p className="text-sm text-amber-800">
+            Inspector mode active. Click on any element in the preview to see its CSS selector.
+          </p>
+        </div>
+      )}
       
       {Object.entries(rules).map(([selector, styles]) => (
         <div key={selector} className="border rounded-lg p-3 bg-white">
@@ -1273,8 +1345,50 @@ paymentElement.mount('#payment-element');`;
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-2xl mx-auto">
-                <div id="sdk-customization-payment-element" className="bg-white rounded-lg border border-gray-200 p-4" />
+              <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-2xl mx-auto relative">
+                {inspectorMode && (
+                  <div
+                    className="absolute inset-0 z-50 cursor-crosshair"
+                    onClick={(e) => {
+                      const paymentEl = document.getElementById('sdk-customization-payment-element');
+                      if (!paymentEl) return;
+                      
+                      const rect = paymentEl.getBoundingClientRect();
+                      const elements = document.elementsFromPoint(e.clientX, e.clientY);
+                      const sdkElement = elements.find(el => 
+                        el.closest('#sdk-customization-payment-element') && 
+                        el !== paymentEl
+                      );
+                      
+                      if (sdkElement) {
+                        const classes = Array.from(sdkElement.classList);
+                        const selector = classes.length > 0 ? '.' + classes[0] : sdkElement.tagName.toLowerCase();
+                        setInspectorMessage({
+                          selector: selector,
+                          classes: classes.slice(0, 3)
+                        });
+                        setTimeout(() => setInspectorMessage(null), 3000);
+                      }
+                    }}
+                  >
+                    {inspectorMessage && (
+                      <div className="absolute top-2 right-2 bg-blue-500 text-white px-3 py-2 rounded-lg text-sm shadow-lg">
+                        <p className="font-mono">{inspectorMessage.selector}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div id="sdk-customization-payment-element" className={`bg-white rounded-lg border border-gray-200 p-4 ${inspectorMode ? 'pointer-events-none' : ''}`} />
+                {inspectorMessage && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-sm text-blue-800">
+                      Selected element: <code className="font-mono bg-blue-100 px-1 rounded">{inspectorMessage.selector}</code>
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      Classes: {inspectorMessage.classes.join(', ')}
+                    </p>
+                  </div>
+                )}
 
                 {clientSecret && (
                   <button

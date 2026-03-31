@@ -242,35 +242,36 @@ const ThreeDSDecisionManager = () => {
     setEvaluatingRuleId(null);
     setMatchedRuleId(null);
 
-    const ruleIndex = currentScenario % rules.length;
-    const ruleToRun = rules[ruleIndex];
     const scenario = SIMULATION_SCENARIOS[currentScenario];
     const transaction = scenario.transaction;
 
-    setRules(prev => prev.map(r => r.id === ruleToRun.id ? { ...r, expanded: true } : r));
-
-    setEvaluatingRuleId(ruleToRun.id);
-
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    const isMatch = evaluateRule(ruleToRun, transaction);
-
-    if (isMatch) {
-      setMatchedRuleId(ruleToRun.id);
+    const allMatchedRules = [];
+    for (const rule of rules) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setEvaluatingRuleId(rule.id);
+      setRules(prev => prev.map(r => r.id === rule.id ? { ...r, expanded: true } : r));
+      
+      const isMatch = evaluateRule(rule, transaction);
+      if (isMatch) {
+        allMatchedRules.push(rule);
+        setMatchedRuleId(rule.id);
+        await new Promise(resolve => setTimeout(resolve, 400));
+      }
+      
+      setEvaluatingRuleId(null);
     }
 
-    setEvaluatingRuleId(null);
-
+    const firstMatchedRule = allMatchedRules.length > 0 ? allMatchedRules[0] : null;
+    
     const result = {
       scenario: scenario,
-      matchedRule: isMatch ? ruleToRun : null,
-      decision: isMatch ? ruleToRun.decision : 'no_three_ds'
+      matchedRules: allMatchedRules,
+      primaryMatch: firstMatchedRule,
+      decision: firstMatchedRule ? firstMatchedRule.decision : 'no_three_ds'
     };
 
     setSimulationResults(prev => [...prev, result]);
-
     setCurrentScenario((prev) => (prev + 1) % SIMULATION_SCENARIOS.length);
-
     setIsRunning(false);
   };
 
@@ -506,13 +507,15 @@ const ThreeDSDecisionManager = () => {
                     </div>
                   </div>
 
-                  <div className={`rounded-lg border-2 p-3 ${result.matchedRule ? 'border-amber-500 bg-amber-50' : 'border-green-500 bg-green-50'}`}>
+                  <div className={`rounded-lg border-2 p-3 ${result.primaryMatch ? 'border-amber-500 bg-amber-50' : 'border-green-500 bg-green-50'}`}>
                     <div className="flex items-center gap-3">
-                      {result.matchedRule ? <ShieldAlert className="w-6 h-6 text-amber-500" /> : <ShieldCheck className="w-6 h-6 text-green-500" />}
+                      {result.primaryMatch ? <ShieldAlert className="w-6 h-6 text-amber-500" /> : <ShieldCheck className="w-6 h-6 text-green-500" />}
                       <div>
                         <p className="font-semibold text-gray-900">{getDecisionDetails(result.decision).label}</p>
                         <p className="text-sm text-gray-600">
-                          {result.matchedRule ? `Matched: ${result.matchedRule.name}` : 'No rules matched - default applied'}
+                          {result.primaryMatch 
+                            ? `Matched ${result.matchedRules.length} rule(s): ${result.matchedRules.map(r => r.name).join(', ')}`
+                            : 'No rules matched - default applied'}
                         </p>
                       </div>
                     </div>
@@ -527,6 +530,7 @@ const ThreeDSDecisionManager = () => {
       {(showFieldDropdown || showOperatorDropdown || showDecisionDropdown) && (
         <div className="fixed inset-0 z-40" onClick={() => { setShowFieldDropdown(null); setShowOperatorDropdown(null); setShowDecisionDropdown(null); }} />
       )}
+      </div>
     </div>
   );
 };
