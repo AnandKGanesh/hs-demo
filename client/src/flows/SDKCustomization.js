@@ -1082,84 +1082,21 @@ paymentElement.mount('#payment-element');`;
       </div>
       
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Payment Method Order</label>
-
-        <div className="border rounded text-xs">
-          {selectedPaymentMethods.map((methodId, index) => {
-            const method = availablePaymentMethods.find(m => m.id === methodId);
-            const isLast = index === selectedPaymentMethods.length - 1;
-
-            return (
-              <div
-                key={methodId}
-                className={`flex items-center px-2 py-1.5 ${!isLast ? 'border-b' : ''} ${index === 0 ? 'bg-gray-50' : ''}`}
-              >
-                <span className="w-4 text-gray-400 font-mono">{index + 1}</span>
-                <span className="mr-1">{method?.icon}</span>
-                <span className="flex-1">{method?.label}</span>
-
-                <div className="flex gap-0.5">
-                  <button
-                    onClick={() => {
-                      if (index > 0) {
-                        const newOrder = [...selectedPaymentMethods];
-                        [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
-                        setSelectedPaymentMethods(newOrder);
-                      }
-                    }}
-                    disabled={index === 0}
-                    className="px-1 text-gray-400 hover:text-gray-600 disabled:opacity-20"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (index < selectedPaymentMethods.length - 1) {
-                        const newOrder = [...selectedPaymentMethods];
-                        [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
-                        setSelectedPaymentMethods(newOrder);
-                      }
-                    }}
-                    disabled={isLast}
-                    className="px-1 text-gray-400 hover:text-gray-600 disabled:opacity-20"
-                  >
-                    ↓
-                  </button>
-                  {methodId !== 'card' && (
-                    <button
-                      onClick={() => setSelectedPaymentMethods(selectedPaymentMethods.filter(id => id !== methodId))}
-                      className="px-1 text-gray-400 hover:text-red-500"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+        <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Method Order</label>
+        <input
+          type="text"
+          value={selectedPaymentMethods.join(', ')}
+          onChange={(e) => {
+            const values = e.target.value.split(',').map(s => s.trim()).filter(s => s);
+            setSelectedPaymentMethods(values);
+          }}
+          className="w-full px-3 py-2 border rounded-lg text-sm font-mono"
+        />
+        <div className="mt-2 text-xs text-gray-500 space-y-1">
+          <p>Enter comma-separated payment method IDs. Card must be first.</p>
+          <p className="font-medium text-gray-600">Available methods:</p>
+          <p className="font-mono text-gray-400">card, klarna, affirm, givex, paypal, google_pay, apple_pay, ideal, sepa_debit, sofort, bancontact, afterpay, alipay, wechat, ach_debit, paysafecard</p>
         </div>
-
-        {availablePaymentMethods.some(m => !selectedPaymentMethods.includes(m.id)) && (
-          <select
-            value=""
-            onChange={(e) => {
-              if (e.target.value) {
-                setSelectedPaymentMethods([...selectedPaymentMethods, e.target.value]);
-              }
-              e.target.value = '';
-            }}
-            className="mt-1.5 w-full px-2 py-1 border rounded text-xs bg-white"
-          >
-            <option value="">+ Add...</option>
-            {availablePaymentMethods
-              .filter(m => !selectedPaymentMethods.includes(m.id))
-              .map(method => (
-                <option key={method.id} value={method.id}>
-                  {method.icon} {method.label}
-                </option>
-              ))}
-          </select>
-        )}
       </div>
       
       <div className="space-y-2 pt-2 border-t">
