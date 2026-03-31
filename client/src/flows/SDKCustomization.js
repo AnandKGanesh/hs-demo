@@ -138,7 +138,22 @@ const SDKCustomization = () => {
     { key: 'bancontact', label: 'Bancontact' },
   ];
 
-  const [paymentMethodOrder, setPaymentMethodOrder] = useState('card, ideal, sepaDebit, sofort, bancontact');
+  const availablePaymentMethods = [
+    { id: 'card', label: 'Card', icon: '💳' },
+    { id: 'ideal', label: 'iDEAL', icon: '🏦' },
+    { id: 'sepaDebit', label: 'SEPA Debit', icon: '🏛️' },
+    { id: 'sofort', label: 'Sofort', icon: '🔒' },
+    { id: 'bancontact', label: 'Bancontact', icon: '🇧🇪' },
+    { id: 'klarna', label: 'Klarna', icon: '💰' },
+    { id: 'affirm', label: 'Affirm', icon: '✅' },
+    { id: 'paypal', label: 'PayPal', icon: '💸' },
+    { id: 'applePay', label: 'Apple Pay', icon: '🍎' },
+    { id: 'googlePay', label: 'Google Pay', icon: '📱' },
+  ];
+
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState([
+    'card', 'ideal', 'sepaDebit', 'sofort', 'bancontact'
+  ]);
 
   const [rules, setRules] = useState({
     '.Tab--selected': {
@@ -417,9 +432,9 @@ const SDKCustomization = () => {
     if (moreConfig.readOnly) options.readOnly = true;
     if (moreConfig.showShortSurchargeMessage) options.showShortSurchargeMessage = true;
 
-    if (paymentMethodOrder && paymentMethodOrder.trim() !== '') {
-      const orderList = paymentMethodOrder.split(',').map(s => s.trim()).filter(s => s !== '');
-      const cardIndex = orderList.indexOf('card');
+    if (selectedPaymentMethods.length > 0) {
+      const cardIndex = selectedPaymentMethods.indexOf('card');
+      let orderList = [...selectedPaymentMethods];
       if (cardIndex > 0) {
         orderList.splice(cardIndex, 1);
         orderList.unshift('card');
@@ -467,7 +482,7 @@ const SDKCustomization = () => {
   }, [
     hyper, clientSecret, locale, layout, paymentMethodsArrangementForTabs,
     wallets, appearanceVars, buttonVars, currency,
-    moreConfig, paymentMethodOrder, rules
+    moreConfig, selectedPaymentMethods, rules
   ]);
 
   const toggleSection = (section) => {
@@ -1061,15 +1076,89 @@ paymentElement.mount('#payment-element');`;
       </div>
       
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Method Order</label>
-        <input 
-          type="text" 
-          value={paymentMethodOrder} 
-          onChange={(e) => setPaymentMethodOrder(e.target.value)}
-          placeholder='card, ideal, sepaDebit, sofort, bancontact'
-          className="w-full px-3 py-2 border rounded-lg text-sm"
-        />
-        <p className="text-sm text-gray-500 mt-1">Comma-separated list without quotes. Card must be first. Example: card, klarna, affirm</p>
+        <label className="block text-sm font-medium text-gray-600 mb-2">Payment Method Order</label>
+        <p className="text-xs text-gray-500 mb-3">Drag to reorder. Card is always first.</p>
+        
+        <div className="space-y-1 mb-3">
+          {selectedPaymentMethods.map((methodId, index) => {
+            const method = availablePaymentMethods.find(m => m.id === methodId);
+            return (
+              <div 
+                key={methodId} 
+                className="flex items-center justify-between bg-white border rounded-lg px-3 py-2"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">{method?.icon}</span>
+                  <span className="text-sm font-medium">{method?.label}</span>
+                  {index === 0 && (
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Default</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      if (index > 0) {
+                        const newOrder = [...selectedPaymentMethods];
+                        [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+                        setSelectedPaymentMethods(newOrder);
+                      }
+                    }}
+                    disabled={index === 0}
+                    className="p-1 hover:bg-gray-100 rounded disabled:opacity-30"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (index < selectedPaymentMethods.length - 1) {
+                        const newOrder = [...selectedPaymentMethods];
+                        [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+                        setSelectedPaymentMethods(newOrder);
+                      }
+                    }}
+                    disabled={index === selectedPaymentMethods.length - 1}
+                    className="p-1 hover:bg-gray-100 rounded disabled:opacity-30"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (selectedPaymentMethods.length > 1) {
+                        setSelectedPaymentMethods(selectedPaymentMethods.filter(id => id !== methodId));
+                      }
+                    }}
+                    disabled={methodId === 'card'}
+                    className="p-1 hover:bg-red-50 text-red-500 rounded disabled:opacity-30"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex gap-2">
+          <select
+            value=""
+            onChange={(e) => {
+              if (e.target.value && !selectedPaymentMethods.includes(e.target.value)) {
+                setSelectedPaymentMethods([...selectedPaymentMethods, e.target.value]);
+              }
+              e.target.value = '';
+            }}
+            className="flex-1 px-3 py-2 border rounded-lg text-sm"
+          >
+            <option value="">+ Add payment method...</option>
+            {availablePaymentMethods
+              .filter(m => !selectedPaymentMethods.includes(m.id))
+              .map(method => (
+                <option key={method.id} value={method.id}>
+                  {method.icon} {method.label}
+                </option>
+              ))}
+          </select>
+        </div>
       </div>
       
       <div className="space-y-2 pt-2 border-t">
