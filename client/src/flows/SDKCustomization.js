@@ -142,23 +142,23 @@ const SDKCustomization = () => {
     { id: 'card', label: 'Card', icon: '💳' },
     { id: 'klarna', label: 'Klarna', icon: '💰' },
     { id: 'affirm', label: 'Affirm', icon: '✅' },
-    { id: 'afterPay', label: 'After Pay', icon: '⏰' },
-    { id: 'alipay', label: 'Alipay', icon: '🔵' },
-    { id: 'weChat', label: 'WeChat', icon: '💬' },
-    { id: 'achDebit', label: 'ACH Debit', icon: '🏛️' },
-    { id: 'paysafecard', label: 'Paysafecard', icon: '🎫' },
     { id: 'givex', label: 'Givex', icon: '🎁' },
+    { id: 'paypal', label: 'PayPal', icon: '💸' },
+    { id: 'google_pay', label: 'Google Pay', icon: '📱' },
+    { id: 'apple_pay', label: 'Apple Pay', icon: '🍎' },
     { id: 'ideal', label: 'iDEAL', icon: '🏦' },
-    { id: 'sepaDebit', label: 'SEPA Debit', icon: '💶' },
+    { id: 'sepa_debit', label: 'SEPA Debit', icon: '💶' },
     { id: 'sofort', label: 'Sofort', icon: '🔒' },
     { id: 'bancontact', label: 'Bancontact', icon: '🇧🇪' },
-    { id: 'paypal', label: 'PayPal', icon: '💸' },
-    { id: 'applePay', label: 'Apple Pay', icon: '🍎' },
-    { id: 'googlePay', label: 'Google Pay', icon: '📱' },
+    { id: 'afterpay', label: 'After Pay', icon: '⏰' },
+    { id: 'alipay', label: 'Alipay', icon: '🔵' },
+    { id: 'wechat', label: 'WeChat', icon: '💬' },
+    { id: 'ach_debit', label: 'ACH Debit', icon: '🏛️' },
+    { id: 'paysafecard', label: 'Paysafecard', icon: '🎫' },
   ];
 
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState([
-    'card', 'klarna', 'affirm', 'afterPay', 'alipay', 'weChat', 'achDebit', 'paysafecard', 'givex'
+    'card', 'klarna', 'affirm', 'givex', 'paypal', 'google_pay'
   ]);
 
   const [rules, setRules] = useState({
