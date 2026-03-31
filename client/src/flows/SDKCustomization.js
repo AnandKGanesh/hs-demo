@@ -414,6 +414,7 @@ const SDKCustomization = () => {
 
   const buildWalletOptions = () => {
     const walletConfig = {
+      walletReturnUrl: window.location.origin,
       applePay: wallets.applePay,
       googlePay: wallets.googlePay,
       payPal: wallets.payPal,
@@ -1082,30 +1083,38 @@ paymentElement.mount('#payment-element');`;
       
       <div>
         <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Method Order</label>
-        <p className="text-sm text-gray-500 mb-2">Select methods to display (drag order coming soon)</p>
-        <div className="grid grid-cols-2 gap-2">
+        <input 
+          type="text" 
+          value={paymentMethodOrder} 
+          onChange={(e) => setPaymentMethodOrder(e.target.value)}
+          placeholder="card, ideal, sepaDebit, sofort, bancontact"
+          className="w-full px-3 py-2 border rounded-lg text-sm font-mono"
+        />
+        <p className="text-sm text-gray-500 mt-1">
+          Comma-separated values. Card must be first. Available methods:
+        </p>
+        <div className="flex flex-wrap gap-1.5 mt-2">
           {availablePaymentMethods.map(method => (
             <button
               key={method}
-              onClick={() => togglePaymentMethod(method)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm border transition-colors ${
-                selectedPaymentMethods.includes(method)
-                  ? 'bg-blue-50 border-blue-300 text-blue-700'
-                  : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+              onClick={() => {
+                const current = paymentMethodOrder.split(',').map(s => s.trim()).filter(s => s !== '');
+                if (!current.includes(method)) {
+                  const newOrder = [...current, method];
+                  setPaymentMethodOrder(newOrder.join(', '));
+                }
+              }}
+              disabled={paymentMethodOrder.includes(method)}
+              className={`px-2 py-1 rounded text-xs border transition-colors ${
+                paymentMethodOrder.includes(method)
+                  ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-default'
+                  : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400 hover:text-blue-600'
               }`}
             >
-              <span className={`w-4 h-4 rounded flex items-center justify-center text-xs ${
-                selectedPaymentMethods.includes(method) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-400'
-              }`}>
-                {selectedPaymentMethods.includes(method) ? '✓' : ''}
-              </span>
-              <span className="capitalize">{method.replace(/([A-Z])/g, ' $1').trim()}</span>
+              + {method}
             </button>
           ))}
         </div>
-        <p className="text-sm text-gray-500 mt-2">
-          Current order: <span className="font-mono text-blue-600">{paymentMethodOrder || 'none selected'}</span>
-        </p>
       </div>
       
       <div className="space-y-2 pt-2 border-t">
