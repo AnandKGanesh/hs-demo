@@ -257,6 +257,7 @@ const SDKCustomization = () => {
     const initializeSDK = async () => {
       setIsLoading(true);
       setError(null);
+      setClientSecret(null);
 
       try {
         const customerData = await makeAuthenticatedRequest('/api/create-customer', {
