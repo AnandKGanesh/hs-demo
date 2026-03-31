@@ -1082,89 +1082,96 @@ paymentElement.mount('#payment-element');`;
       </div>
       
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-2">Payment Method Order</label>
-        <p className="text-xs text-gray-500 mb-3">Drag to reorder. Card is always first.</p>
-        
-        <div className="space-y-1 mb-3">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method Order</label>
+        <p className="text-xs text-gray-500 mb-2">Card is always first priority</p>
+
+        <div className="bg-white border rounded-lg overflow-hidden">
           {selectedPaymentMethods.map((methodId, index) => {
             const method = availablePaymentMethods.find(m => m.id === methodId);
+            const isFirst = index === 0;
+            const isLast = index === selectedPaymentMethods.length - 1;
+
             return (
-              <div 
-                key={methodId} 
-                className="flex items-center justify-between bg-white border rounded-lg px-3 py-2"
+              <div
+                key={methodId}
+                className={`flex items-center justify-between px-3 py-2.5 ${!isLast ? 'border-b' : ''}`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">{method?.icon}</span>
-                  <span className="text-sm font-medium">{method?.label}</span>
-                  {index === 0 && (
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Default</span>
+                  <span className="text-base">{method?.icon}</span>
+                  <span className="text-sm text-gray-700">{method?.label}</span>
+                  {isFirst && (
+                    <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">1st</span>
                   )}
                 </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => {
-                      if (index > 0) {
-                        const newOrder = [...selectedPaymentMethods];
-                        [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
-                        setSelectedPaymentMethods(newOrder);
-                      }
-                    }}
-                    disabled={index === 0}
-                    className="p-1 hover:bg-gray-100 rounded disabled:opacity-30"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (index < selectedPaymentMethods.length - 1) {
-                        const newOrder = [...selectedPaymentMethods];
-                        [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
-                        setSelectedPaymentMethods(newOrder);
-                      }
-                    }}
-                    disabled={index === selectedPaymentMethods.length - 1}
-                    className="p-1 hover:bg-gray-100 rounded disabled:opacity-30"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (selectedPaymentMethods.length > 1) {
-                        setSelectedPaymentMethods(selectedPaymentMethods.filter(id => id !== methodId));
-                      }
-                    }}
-                    disabled={methodId === 'card'}
-                    className="p-1 hover:bg-red-50 text-red-500 rounded disabled:opacity-30"
-                  >
-                    ×
-                  </button>
+
+                <div className="flex items-center">
+                  <div className="flex items-center mr-2">
+                    <button
+                      onClick={() => {
+                        if (!isFirst) {
+                          const newOrder = [...selectedPaymentMethods];
+                          [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+                          setSelectedPaymentMethods(newOrder);
+                        }
+                      }}
+                      disabled={isFirst}
+                      className="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded disabled:opacity-25 disabled:hover:bg-transparent"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!isLast) {
+                          const newOrder = [...selectedPaymentMethods];
+                          [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+                          setSelectedPaymentMethods(newOrder);
+                        }
+                      }}
+                      disabled={isLast}
+                      className="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded disabled:opacity-25 disabled:hover:bg-transparent"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {methodId !== 'card' && (
+                    <button
+                      onClick={() => setSelectedPaymentMethods(selectedPaymentMethods.filter(id => id !== methodId))}
+                      className="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
 
-        <div className="flex gap-2">
-          <select
-            value=""
-            onChange={(e) => {
-              if (e.target.value && !selectedPaymentMethods.includes(e.target.value)) {
-                setSelectedPaymentMethods([...selectedPaymentMethods, e.target.value]);
-              }
-              e.target.value = '';
-            }}
-            className="flex-1 px-3 py-2 border rounded-lg text-sm"
-          >
-            <option value="">+ Add payment method...</option>
-            {availablePaymentMethods
-              .filter(m => !selectedPaymentMethods.includes(m.id))
-              .map(method => (
-                <option key={method.id} value={method.id}>
-                  {method.icon} {method.label}
-                </option>
-              ))}
-          </select>
-        </div>
+        {availablePaymentMethods.some(m => !selectedPaymentMethods.includes(m.id)) && (
+          <div className="mt-2">
+            <button
+              onClick={() => {
+                const unselected = availablePaymentMethods.filter(m => !selectedPaymentMethods.includes(m.id));
+                if (unselected.length > 0) {
+                  setSelectedPaymentMethods([...selectedPaymentMethods, unselected[0].id]);
+                }
+              }}
+              className="w-full py-2 px-3 border border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:text-primary hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-1"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add payment method
+            </button>
+          </div>
+        )}
       </div>
       
       <div className="space-y-2 pt-2 border-t">
