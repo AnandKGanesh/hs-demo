@@ -29,7 +29,6 @@ const SDKCustomization = () => {
   });
   const [paymentMethodsArrangementForTabs, setPaymentMethodsArrangementForTabs] = useState('default');
   const [wallets, setWallets] = useState({
-    walletReturnUrl: 'https://juspay.github.io/hyperswitch-demo-app',
     applePay: 'auto',
     googlePay: 'auto',
     payPal: 'auto',
@@ -379,19 +378,16 @@ const SDKCustomization = () => {
   };
 
   const buildWalletOptions = () => {
-    const walletConfig = {};
-    
-    if (wallets.walletReturnUrl) {
-      walletConfig.walletReturnUrl = wallets.walletReturnUrl;
-      walletConfig.applePay = wallets.applePay;
-      walletConfig.googlePay = wallets.googlePay;
-      walletConfig.payPal = wallets.payPal;
-      walletConfig.style = {
+    const walletConfig = {
+      applePay: wallets.applePay,
+      googlePay: wallets.googlePay,
+      payPal: wallets.payPal,
+      style: {
         theme: wallets.style.theme,
         type: wallets.style.type,
         height: wallets.style.height,
-      };
-    }
+      },
+    };
     
     return walletConfig;
   };
@@ -599,17 +595,6 @@ paymentElement.mount('#payment-element');`;
 
   const renderWalletSection = () => (
     <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1.5">Wallet Return URL</label>
-        <input 
-          type="text" 
-          value={wallets.walletReturnUrl} 
-          onChange={(e) => setWallets({...wallets, walletReturnUrl: e.target.value})} 
-          placeholder="https://your-site.com/return"
-          className="w-full px-3 py-2 border rounded-lg text-sm"
-        />
-      </div>
-      
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium text-gray-600 mb-1.5">Apple Pay</label>

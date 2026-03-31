@@ -283,70 +283,71 @@ const ThreeDSDecisionManager = () => {
   };
 
   return (
-    <div className="w-full space-y-6">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-4 border-b border-gray-200 bg-gray-50 rounded-t-lg">
-          <h2 className="text-lg font-semibold text-gray-900">Rule Assignment Template</h2>
-          <p className="text-sm text-gray-600">Define rules to determine 3DS authentication requirements</p>
-        </div>
-        
-        <div className="p-6 space-y-4">
-          {rules.map((rule, index) => {
-            const isEvaluating = evaluatingRuleId === rule.id;
-            const isMatched = matchedRuleId === rule.id;
-            
-            return (
-              <div 
-                key={rule.id} 
-                className={`bg-white rounded-lg border-2 transition-all ${
-                  isEvaluating ? 'border-blue-500 shadow-lg ring-2 ring-blue-200' : 
-                  isMatched ? 'border-green-500 bg-green-50' : 
-                  'border-gray-200'
-                }`}
-              >
+    <div className="w-full h-full">
+      <div className="grid grid-cols-2 gap-6 h-full">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col">
+          <div className="p-4 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+            <h2 className="text-lg font-semibold text-gray-900">Rule Assignment Template</h2>
+            <p className="text-sm text-gray-600">Define rules to determine 3DS authentication requirements</p>
+          </div>
+          
+          <div className="p-6 space-y-4 overflow-y-auto flex-1">
+            {rules.map((rule, index) => {
+              const isEvaluating = evaluatingRuleId === rule.id;
+              const isMatched = matchedRuleId === rule.id;
+              
+              return (
                 <div 
-                  className="flex items-center justify-between px-4 py-3 cursor-pointer"
-                  onClick={() => !isRunning && toggleRuleExpanded(rule.id)}
+                  key={rule.id} 
+                  className={`bg-white rounded-lg border-2 transition-all ${
+                    isEvaluating ? 'border-blue-500 shadow-lg ring-2 ring-blue-200' : 
+                    isMatched ? 'border-green-500 bg-green-50' : 
+                    'border-gray-200'
+                  }`}
                 >
-                  <div className="flex items-center gap-3">
-                    {isEvaluating && <RotateCcw className="w-5 h-5 text-blue-500 animate-spin" />}
-                    {isMatched && <CheckCircle className="w-5 h-5 text-green-500" />}
-                    {!isEvaluating && !isMatched && <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium">{index + 1}</div>}
-                    <span className="text-sm font-medium text-gray-700">{rule.name}</span>
+                  <div 
+                    className="flex items-center justify-between px-4 py-3 cursor-pointer"
+                    onClick={() => !isRunning && toggleRuleExpanded(rule.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      {isEvaluating && <RotateCcw className="w-5 h-5 text-blue-500 animate-spin" />}
+                      {isMatched && <CheckCircle className="w-5 h-5 text-green-500" />}
+                      {!isEvaluating && !isMatched && <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium">{index + 1}</div>}
+                      <span className="text-sm font-medium text-gray-700">{rule.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); !isRunning && removeRule(rule.id); }}
+                        className="p-1 hover:bg-red-100 rounded text-red-500"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <button className="p-1 hover:bg-gray-200 rounded">
+                        {rule.expanded ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); !isRunning && removeRule(rule.id); }}
-                      className="p-1 hover:bg-red-100 rounded text-red-500"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                    <button className="p-1 hover:bg-gray-200 rounded">
-                      {rule.expanded ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
-                    </button>
-                  </div>
-                </div>
-                
-                {rule.expanded && (
-                  <div className="px-4 pb-4 space-y-3">
-                    {rule.conditions.map((condition, idx) => (
-                      <div key={condition.id} className="flex items-center gap-2">
-                        {idx > 0 && (
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => updateCondition(rule.id, condition.id, { logicalOperator: condition.logicalOperator === 'AND' ? 'OR' : 'AND' })}
-                              className={`px-2 py-1 rounded text-xs font-medium ${condition.logicalOperator === 'AND' ? 'text-blue-600 bg-blue-50' : 'text-gray-600 bg-gray-100'}`}
-                            >
-                              AND
-                            </button>
-                            <button
-                              onClick={() => updateCondition(rule.id, condition.id, { logicalOperator: condition.logicalOperator === 'OR' ? 'AND' : 'OR' })}
-                              className={`px-2 py-1 rounded text-xs font-medium ${condition.logicalOperator === 'OR' ? 'text-blue-600 bg-blue-50' : 'text-gray-600 bg-gray-100'}`}
-                            >
-                              OR
-                            </button>
-                          </div>
-                        )}
+                  
+                  {rule.expanded && (
+                    <div className="px-4 pb-4 space-y-3">
+                      {rule.conditions.map((condition, idx) => (
+                        <div key={condition.id} className="flex items-center gap-2">
+                          {idx > 0 && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => updateCondition(rule.id, condition.id, { logicalOperator: condition.logicalOperator === 'AND' ? 'OR' : 'AND' })}
+                                className={`px-2 py-1 rounded text-xs font-medium ${condition.logicalOperator === 'AND' ? 'text-blue-600 bg-blue-50' : 'text-gray-600 bg-gray-100'}`}
+                              >
+                                AND
+                              </button>
+                              <button
+                                onClick={() => updateCondition(rule.id, condition.id, { logicalOperator: condition.logicalOperator === 'OR' ? 'AND' : 'OR' })}
+                                className={`px-2 py-1 rounded text-xs font-medium ${condition.logicalOperator === 'OR' ? 'text-blue-600 bg-blue-50' : 'text-gray-600 bg-gray-100'}`}
+                              >
+                                OR
+                              </button>
+                            </div>
+                          )}
 
                         <div className="relative">
                           <button
@@ -467,55 +468,61 @@ const ThreeDSDecisionManager = () => {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <button
-          onClick={runScenario}
-          disabled={isRunning}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium disabled:opacity-50"
-        >
-          {isRunning ? <RotateCcw className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />}
-          Run Scenario {currentScenario + 1}/{SIMULATION_SCENARIOS.length}
-        </button>
-        {simulationResults.length > 0 && (
-          <button onClick={resetAll} className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1">
-            <RotateCcw className="w-4 h-4" /> Reset All
-          </button>
-        )}
-      </div>
+      <div className="flex flex-col gap-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Simulation</h3>
+          
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              onClick={runScenario}
+              disabled={isRunning}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium disabled:opacity-50"
+            >
+              {isRunning ? <RotateCcw className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />}
+              Run Scenario {currentScenario + 1}/{SIMULATION_SCENARIOS.length}
+            </button>
+            {simulationResults.length > 0 && (
+              <button onClick={resetAll} className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1">
+                <RotateCcw className="w-4 h-4" /> Reset All
+              </button>
+            )}
+          </div>
 
-      {simulationResults.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">Simulation Results</h3>
-          {simulationResults.map((result, idx) => (
-            <div key={idx} className="bg-gray-50 rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium text-gray-900">{result.scenario.name}</h4>
-                <span className="text-sm text-gray-500">Scenario {SIMULATION_SCENARIOS.findIndex(s => s.id === result.scenario.id) + 1}</span>
-              </div>
-              
-              <div className="bg-blue-50 rounded-lg border border-blue-200 p-3 mb-3">
-                <div className="flex items-center gap-6 text-sm">
-                  <div><span className="text-gray-500">Amount:</span> <span className="font-medium">${result.scenario.transaction.amount / 100}</span></div>
-                  <div><span className="text-gray-500">Card:</span> <span className="font-medium">{result.scenario.transaction.card_network}</span></div>
-                  <div><span className="text-gray-500">Country:</span> <span className="font-medium">{result.scenario.transaction.issuer_country}</span></div>
-                </div>
-              </div>
+          {simulationResults.length > 0 && (
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Results</h4>
+              {simulationResults.map((result, idx) => (
+                <div key={idx} className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h5 className="font-medium text-gray-900">{result.scenario.name}</h5>
+                    <span className="text-sm text-gray-500">Scenario {SIMULATION_SCENARIOS.findIndex(s => s.id === result.scenario.id) + 1}</span>
+                  </div>
+                  
+                  <div className="bg-blue-50 rounded-lg border border-blue-200 p-3 mb-3">
+                    <div className="flex items-center gap-6 text-sm">
+                      <div><span className="text-gray-500">Amount:</span> <span className="font-medium">${result.scenario.transaction.amount / 100}</span></div>
+                      <div><span className="text-gray-500">Card:</span> <span className="font-medium">{result.scenario.transaction.card_network}</span></div>
+                      <div><span className="text-gray-500">Country:</span> <span className="font-medium">{result.scenario.transaction.issuer_country}</span></div>
+                    </div>
+                  </div>
 
-              <div className={`rounded-lg border-2 p-3 ${result.matchedRule ? 'border-amber-500 bg-amber-50' : 'border-green-500 bg-green-50'}`}>
-                <div className="flex items-center gap-3">
-                  {result.matchedRule ? <ShieldAlert className="w-6 h-6 text-amber-500" /> : <ShieldCheck className="w-6 h-6 text-green-500" />}
-                  <div>
-                    <p className="font-semibold text-gray-900">{getDecisionDetails(result.decision).label}</p>
-                    <p className="text-sm text-gray-600">
-                      {result.matchedRule ? `Matched: ${result.matchedRule.name}` : 'No rules matched - default applied'}
-                    </p>
+                  <div className={`rounded-lg border-2 p-3 ${result.matchedRule ? 'border-amber-500 bg-amber-50' : 'border-green-500 bg-green-50'}`}>
+                    <div className="flex items-center gap-3">
+                      {result.matchedRule ? <ShieldAlert className="w-6 h-6 text-amber-500" /> : <ShieldCheck className="w-6 h-6 text-green-500" />}
+                      <div>
+                        <p className="font-semibold text-gray-900">{getDecisionDetails(result.decision).label}</p>
+                        <p className="text-sm text-gray-600">
+                          {result.matchedRule ? `Matched: ${result.matchedRule.name}` : 'No rules matched - default applied'}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
-      )}
+      </div>
 
       {(showFieldDropdown || showOperatorDropdown || showDecisionDropdown) && (
         <div className="fixed inset-0 z-40" onClick={() => { setShowFieldDropdown(null); setShowOperatorDropdown(null); setShowDecisionDropdown(null); }} />
