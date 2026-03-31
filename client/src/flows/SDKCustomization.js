@@ -27,6 +27,7 @@ const SDKCustomization = () => {
     radios: true,
     spacedAccordionItems: false,
   });
+  const [paymentMethodsArrangementForTabs, setPaymentMethodsArrangementForTabs] = useState('default');
   const [wallets, setWallets] = useState({
     walletReturnUrl: 'https://juspay.github.io/hyperswitch-demo-app',
     applePay: 'auto',
@@ -162,7 +163,6 @@ const SDKCustomization = () => {
     button: false,
     language: false,
     more: false,
-    terms: false,
     rules: false,
   });
 
@@ -347,6 +347,10 @@ const SDKCustomization = () => {
       spacedAccordionItems: layout.spacedAccordionItems,
     };
 
+    if (layout.type === 'tabs' && paymentMethodsArrangementForTabs !== 'default') {
+      layoutConfig.paymentMethodsArrangementForTabs = paymentMethodsArrangementForTabs;
+    }
+
     return layoutConfig;
   };
 
@@ -389,10 +393,14 @@ const SDKCustomization = () => {
     if (moreConfig.readOnly) options.readOnly = true;
     if (moreConfig.showShortSurchargeMessage) options.showShortSurchargeMessage = true;
 
-    options.terms = terms;
-
     if (paymentMethodOrder && paymentMethodOrder.trim() !== '') {
-      options.paymentMethodOrder = paymentMethodOrder.split(',').map(s => s.trim()).filter(s => s !== '');
+      const orderList = paymentMethodOrder.split(',').map(s => s.trim()).filter(s => s !== '');
+      const cardIndex = orderList.indexOf('card');
+      if (cardIndex > 0) {
+        orderList.splice(cardIndex, 1);
+        orderList.unshift('card');
+      }
+      options.paymentMethodOrder = orderList;
     }
 
     const activeRules = Object.entries(rules).reduce((acc, [selector, styles]) => {
@@ -433,9 +441,9 @@ const SDKCustomization = () => {
       paymentEl.destroy();
     };
   }, [
-    hyper, clientSecret, locale, layout,
+    hyper, clientSecret, locale, layout, paymentMethodsArrangementForTabs,
     wallets, appearanceVars, buttonVars,
-    moreConfig, terms, paymentMethodOrder, rules
+    moreConfig, paymentMethodOrder, rules
   ]);
 
   const toggleSection = (section) => {
@@ -518,6 +526,20 @@ paymentElement.mount('#payment-element');`;
           >Tabs</button>
         </div>
       </div>
+      
+      {layout.type === 'tabs' && (
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-1.5">Arrangement</label>
+          <select 
+            value={paymentMethodsArrangementForTabs} 
+            onChange={(e) => setPaymentMethodsArrangementForTabs(e.target.value)}
+            className="w-full px-3 py-2 border rounded-lg text-sm"
+          >
+            <option value="default">Default (dropdown for excess)</option>
+            <option value="grid">Grid (show all)</option>
+          </select>
+        </div>
+      )}
       
       <div className="space-y-2">
         <label className="flex items-center justify-between py-1.5">
@@ -998,10 +1020,10 @@ paymentElement.mount('#payment-element');`;
           type="text" 
           value={paymentMethodOrder} 
           onChange={(e) => setPaymentMethodOrder(e.target.value)}
-          placeholder="card, ideal, sepaDebit, sofort, bancontact"
+          placeholder='card, ideal, sepaDebit, sofort, bancontact'
           className="w-full px-3 py-2 border rounded-lg text-sm"
         />
-        <p className="text-sm text-gray-500 mt-1">Comma-separated list (camelCase format: sepaDebit, auBecsDebit, usBankAccount)</p>
+        <p className="text-sm text-gray-500 mt-1">Comma-separated list without quotes. Card must be first. Example: card, klarna, affirm</p>
       </div>
       
       <div className="space-y-2 pt-2 border-t">
@@ -1195,15 +1217,6 @@ paymentElement.mount('#payment-element');`;
               {expandedSections.more && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                   {renderMoreSection()}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <SectionHeader title="Terms" icon={Type} section="terms" />
-              {expandedSections.terms && (
-                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                  {renderTermsSection()}
                 </div>
               )}
             </div>
