@@ -19,6 +19,7 @@ const SDKCustomization = () => {
   const [error, setError] = useState(null);
   const [showCode, setShowCode] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [sdkErrorLog, setSdkErrorLog] = useState([]);
 
   const [layout, setLayout] = useState({
     type: 'tabs',
@@ -26,13 +27,11 @@ const SDKCustomization = () => {
     radios: true,
     spacedAccordionItems: false,
   });
-  const [paymentMethodsArrangementForTabs, setPaymentMethodsArrangementForTabs] = useState('default');
   const [wallets, setWallets] = useState({
     walletReturnUrl: 'https://juspay.github.io/hyperswitch-demo-app',
     applePay: 'auto',
     googlePay: 'auto',
     payPal: 'auto',
-    klarna: 'never',
     style: {
       theme: 'light',
       type: 'default',
@@ -91,7 +90,6 @@ const SDKCustomization = () => {
     branding: 'always',
     paymentMethodsHeaderText: '',
     savedPaymentMethodsHeaderText: '',
-    customMessageForCardTerms: '',
     hideCardNicknameField: false,
     hideExpiredPaymentMethods: false,
     displaySavedPaymentMethods: true,
@@ -99,7 +97,6 @@ const SDKCustomization = () => {
     savedPaymentMethodsCheckboxCheckedByDefault: false,
     readOnly: false,
     showShortSurchargeMessage: false,
-    businessName: '',
   });
 
   const [terms, setTerms] = useState({
@@ -108,6 +105,13 @@ const SDKCustomization = () => {
     sofort: 'auto',
     bancontact: 'auto',
   });
+
+  const availableTerms = [
+    { key: 'card', label: 'Card' },
+    { key: 'ideal', label: 'iDEAL' },
+    { key: 'sofort', label: 'Sofort' },
+    { key: 'bancontact', label: 'Bancontact' },
+  ];
 
   const [paymentMethodOrder, setPaymentMethodOrder] = useState('card, ideal, sepaDebit, sofort, bancontact');
 
@@ -354,8 +358,11 @@ const SDKCustomization = () => {
       walletConfig.applePay = wallets.applePay;
       walletConfig.googlePay = wallets.googlePay;
       walletConfig.payPal = wallets.payPal;
-      walletConfig.klarna = wallets.klarna;
-      walletConfig.style = wallets.style;
+      walletConfig.style = {
+        theme: wallets.style.theme,
+        type: wallets.style.type,
+        height: wallets.style.height,
+      };
     }
     
     return walletConfig;
@@ -426,7 +433,7 @@ const SDKCustomization = () => {
       paymentEl.destroy();
     };
   }, [
-    hyper, clientSecret, locale, layout, paymentMethodsArrangementForTabs,
+    hyper, clientSecret, locale, layout,
     wallets, appearanceVars, buttonVars,
     moreConfig, terms, paymentMethodOrder, rules
   ]);
@@ -483,7 +490,7 @@ const paymentElement = elements.create('payment', ${JSON.stringify(options, null
 paymentElement.mount('#payment-element');`;
   };
 
-  const SectionHeader = ({ title, icon: Icon, section, count }) => (
+  const SectionHeader = ({ title, icon: Icon, section }) => (
     <button
       onClick={() => toggleSection(section)}
       className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
@@ -491,7 +498,6 @@ paymentElement.mount('#payment-element');`;
       <div className="flex items-center gap-2">
         <Icon size={18} className="text-gray-600" />
         <span className="font-medium text-base">{title}</span>
-        {count > 0 && <span className="text-sm text-gray-500">({count} options)</span>}
       </div>
       {expandedSections[section] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
     </button>
@@ -512,20 +518,6 @@ paymentElement.mount('#payment-element');`;
           >Tabs</button>
         </div>
       </div>
-      
-      {layout.type === 'tabs' && (
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">Arrangement</label>
-          <select 
-            value={paymentMethodsArrangementForTabs} 
-            onChange={(e) => setPaymentMethodsArrangementForTabs(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-          >
-            <option value="default">Default (dropdown for excess)</option>
-            <option value="grid">Grid (show all)</option>
-          </select>
-        </div>
-      )}
       
       <div className="space-y-2">
         <label className="flex items-center justify-between py-1.5">
@@ -606,17 +598,6 @@ paymentElement.mount('#payment-element');`;
             <option value="never">Never</option>
           </select>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">Klarna</label>
-          <select 
-            value={wallets.klarna} 
-            onChange={(e) => setWallets({...wallets, klarna: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-          >
-            <option value="auto">Auto</option>
-            <option value="never">Never</option>
-          </select>
-        </div>
       </div>
       
       <div className="border-t pt-3">
@@ -650,15 +631,6 @@ paymentElement.mount('#payment-element');`;
               type="number" 
               value={wallets.style.height} 
               onChange={(e) => setWallets({...wallets, style: {...wallets.style, height: parseInt(e.target.value) || 0}})}
-              className="w-full px-3 py-2 border rounded-lg text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-500 mb-1">Button Radius</label>
-            <input 
-              type="number" 
-              value={wallets.style.buttonRadius} 
-              onChange={(e) => setWallets({...wallets, style: {...wallets.style, buttonRadius: parseInt(e.target.value) || 0}})}
               className="w-full px-3 py-2 border rounded-lg text-sm"
             />
           </div>
@@ -1021,37 +993,15 @@ paymentElement.mount('#payment-element');`;
       </div>
       
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1.5">Custom Card Terms</label>
-        <textarea 
-          value={moreConfig.customMessageForCardTerms} 
-          onChange={(e) => setMoreConfig({...moreConfig, customMessageForCardTerms: e.target.value})}
-          placeholder="Custom message for card terms..."
-          rows="2"
-          className="w-full px-3 py-2 border rounded-lg text-sm resize-none"
-        />
-      </div>
-      
-      <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1.5">Business Name</label>
-        <input 
-          type="text" 
-          value={moreConfig.businessName} 
-          onChange={(e) => setMoreConfig({...moreConfig, businessName: e.target.value})}
-          placeholder="Your Business Name"
-          className="w-full px-3 py-2 border rounded-lg text-sm"
-        />
-      </div>
-      
-      <div>
         <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Method Order</label>
         <input 
           type="text" 
           value={paymentMethodOrder} 
           onChange={(e) => setPaymentMethodOrder(e.target.value)}
-          placeholder="card, ideal, sepa_debit, sofort"
+          placeholder="card, ideal, sepaDebit, sofort, bancontact"
           className="w-full px-3 py-2 border rounded-lg text-sm"
         />
-        <p className="text-sm text-gray-500 mt-1">Comma-separated list</p>
+        <p className="text-sm text-gray-500 mt-1">Comma-separated list (camelCase format: sepaDebit, auBecsDebit, usBankAccount)</p>
       </div>
       
       <div className="space-y-2 pt-2 border-t">
@@ -1196,7 +1146,7 @@ paymentElement.mount('#payment-element');`;
           
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
             <div>
-              <SectionHeader title="Layout" icon={Layout} section="layout" count={5} />
+              <SectionHeader title="Layout" icon={Layout} section="layout" />
               {expandedSections.layout && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                   {renderLayoutSection()}
@@ -1205,7 +1155,7 @@ paymentElement.mount('#payment-element');`;
             </div>
 
             <div>
-              <SectionHeader title="Wallets" icon={Wallet} section="wallets" count={9} />
+              <SectionHeader title="Wallets" icon={Wallet} section="wallets" />
               {expandedSections.wallets && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                   {renderWalletSection()}
@@ -1214,7 +1164,7 @@ paymentElement.mount('#payment-element');`;
             </div>
 
             <div>
-              <SectionHeader title="Appearance" icon={Palette} section="appearance" count={27} />
+              <SectionHeader title="Appearance" icon={Palette} section="appearance" />
               {expandedSections.appearance && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                   {renderAppearanceSection()}
@@ -1223,7 +1173,7 @@ paymentElement.mount('#payment-element');`;
             </div>
 
             <div>
-              <SectionHeader title="Confirm Button" icon={CreditCard} section="button" count={9} />
+              <SectionHeader title="Confirm Button" icon={CreditCard} section="button" />
               {expandedSections.button && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                   {renderButtonSection()}
@@ -1232,7 +1182,7 @@ paymentElement.mount('#payment-element');`;
             </div>
 
             <div>
-              <SectionHeader title="Language" icon={Languages} section="language" count={18} />
+              <SectionHeader title="Language" icon={Languages} section="language" />
               {expandedSections.language && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                   {renderLanguageSection()}
@@ -1241,7 +1191,7 @@ paymentElement.mount('#payment-element');`;
             </div>
 
             <div>
-              <SectionHeader title="More Configurations" icon={Settings} section="more" count={14} />
+              <SectionHeader title="More Configurations" icon={Settings} section="more" />
               {expandedSections.more && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                   {renderMoreSection()}
@@ -1250,7 +1200,7 @@ paymentElement.mount('#payment-element');`;
             </div>
 
             <div>
-              <SectionHeader title="Terms" icon={Type} section="terms" count={7} />
+              <SectionHeader title="Terms" icon={Type} section="terms" />
               {expandedSections.terms && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                   {renderTermsSection()}
@@ -1259,7 +1209,7 @@ paymentElement.mount('#payment-element');`;
             </div>
 
             <div>
-              <SectionHeader title="CSS Rules" icon={Code} section="rules" count={9} />
+              <SectionHeader title="CSS Rules" icon={Code} section="rules" />
               {expandedSections.rules && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                   {renderRulesSection()}

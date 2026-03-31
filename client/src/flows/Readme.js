@@ -137,10 +137,10 @@ const Readme = () => {
     <div className="w-full">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
-          Hyperswitch Demo App
+          Hyperswitch Playground
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-400">
-          Explore 30+ payment flows across 11 categories. Click on any section below to get started.
+          Experience the core orchestration product features.
         </p>
       </div>
 

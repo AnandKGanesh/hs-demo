@@ -189,10 +189,10 @@ const OrganizationManager = () => {
           <div className="w-0.5 h-6 bg-gray-300"></div>
           
           <div className="relative w-full min-w-max">
-            <div className="absolute top-0 left-0 right-0 h-3">
-              <div className="absolute top-0 left-[30%] right-[40%] h-0.5 bg-gray-300"></div>
-              <div className="absolute top-0 left-[30%] w-0.5 h-3 bg-gray-300"></div>
-              <div className="absolute top-0 right-[40%] w-0.5 h-3 bg-gray-300"></div>
+            <div className="absolute top-0 left-0 right-0 h-4">
+              <div className="absolute top-0 left-[25%] right-[35%] h-0.5 bg-gray-300"></div>
+              <div className="absolute top-0 left-[25%] w-0.5 h-4 bg-gray-300"></div>
+              <div className="absolute top-0 right-[35%] w-0.5 h-4 bg-gray-300"></div>
             </div>
           </div>
 
@@ -203,33 +203,33 @@ const OrganizationManager = () => {
               </h4>
               
               <div className="flex flex-col gap-6">
-                <div className="flex justify-center gap-6">
+                <div className="flex justify-center gap-8">
                   <div 
-                    className="bg-cyan-100 border-2 border-cyan-400 rounded-full px-8 py-3 cursor-pointer hover:ring-4 hover:ring-cyan-200 transition-all"
+                    className="bg-cyan-100 border-2 border-cyan-400 rounded-full px-10 py-4 cursor-pointer hover:ring-4 hover:ring-cyan-200 transition-all"
                     onMouseEnter={() => handleMouseEnter('sharedCustomers')}
                     onMouseLeave={handleMouseLeave}
                   >
                     <div className="flex items-center gap-2 text-cyan-900 font-semibold text-sm">
-                      <User size={14} />
+                      <User size={16} />
                       <span>Customers</span>
                     </div>
                   </div>
                   <div 
-                    className="bg-cyan-100 border-2 border-cyan-400 rounded-full px-8 py-3 cursor-pointer hover:ring-4 hover:ring-cyan-200 transition-all"
+                    className="bg-cyan-100 border-2 border-cyan-400 rounded-full px-10 py-4 cursor-pointer hover:ring-4 hover:ring-cyan-200 transition-all"
                     onMouseEnter={() => handleMouseEnter('sharedCardvault')}
                     onMouseLeave={handleMouseLeave}
                   >
                     <div className="flex items-center gap-2 text-cyan-900 font-semibold text-sm">
-                      <CreditCard size={14} />
+                      <CreditCard size={16} />
                       <span>Cardvault</span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex justify-center gap-3 overflow-x-auto pb-2">
-                  <div className="flex flex-col items-center gap-1 w-36 shrink-0">
+                <div className="flex justify-center gap-5 overflow-x-auto pb-2">
+                  <div className="flex flex-col items-center gap-1 w-44 shrink-0">
                     <div 
-                      className="bg-teal-100 border border-teal-300 rounded-lg p-2 w-full h-full cursor-pointer hover:ring-4 hover:ring-teal-200 transition-all"
+                      className="bg-teal-100 border border-teal-300 rounded-lg p-3 w-full h-full cursor-pointer hover:ring-4 hover:ring-teal-200 transition-all"
                       onMouseEnter={() => handleMouseEnter('platformMerchant')}
                       onMouseLeave={handleMouseLeave}
                     >
@@ -238,13 +238,13 @@ const OrganizationManager = () => {
                         <div className="flex items-center gap-0.5"><Settings size={8} /><span>API key</span></div>
                       </div>
                     </div>
-                    <div className="w-0.5 h-3"></div>
+                    <div className="w-0.5 h-4"></div>
                     <div className="w-full h-[60px]"></div>
                   </div>
-                  
-                  <div className="flex flex-col items-center gap-1 w-36 shrink-0">
+
+                  <div className="flex flex-col items-center gap-1 w-44 shrink-0">
                     <div 
-                      className="bg-blue-100 border border-blue-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
+                      className="bg-blue-100 border border-blue-300 rounded-lg p-3 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
                       onMouseEnter={() => handleMouseEnter('connectedMerchant')}
                       onMouseLeave={handleMouseLeave}
                     >
@@ -253,9 +253,9 @@ const OrganizationManager = () => {
                         <div className="flex items-center gap-0.5"><Settings size={8} /><span>API key</span></div>
                       </div>
                     </div>
-                    <div className="w-0.5 h-3 bg-gray-300"></div>
+                    <div className="w-0.5 h-4 bg-gray-300"></div>
                     <div 
-                      className="bg-purple-100 border border-purple-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
+                      className="bg-purple-100 border border-purple-300 rounded-lg p-3 w-full cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
                       onMouseEnter={() => handleMouseEnter('profile')}
                       onMouseLeave={handleMouseLeave}
                     >
@@ -266,10 +266,10 @@ const OrganizationManager = () => {
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="flex flex-col items-center gap-1 w-36 shrink-0">
+
+                  <div className="flex flex-col items-center gap-1 w-44 shrink-0">
                     <div 
-                      className="bg-blue-100 border border-blue-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
+                      className="bg-blue-100 border border-blue-300 rounded-lg p-3 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
                       onMouseEnter={() => handleMouseEnter('connectedMerchant')}
                       onMouseLeave={handleMouseLeave}
                     >
@@ -278,10 +278,10 @@ const OrganizationManager = () => {
                         <div className="flex items-center gap-0.5"><Settings size={8} /><span>API key</span></div>
                       </div>
                     </div>
-                    <div className="w-0.5 h-3 bg-gray-300"></div>
+                    <div className="w-0.5 h-4 bg-gray-300"></div>
                     <div className="space-y-1 w-full">
                       <div 
-                        className="bg-purple-100 border border-purple-300 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
+                        className="bg-purple-100 border border-purple-300 rounded-lg p-3 cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
                         onMouseEnter={() => handleMouseEnter('profile')}
                         onMouseLeave={handleMouseLeave}
                       >
