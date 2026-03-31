@@ -3,14 +3,6 @@ import { CreditCard, Repeat, Shield, AlertTriangle, Database, ChevronRight, Lock
 
 const flowCategories = [
   {
-    id: 'readme',
-    name: 'Overview',
-    icon: null,
-    flows: [
-      { id: 'readme', name: 'Readme', description: 'Overview of all demo app sections' },
-    ],
-  },
-  {
     id: 'payment',
     name: 'Payment Flows',
     icon: CreditCard,
@@ -135,7 +127,6 @@ const Sidebar = ({ onFlowSelect, currentFlow }) => {
   const [expandedCategories, setExpandedCategories] = useState(() => {
     const currentCategory = currentFlow ? getCategoryForFlow(currentFlow.id) : null;
     return {
-      readme: currentCategory === 'readme',
       payment: currentCategory === 'payment',
       recurring: currentCategory === 'recurring',
       threeds: currentCategory === 'threeds',
@@ -180,6 +171,17 @@ const Sidebar = ({ onFlowSelect, currentFlow }) => {
   return (
     <aside className="fixed left-0 top-16 bottom-0 w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
       <div className="p-4">
+        <button
+          onClick={() => handleFlowClick({ id: 'readme', name: 'Readme' })}
+          className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm mb-4 transition-colors ${
+            currentFlow?.id === 'readme'
+              ? 'bg-primary text-white'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
+        >
+          <span className="font-medium">Readme</span>
+        </button>
+
         <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
           Flow Categories
         </h2>
