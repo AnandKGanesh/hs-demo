@@ -150,8 +150,8 @@ const OrganizationManager = () => {
                   ))}
                 </ul>
               ) : (
-                <div className="h-full flex items-center justify-center">
-                  <p className="text-sm text-slate-400 dark:text-slate-500 italic text-center">
+                <div className="h-full flex items-center">
+                  <p className="text-sm text-slate-400 dark:text-slate-500 italic text-left px-4 w-full">
                     Hover over any diagram element to see its definition and purpose.
                   </p>
                 </div>
@@ -227,7 +227,7 @@ const OrganizationManager = () => {
                 </div>
                 
                 <div className="flex justify-center gap-3 overflow-x-auto pb-2">
-                  <div className="flex flex-col items-center gap-1 w-28 shrink-0">
+                  <div className="flex flex-col items-center gap-1 w-36 shrink-0">
                     <div 
                       className="bg-teal-100 border border-teal-300 rounded-lg p-2 w-full h-full cursor-pointer hover:ring-4 hover:ring-teal-200 transition-all"
                       onMouseEnter={() => handleMouseEnter('platformMerchant')}
@@ -242,7 +242,7 @@ const OrganizationManager = () => {
                     <div className="w-full h-[60px]"></div>
                   </div>
                   
-                  <div className="flex flex-col items-center gap-1 w-28 shrink-0">
+                  <div className="flex flex-col items-center gap-1 w-36 shrink-0">
                     <div 
                       className="bg-blue-100 border border-blue-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
                       onMouseEnter={() => handleMouseEnter('connectedMerchant')}
@@ -267,7 +267,7 @@ const OrganizationManager = () => {
                     </div>
                   </div>
                   
-                  <div className="flex flex-col items-center gap-1 w-28 shrink-0">
+                  <div className="flex flex-col items-center gap-1 w-36 shrink-0">
                     <div 
                       className="bg-blue-100 border border-blue-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
                       onMouseEnter={() => handleMouseEnter('connectedMerchant')}
@@ -306,7 +306,7 @@ const OrganizationManager = () => {
                   </div>
                   
                   {merchants.shared.map((merchant) => (
-                    <div key={merchant.id} className="flex flex-col items-center gap-1 w-28 shrink-0">
+                    <div key={merchant.id} className="flex flex-col items-center gap-1 w-36 shrink-0">
                       <div 
                         className="bg-blue-100 border border-blue-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
                         onMouseEnter={() => handleMouseEnter('connectedMerchant')}
@@ -357,7 +357,7 @@ const OrganizationManager = () => {
                 </div>
                 
                 <div className="flex justify-center gap-3 overflow-x-auto pb-2">
-                  <div className="flex flex-col items-center gap-1 w-28 shrink-0">
+                  <div className="flex flex-col items-center gap-1 w-36 shrink-0">
                     <div 
                       className="bg-blue-100 border border-blue-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
                       onMouseEnter={() => handleMouseEnter('standardMerchant')}
@@ -397,7 +397,7 @@ const OrganizationManager = () => {
                     </div>
                   </div>
                   
-                  <div className="flex flex-col items-center gap-1 w-28 shrink-0">
+                  <div className="flex flex-col items-center gap-1 w-36 shrink-0">
                     <div 
                       className="bg-blue-100 border border-blue-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
                       onMouseEnter={() => handleMouseEnter('standardMerchant')}
@@ -438,7 +438,7 @@ const OrganizationManager = () => {
                   </div>
                   
                   {merchants.isolated.map((merchant) => (
-                    <div key={merchant.id} className="flex flex-col items-center gap-1 w-28 shrink-0">
+                    <div key={merchant.id} className="flex flex-col items-center gap-1 w-36 shrink-0">
                       <div 
                         className="bg-blue-100 border border-blue-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
                         onMouseEnter={() => handleMouseEnter('standardMerchant')}
