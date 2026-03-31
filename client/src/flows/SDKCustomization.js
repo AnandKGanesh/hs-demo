@@ -109,7 +109,7 @@ const SDKCustomization = () => {
     bancontact: 'auto',
   });
 
-  const [paymentMethodOrder, setPaymentMethodOrder] = useState('card, ideal, sepa_debit, sofort, bancontact');
+  const [paymentMethodOrder, setPaymentMethodOrder] = useState('card, ideal, sepaDebit, sofort, bancontact');
 
   const [rules, setRules] = useState({
     '.Tab--selected': {
@@ -374,7 +374,6 @@ const SDKCustomization = () => {
     if (moreConfig.branding !== 'always') options.branding = moreConfig.branding;
     if (moreConfig.paymentMethodsHeaderText) options.paymentMethodsHeaderText = moreConfig.paymentMethodsHeaderText;
     if (moreConfig.savedPaymentMethodsHeaderText) options.savedPaymentMethodsHeaderText = moreConfig.savedPaymentMethodsHeaderText;
-    if (moreConfig.customMessageForCardTerms) options.customMessageForCardTerms = moreConfig.customMessageForCardTerms;
     if (moreConfig.hideCardNicknameField) options.hideCardNicknameField = true;
     if (moreConfig.hideExpiredPaymentMethods) options.hideExpiredPaymentMethods = true;
     if (!moreConfig.displaySavedPaymentMethods) options.displaySavedPaymentMethods = false;
@@ -382,7 +381,6 @@ const SDKCustomization = () => {
     if (moreConfig.savedPaymentMethodsCheckboxCheckedByDefault) options.savedPaymentMethodsCheckboxCheckedByDefault = true;
     if (moreConfig.readOnly) options.readOnly = true;
     if (moreConfig.showShortSurchargeMessage) options.showShortSurchargeMessage = true;
-    if (moreConfig.businessName) options.business = { name: moreConfig.businessName };
 
     options.terms = terms;
 
@@ -843,39 +841,69 @@ paymentElement.mount('#payment-element');`;
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm text-gray-500 mb-1">Height</label>
-          <input 
-            type="text" 
-            value={buttonVars.buttonHeight} 
-            onChange={(e) => setButtonVars({...buttonVars, buttonHeight: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-          />
+          <div className="flex items-center">
+            <button
+              onClick={() => setButtonVars({...buttonVars, buttonHeight: (parseInt(buttonVars.buttonHeight) - 1) + 'px'})}
+              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+            >-</button>
+            <input
+              type="text"
+              value={buttonVars.buttonHeight}
+              onChange={(e) => setButtonVars({...buttonVars, buttonHeight: e.target.value})}
+              className="w-full px-2 py-2 border-y text-center text-sm"
+            />
+            <button
+              onClick={() => setButtonVars({...buttonVars, buttonHeight: (parseInt(buttonVars.buttonHeight) + 1) + 'px'})}
+              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+            >+</button>
+          </div>
         </div>
         <div>
           <label className="block text-sm text-gray-500 mb-1">Width</label>
-          <input 
-            type="text" 
-            value={buttonVars.buttonWidth} 
+          <input
+            type="text"
+            value={buttonVars.buttonWidth}
             onChange={(e) => setButtonVars({...buttonVars, buttonWidth: e.target.value})}
             className="w-full px-3 py-2 border rounded-lg text-sm"
           />
         </div>
         <div>
           <label className="block text-sm text-gray-500 mb-1">Border Radius</label>
-          <input 
-            type="text" 
-            value={buttonVars.buttonBorderRadius} 
-            onChange={(e) => setButtonVars({...buttonVars, buttonBorderRadius: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-          />
+          <div className="flex items-center">
+            <button
+              onClick={() => setButtonVars({...buttonVars, buttonBorderRadius: (parseInt(buttonVars.buttonBorderRadius) - 1) + 'px'})}
+              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+            >-</button>
+            <input
+              type="text"
+              value={buttonVars.buttonBorderRadius}
+              onChange={(e) => setButtonVars({...buttonVars, buttonBorderRadius: e.target.value})}
+              className="w-full px-2 py-2 border-y text-center text-sm"
+            />
+            <button
+              onClick={() => setButtonVars({...buttonVars, buttonBorderRadius: (parseInt(buttonVars.buttonBorderRadius) + 1) + 'px'})}
+              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+            >+</button>
+          </div>
         </div>
         <div>
           <label className="block text-sm text-gray-500 mb-1">Border Width</label>
-          <input 
-            type="text" 
-            value={buttonVars.buttonBorderWidth} 
-            onChange={(e) => setButtonVars({...buttonVars, buttonBorderWidth: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-          />
+          <div className="flex items-center">
+            <button
+              onClick={() => setButtonVars({...buttonVars, buttonBorderWidth: (parseInt(buttonVars.buttonBorderWidth) - 1) + 'px'})}
+              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+            >-</button>
+            <input
+              type="text"
+              value={buttonVars.buttonBorderWidth}
+              onChange={(e) => setButtonVars({...buttonVars, buttonBorderWidth: e.target.value})}
+              className="w-full px-2 py-2 border-y text-center text-sm"
+            />
+            <button
+              onClick={() => setButtonVars({...buttonVars, buttonBorderWidth: (parseInt(buttonVars.buttonBorderWidth) + 1) + 'px'})}
+              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+            >+</button>
+          </div>
         </div>
       </div>
       
@@ -900,21 +928,41 @@ paymentElement.mount('#payment-element');`;
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm text-gray-500 mb-1">Text Size</label>
-          <input 
-            type="text" 
-            value={buttonVars.buttonTextFontSize} 
-            onChange={(e) => setButtonVars({...buttonVars, buttonTextFontSize: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-          />
+          <div className="flex items-center">
+            <button
+              onClick={() => setButtonVars({...buttonVars, buttonTextFontSize: (parseInt(buttonVars.buttonTextFontSize) - 1) + 'px'})}
+              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+            >-</button>
+            <input
+              type="text"
+              value={buttonVars.buttonTextFontSize}
+              onChange={(e) => setButtonVars({...buttonVars, buttonTextFontSize: e.target.value})}
+              className="w-full px-2 py-2 border-y text-center text-sm"
+            />
+            <button
+              onClick={() => setButtonVars({...buttonVars, buttonTextFontSize: (parseInt(buttonVars.buttonTextFontSize) + 1) + 'px'})}
+              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+            >+</button>
+          </div>
         </div>
         <div>
           <label className="block text-sm text-gray-500 mb-1">Text Weight</label>
-          <input 
-            type="text" 
-            value={buttonVars.buttonTextFontWeight} 
-            onChange={(e) => setButtonVars({...buttonVars, buttonTextFontWeight: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
-          />
+          <div className="flex items-center">
+            <button
+              onClick={() => setButtonVars({...buttonVars, buttonTextFontWeight: (parseInt(buttonVars.buttonTextFontWeight) - 100).toString()})}
+              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+            >-</button>
+            <input
+              type="text"
+              value={buttonVars.buttonTextFontWeight}
+              onChange={(e) => setButtonVars({...buttonVars, buttonTextFontWeight: e.target.value})}
+              className="w-full px-2 py-2 border-y text-center text-sm"
+            />
+            <button
+              onClick={() => setButtonVars({...buttonVars, buttonTextFontWeight: (parseInt(buttonVars.buttonTextFontWeight) + 100).toString()})}
+              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+            >+</button>
+          </div>
         </div>
       </div>
     </div>

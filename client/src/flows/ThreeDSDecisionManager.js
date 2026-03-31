@@ -71,7 +71,7 @@ const SIMULATION_SCENARIOS = [
     transaction: { amount: 15000, currency: 'USD', card_network: 'Visa', issuer_country: 'US', customer_device_platform: 'Web' }
   },
   {
-    id: 'scenario-2', 
+    id: 'scenario-2',
     name: 'Low Value Transaction',
     description: 'Amount < $50 exempts from 3DS',
     transaction: { amount: 2500, currency: 'USD', card_network: 'Mastercard', issuer_country: 'US', customer_device_platform: 'Mobile' }
@@ -87,12 +87,6 @@ const SIMULATION_SCENARIOS = [
     name: 'Mobile UK Transaction',
     description: 'Mobile transactions from UK require 3DS',
     transaction: { amount: 10000, currency: 'GBP', card_network: 'Visa', issuer_country: 'GB', customer_device_platform: 'iOS' }
-  },
-  {
-    id: 'scenario-5',
-    name: 'Corporate Card',
-    description: 'Corporate Mastercard prefer 3DS',
-    transaction: { amount: 20000, currency: 'USD', card_network: 'Mastercard', issuer_country: 'CA', customer_device_platform: 'Web' }
   }
 ];
 
@@ -124,6 +118,17 @@ const ThreeDSDecisionManager = () => {
         { id: 'cond-2', field: 'issuer_country', operator: 'IS', value: 'GB', logicalOperator: 'AND' }
       ],
       decision: 'challenge_requested'
+    },
+    {
+      id: 'rule-4',
+      name: 'Corporate Card Rule',
+      expanded: false,
+      enabled: true,
+      conditions: [
+        { id: 'cond-1', field: 'card_network', operator: 'IS', value: 'Mastercard', logicalOperator: 'AND' },
+        { id: 'cond-2', field: 'amount', operator: 'GREATER_THAN', value: '15000', logicalOperator: 'AND' }
+      ],
+      decision: 'challenge_preferred'
     }
   ]);
   
@@ -236,39 +241,36 @@ const ThreeDSDecisionManager = () => {
     setIsRunning(true);
     setEvaluatingRuleId(null);
     setMatchedRuleId(null);
-    
+
+    const ruleIndex = currentScenario % rules.length;
+    const ruleToRun = rules[ruleIndex];
     const scenario = SIMULATION_SCENARIOS[currentScenario];
     const transaction = scenario.transaction;
-    
-    let matchedRule = null;
-    
-    for (let i = 0; i < rules.length; i++) {
-      const rule = rules[i];
-      setEvaluatingRuleId(rule.id);
-      
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      const isMatch = evaluateRule(rule, transaction);
-      
-      if (isMatch) {
-        matchedRule = rule;
-        setMatchedRuleId(rule.id);
-        break;
-      }
+
+    setRules(prev => prev.map(r => r.id === ruleToRun.id ? { ...r, expanded: true } : r));
+
+    setEvaluatingRuleId(ruleToRun.id);
+
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const isMatch = evaluateRule(ruleToRun, transaction);
+
+    if (isMatch) {
+      setMatchedRuleId(ruleToRun.id);
     }
-    
+
     setEvaluatingRuleId(null);
-    
+
     const result = {
       scenario: scenario,
-      matchedRule: matchedRule,
-      decision: matchedRule ? matchedRule.decision : 'no_three_ds'
+      matchedRule: isMatch ? ruleToRun : null,
+      decision: isMatch ? ruleToRun.decision : 'no_three_ds'
     };
-    
+
     setSimulationResults(prev => [...prev, result]);
-    
+
     setCurrentScenario((prev) => (prev + 1) % SIMULATION_SCENARIOS.length);
-    
+
     setIsRunning(false);
   };
 
