@@ -86,6 +86,30 @@ const SDKCustomization = () => {
   });
 
   const [locale, setLocale] = useState('auto');
+  const [currency, setCurrency] = useState('USD');
+
+  const currencies = [
+    { code: 'USD', name: 'US Dollar', symbol: '$' },
+    { code: 'EUR', name: 'Euro', symbol: '€' },
+    { code: 'GBP', name: 'British Pound', symbol: '£' },
+    { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
+    { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
+    { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
+    { code: 'CHF', name: 'Swiss Franc', symbol: 'Fr' },
+    { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
+    { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
+    { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$' },
+    { code: 'HKD', name: 'Hong Kong Dollar', symbol: 'HK$' },
+    { code: 'SEK', name: 'Swedish Krona', symbol: 'kr' },
+    { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr' },
+    { code: 'DKK', name: 'Danish Krone', symbol: 'kr' },
+    { code: 'PLN', name: 'Polish Złoty', symbol: 'zł' },
+    { code: 'MXN', name: 'Mexican Peso', symbol: '$' },
+    { code: 'BRL', name: 'Brazilian Real', symbol: 'R$' },
+    { code: 'ZAR', name: 'South African Rand', symbol: 'R' },
+    { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ' },
+    { code: 'SAR', name: 'Saudi Riyal', symbol: '﷼' },
+  ];
 
   const [moreConfig, setMoreConfig] = useState({
     branding: 'always',
@@ -160,7 +184,7 @@ const SDKCustomization = () => {
     layout: true,
     wallets: false,
     appearance: false,
-    button: false,
+    currency: false,
     language: false,
     more: false,
     rules: false,
@@ -220,7 +244,7 @@ const SDKCustomization = () => {
 
         const paymentData = {
           amount: 6500,
-          currency: 'USD',
+          currency: currency,
           confirm: false,
           customer_id: customerData.customer_id,
           profile_id: 'pro_1ZrfdulAlyqvRf0CCROa',
@@ -442,7 +466,7 @@ const SDKCustomization = () => {
     };
   }, [
     hyper, clientSecret, locale, layout, paymentMethodsArrangementForTabs,
-    wallets, appearanceVars, buttonVars,
+    wallets, appearanceVars, buttonVars, currency,
     moreConfig, paymentMethodOrder, rules
   ]);
 
@@ -962,6 +986,28 @@ paymentElement.mount('#payment-element');`;
     </div>
   );
 
+  const renderCurrencySection = () => (
+    <div className="space-y-3">
+      <div>
+        <label className="block text-sm font-medium text-gray-600 mb-1.5">Transaction Currency</label>
+        <select 
+          value={currency} 
+          onChange={(e) => setCurrency(e.target.value)}
+          className="w-full px-3 py-2 border rounded-lg text-sm"
+        >
+          {currencies.map(c => (
+            <option key={c.code} value={c.code}>
+              {c.code} - {c.name} ({c.symbol})
+            </option>
+          ))}
+        </select>
+        <p className="text-sm text-gray-500 mt-2">
+          Changing currency will reload the SDK with payment methods that support {currency}
+        </p>
+      </div>
+    </div>
+  );
+
   const renderLanguageSection = () => (
     <div>
       <label className="block text-sm font-medium text-gray-600 mb-1.5">Locale</label>
@@ -1072,24 +1118,6 @@ paymentElement.mount('#payment-element');`;
             className="w-4 h-4 rounded" 
           />
         </label>
-        <label className="flex items-center justify-between py-1">
-          <span className="text-sm">Read Only Mode</span>
-          <input 
-            type="checkbox" 
-            checked={moreConfig.readOnly} 
-            onChange={(e) => setMoreConfig({...moreConfig, readOnly: e.target.checked})}
-            className="w-4 h-4 rounded" 
-          />
-        </label>
-        <label className="flex items-center justify-between py-1">
-          <span className="text-sm">Short Surcharge Message</span>
-          <input 
-            type="checkbox" 
-            checked={moreConfig.showShortSurchargeMessage} 
-            onChange={(e) => setMoreConfig({...moreConfig, showShortSurchargeMessage: e.target.checked})}
-            className="w-4 h-4 rounded" 
-          />
-        </label>
       </div>
     </div>
   );
@@ -1195,10 +1223,10 @@ paymentElement.mount('#payment-element');`;
             </div>
 
             <div>
-              <SectionHeader title="Confirm Button" icon={CreditCard} section="button" />
-              {expandedSections.button && (
+              <SectionHeader title="Currency" icon={CreditCard} section="currency" />
+              {expandedSections.currency && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                  {renderButtonSection()}
+                  {renderCurrencySection()}
                 </div>
               )}
             </div>
