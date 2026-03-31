@@ -364,7 +364,7 @@ const SDKCustomization = () => {
     };
 
     initializeSDK();
-  }, [hyper, mode, debugCreds, setApiResponse]);
+  }, [hyper, mode, debugCreds, currency, setApiResponse]);
 
   const buildAppearance = () => {
     const vars = {};
@@ -1324,7 +1324,7 @@ paymentElement.mount('#payment-element');`;
                     disabled={isLoading}
                     className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
                   >
-                    Pay $65.00
+                    Pay {currencies.find(c => c.code === currency)?.symbol}${(6500 / 100).toFixed(2)}
                   </button>
                 )}
 
