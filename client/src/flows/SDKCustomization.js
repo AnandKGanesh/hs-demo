@@ -21,14 +21,14 @@ const SDKCustomization = () => {
   const [copied, setCopied] = useState(false);
 
   const [layout, setLayout] = useState({
-    type: 'accordion',
+    type: 'tabs',
     defaultCollapsed: false,
     radios: true,
     spacedAccordionItems: false,
   });
   const [paymentMethodsArrangementForTabs, setPaymentMethodsArrangementForTabs] = useState('default');
   const [wallets, setWallets] = useState({
-    walletReturnUrl: '',
+    walletReturnUrl: 'https://juspay.github.io/hyperswitch-demo-app',
     applePay: 'auto',
     googlePay: 'auto',
     payPal: 'auto',
@@ -394,8 +394,8 @@ const SDKCustomization = () => {
 
     options.terms = terms;
 
-    if (paymentMethodOrder) {
-      options.paymentMethodOrder = paymentMethodOrder.split(',').map(s => s.trim()).filter(Boolean);
+    if (paymentMethodOrder && paymentMethodOrder.trim() !== '') {
+      options.paymentMethodOrder = paymentMethodOrder.split(',').map(s => s.trim()).filter(s => s !== '');
     }
 
     const activeRules = Object.entries(rules).reduce((acc, [selector, styles]) => {
@@ -710,50 +710,98 @@ paymentElement.mount('#payment-element');`;
         <div className="space-y-2">
           <div>
             <label className="block text-sm text-gray-500 mb-1">Font Family</label>
-            <input 
-              type="text" 
-              value={appearanceVars.fontFamily} 
+            <select
+              value={appearanceVars.fontFamily}
               onChange={(e) => setAppearanceVars({...appearanceVars, fontFamily: e.target.value})}
-              placeholder="e.g., Inter, sans-serif"
               className="w-full px-3 py-2 border rounded-lg text-sm"
-            />
+            >
+              <option value="">System Default</option>
+              <option value="Inter, sans-serif">Inter</option>
+              <option value="Roboto, sans-serif">Roboto</option>
+              <option value="Open Sans, sans-serif">Open Sans</option>
+              <option value="Helvetica Neue, sans-serif">Helvetica Neue</option>
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Times New Roman, serif">Times New Roman</option>
+              <option value="Courier New, monospace">Courier New</option>
+            </select>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-sm text-gray-500 mb-1">Base Size</label>
-              <input 
-                type="text" 
-                value={appearanceVars.fontSizeBase} 
-                onChange={(e) => setAppearanceVars({...appearanceVars, fontSizeBase: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg text-sm"
-              />
+              <div className="flex items-center">
+                <button
+                  onClick={() => setAppearanceVars({...appearanceVars, fontSizeBase: (parseInt(appearanceVars.fontSizeBase) - 1) + 'px'})}
+                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+                >-</button>
+                <input
+                  type="text"
+                  value={appearanceVars.fontSizeBase}
+                  onChange={(e) => setAppearanceVars({...appearanceVars, fontSizeBase: e.target.value})}
+                  className="w-full px-2 py-2 border-y text-center text-sm"
+                />
+                <button
+                  onClick={() => setAppearanceVars({...appearanceVars, fontSizeBase: (parseInt(appearanceVars.fontSizeBase) + 1) + 'px'})}
+                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+                >+</button>
+              </div>
             </div>
             <div>
               <label className="block text-sm text-gray-500 mb-1">Border Radius</label>
-              <input 
-                type="text" 
-                value={appearanceVars.borderRadius} 
-                onChange={(e) => setAppearanceVars({...appearanceVars, borderRadius: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg text-sm"
-              />
+              <div className="flex items-center">
+                <button
+                  onClick={() => setAppearanceVars({...appearanceVars, borderRadius: (parseInt(appearanceVars.borderRadius) - 1) + 'px'})}
+                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+                >-</button>
+                <input
+                  type="text"
+                  value={appearanceVars.borderRadius}
+                  onChange={(e) => setAppearanceVars({...appearanceVars, borderRadius: e.target.value})}
+                  className="w-full px-2 py-2 border-y text-center text-sm"
+                />
+                <button
+                  onClick={() => setAppearanceVars({...appearanceVars, borderRadius: (parseInt(appearanceVars.borderRadius) + 1) + 'px'})}
+                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+                >+</button>
+              </div>
             </div>
             <div>
               <label className="block text-sm text-gray-500 mb-1">Spacing Unit</label>
-              <input 
-                type="text" 
-                value={appearanceVars.spacingUnit} 
-                onChange={(e) => setAppearanceVars({...appearanceVars, spacingUnit: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg text-sm"
-              />
+              <div className="flex items-center">
+                <button
+                  onClick={() => setAppearanceVars({...appearanceVars, spacingUnit: (parseInt(appearanceVars.spacingUnit) - 1) + 'px'})}
+                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+                >-</button>
+                <input
+                  type="text"
+                  value={appearanceVars.spacingUnit}
+                  onChange={(e) => setAppearanceVars({...appearanceVars, spacingUnit: e.target.value})}
+                  className="w-full px-2 py-2 border-y text-center text-sm"
+                />
+                <button
+                  onClick={() => setAppearanceVars({...appearanceVars, spacingUnit: (parseInt(appearanceVars.spacingUnit) + 1) + 'px'})}
+                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+                >+</button>
+              </div>
             </div>
             <div>
               <label className="block text-sm text-gray-500 mb-1">Line Height</label>
-              <input 
-                type="text" 
-                value={appearanceVars.fontLineHeight} 
-                onChange={(e) => setAppearanceVars({...appearanceVars, fontLineHeight: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg text-sm"
-              />
+              <div className="flex items-center">
+                <button
+                  onClick={() => setAppearanceVars({...appearanceVars, fontLineHeight: (parseFloat(appearanceVars.fontLineHeight) - 0.1).toFixed(1)})}
+                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+                >-</button>
+                <input
+                  type="text"
+                  value={appearanceVars.fontLineHeight}
+                  onChange={(e) => setAppearanceVars({...appearanceVars, fontLineHeight: e.target.value})}
+                  className="w-full px-2 py-2 border-y text-center text-sm"
+                />
+                <button
+                  onClick={() => setAppearanceVars({...appearanceVars, fontLineHeight: (parseFloat(appearanceVars.fontLineHeight) + 0.1).toFixed(1)})}
+                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+                >+</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1103,7 +1151,7 @@ paymentElement.mount('#payment-element');`;
               <Settings size={16} />
               SDK Customization
             </h2>
-            <p className="text-sm text-gray-500 mt-0.5">70+ options to customize your checkout</p>
+            <p className="text-sm text-gray-500 mt-0.5">100+ options to customize your checkout</p>
           </div>
           
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
