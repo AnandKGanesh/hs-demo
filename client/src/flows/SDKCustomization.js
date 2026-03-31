@@ -115,6 +115,46 @@ const SDKCustomization = () => {
 
   const [paymentMethodOrder, setPaymentMethodOrder] = useState('card, ideal, sepa_debit, sofort, bancontact');
 
+  const [rules, setRules] = useState({
+    '.Tab--selected': {
+      background: '',
+      color: '',
+      borderRadius: '',
+    },
+    '.Tab:hover': {
+      background: '',
+      color: '',
+    },
+    '.Input': {
+      borderColor: '',
+      borderRadius: '',
+    },
+    '.Input--invalid': {
+      borderColor: '',
+      boxShadow: '',
+    },
+    '.Input::placeholder': {
+      color: '',
+      fontSize: '',
+    },
+    '.Label': {
+      color: '',
+      fontSize: '',
+    },
+    '.Checkbox--checked': {
+      background: '',
+      borderColor: '',
+    },
+    '.OrPayUsingLabel': {
+      color: '',
+      fontSize: '',
+    },
+    '.TermsTextLabel': {
+      color: '',
+      fontSize: '',
+    },
+  });
+
   const [expandedSections, setExpandedSections] = useState({
     layout: true,
     wallets: false,
@@ -123,6 +163,7 @@ const SDKCustomization = () => {
     language: false,
     more: false,
     terms: false,
+    rules: false,
   });
 
   const locales = [
@@ -356,6 +397,22 @@ const SDKCustomization = () => {
     if (paymentMethodOrder) {
       options.paymentMethodOrder = paymentMethodOrder.split(',').map(s => s.trim()).filter(Boolean);
     }
+
+    const activeRules = Object.entries(rules).reduce((acc, [selector, styles]) => {
+      const activeStyles = Object.entries(styles).reduce((styleAcc, [prop, value]) => {
+        if (value && value.trim() !== '') {
+          styleAcc[prop] = value;
+        }
+        return styleAcc;
+      }, {});
+      if (Object.keys(activeStyles).length > 0) {
+        acc[selector] = activeStyles;
+      }
+      return acc;
+    }, {});
+    if (Object.keys(activeRules).length > 0) {
+      options.rules = activeRules;
+    }
     
     return options;
   };
@@ -381,7 +438,7 @@ const SDKCustomization = () => {
   }, [
     hyper, clientSecret, locale, layout, paymentMethodsArrangementForTabs,
     wallets, appearanceVars, buttonVars,
-    moreConfig, terms, paymentMethodOrder
+    moreConfig, terms, paymentMethodOrder, rules
   ]);
 
   const toggleSection = (section) => {
@@ -977,6 +1034,35 @@ paymentElement.mount('#payment-element');`;
     </div>
   );
 
+  const renderRulesSection = () => (
+    <div className="space-y-3">
+      <p className="text-sm text-gray-500 mb-2">Custom CSS rules for granular styling (CSS property names in camelCase)</p>
+      
+      {Object.entries(rules).map(([selector, styles]) => (
+        <div key={selector} className="border rounded-lg p-3 bg-white">
+          <p className="text-sm font-medium text-gray-700 mb-2">{selector}</p>
+          <div className="grid grid-cols-2 gap-2">
+            {Object.entries(styles).map(([prop, value]) => (
+              <div key={prop}>
+                <label className="block text-xs text-gray-500 mb-1">{prop}</label>
+                <input
+                  type="text"
+                  value={value}
+                  onChange={(e) => setRules({
+                    ...rules,
+                    [selector]: { ...styles, [prop]: e.target.value }
+                  })}
+                  placeholder="e.g., #0066FF"
+                  className="w-full px-2 py-1 border rounded text-sm"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   const renderTermsSection = () => (
     <div className="space-y-3">
       <p className="text-sm text-gray-500 mb-2">Configure when to display terms for each payment method</p>
@@ -1080,6 +1166,15 @@ paymentElement.mount('#payment-element');`;
               {expandedSections.terms && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                   {renderTermsSection()}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <SectionHeader title="CSS Rules" icon={Code} section="rules" count={9} />
+              {expandedSections.rules && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                  {renderRulesSection()}
                 </div>
               )}
             </div>
