@@ -3,6 +3,14 @@ import { CreditCard, Repeat, Shield, AlertTriangle, Database, ChevronRight, Lock
 
 const flowCategories = [
   {
+    id: 'readme',
+    name: 'Getting Started',
+    icon: null,
+    flows: [
+      { id: 'readme', name: 'Readme', description: 'Overview of all demo app sections' },
+    ],
+  },
+  {
     id: 'payment',
     name: 'Payment Flows',
     icon: CreditCard,
@@ -127,6 +135,7 @@ const Sidebar = ({ onFlowSelect, currentFlow }) => {
   const [expandedCategories, setExpandedCategories] = useState(() => {
     const currentCategory = currentFlow ? getCategoryForFlow(currentFlow.id) : null;
     return {
+      readme: currentCategory === 'readme',
       payment: currentCategory === 'payment',
       recurring: currentCategory === 'recurring',
       threeds: currentCategory === 'threeds',

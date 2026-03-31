@@ -5,6 +5,7 @@ import APIResponsePanel from './components/APIResponsePanel';
 import RecurringCharge from './flows/RecurringCharge';
 import RecurringChargeNTID from './flows/RecurringChargeNTID';
 import RecurringChargePSP from './flows/RecurringChargePSP';
+import Readme from './flows/Readme';
 import Import3DSResults from './flows/Import3DSResults';
 import Standalone3DS from './flows/Standalone3DS';
 import PaymentLinks from './flows/PaymentLinks';
@@ -40,6 +41,7 @@ const App = () => {
     if (flowId) {
       // Find the flow in sidebar data
       const allFlows = [
+        { id: 'readme', name: 'Readme', description: 'Overview of all demo app sections' },
         { id: 'automatic', name: 'Automatic Capture', description: 'Standard one-time payment' },
         { id: 'manual', name: 'Manual Capture', description: 'Authorize now, capture later' },
         { id: 'manual_partial', name: 'Manual Partial Capture', description: 'Capture $50 of $100 authorized' },
@@ -190,9 +192,11 @@ const App = () => {
 
   return (
     <Layout onFlowSelect={handleFlowSelect} currentFlow={currentFlow}>
-      {currentFlow?.id === 'organization_manager' || currentFlow?.id === 'decision_engine' || currentFlow?.id === 'sdk_customization' ? (
+      {currentFlow?.id === 'readme' || currentFlow?.id === 'organization_manager' || currentFlow?.id === 'decision_engine' || currentFlow?.id === 'sdk_customization' ? (
         <div className="w-full">
-          {currentFlow.id === 'organization_manager' ? (
+          {currentFlow.id === 'readme' ? (
+            <Readme key={currentFlow.id} />
+          ) : currentFlow.id === 'organization_manager' ? (
             <OrganizationManager key={currentFlow.id} />
           ) : currentFlow.id === 'decision_engine' ? (
             <DecisionEnginePlayground key={currentFlow.id} />
@@ -248,6 +252,8 @@ const App = () => {
                 <DecisionEnginePlayground key={currentFlow.id} />
               ) : currentFlow.id === 'sdk_customization' ? (
                 <SDKCustomization key={currentFlow.id} />
+              ) : currentFlow.id === 'readme' ? (
+                <Readme key={currentFlow.id} />
               ) : (
                 <PaymentForm key={currentFlow.id} flow={currentFlow} />
               )}
