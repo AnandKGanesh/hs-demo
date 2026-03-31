@@ -27,11 +27,6 @@ const SDKCustomization = () => {
     spacedAccordionItems: false,
   });
   const [paymentMethodsArrangementForTabs, setPaymentMethodsArrangementForTabs] = useState('default');
-  const [displayOneClickPaymentMethodsOnTop, setDisplayOneClickPaymentMethodsOnTop] = useState(true);
-  const [savedMethodCustomization, setSavedMethodCustomization] = useState({
-    groupingBehavior: 'groupByPaymentMethods',
-  });
-
   const [wallets, setWallets] = useState({
     walletReturnUrl: '',
     applePay: 'auto',
@@ -111,11 +106,11 @@ const SDKCustomization = () => {
   const [terms, setTerms] = useState({
     card: 'auto',
     ideal: 'auto',
-    sepaDebit: 'auto',
+    sepa_debit: 'auto',
     sofort: 'auto',
     bancontact: 'auto',
-    auBecsDebit: 'auto',
-    usBankAccount: 'auto',
+    au_becs_debit: 'auto',
+    us_bank_account: 'auto',
   });
 
   const [paymentMethodOrder, setPaymentMethodOrder] = useState('card, ideal, sepa_debit, sofort, bancontact');
@@ -309,13 +304,12 @@ const SDKCustomization = () => {
       defaultCollapsed: layout.defaultCollapsed,
       radios: layout.radios,
       spacedAccordionItems: layout.spacedAccordionItems,
-      displayOneClickPaymentMethodsOnTop: displayOneClickPaymentMethodsOnTop,
     };
-    
+
     if (layout.type === 'tabs') {
       layoutConfig.paymentMethodsArrangementForTabs = paymentMethodsArrangementForTabs;
     }
-    
+
     return layoutConfig;
   };
 
@@ -386,12 +380,19 @@ const SDKCustomization = () => {
     };
   }, [
     hyper, clientSecret, locale, layout, paymentMethodsArrangementForTabs,
-    displayOneClickPaymentMethodsOnTop, wallets, appearanceVars, buttonVars,
+    wallets, appearanceVars, buttonVars,
     moreConfig, terms, paymentMethodOrder
   ]);
 
   const toggleSection = (section) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+    setExpandedSections(prev => {
+      const isCurrentlyOpen = prev[section];
+      const allClosed = Object.keys(prev).reduce((acc, key) => {
+        acc[key] = false;
+        return acc;
+      }, {});
+      return { ...allClosed, [section]: !isCurrentlyOpen };
+    });
   };
 
   const copyCode = () => {
@@ -399,6 +400,26 @@ const SDKCustomization = () => {
     navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!hyper || !clientSecret) return;
+
+    try {
+      const { error: confirmError } = await hyper.confirmPayment({
+        elements: hyper.elements({ clientSecret }),
+        confirmParams: {
+          return_url: window.location.origin,
+        },
+      });
+
+      if (confirmError) {
+        throw new Error(confirmError.message);
+      }
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   const generateCode = () => {
@@ -422,8 +443,8 @@ paymentElement.mount('#payment-element');`;
     >
       <div className="flex items-center gap-2">
         <Icon size={18} className="text-gray-600" />
-        <span className="font-medium text-sm">{title}</span>
-        {count > 0 && <span className="text-xs text-gray-500">({count} options)</span>}
+        <span className="font-medium text-base">{title}</span>
+        {count > 0 && <span className="text-sm text-gray-500">({count} options)</span>}
       </div>
       {expandedSections[section] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
     </button>
@@ -432,26 +453,26 @@ paymentElement.mount('#payment-element');`;
   const renderLayoutSection = () => (
     <div className="space-y-4">
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1.5">Layout Type</label>
+        <label className="block text-sm font-medium text-gray-600 mb-1.5">Layout Type</label>
         <div className="flex gap-2">
           <button 
             onClick={() => setLayout({...layout, type: 'accordion'})} 
-            className={`flex-1 px-3 py-2 rounded-lg border text-xs font-medium ${layout.type === 'accordion' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white border-gray-300'}`}
+            className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium ${layout.type === 'accordion' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white border-gray-300'}`}
           >Accordion</button>
           <button 
             onClick={() => setLayout({...layout, type: 'tabs'})} 
-            className={`flex-1 px-3 py-2 rounded-lg border text-xs font-medium ${layout.type === 'tabs' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white border-gray-300'}`}
+            className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium ${layout.type === 'tabs' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white border-gray-300'}`}
           >Tabs</button>
         </div>
       </div>
       
       {layout.type === 'tabs' && (
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1.5">Arrangement</label>
+          <label className="block text-sm font-medium text-gray-600 mb-1.5">Arrangement</label>
           <select 
             value={paymentMethodsArrangementForTabs} 
             onChange={(e) => setPaymentMethodsArrangementForTabs(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg text-xs"
+            className="w-full px-3 py-2 border rounded-lg text-sm"
           >
             <option value="default">Default (dropdown for excess)</option>
             <option value="grid">Grid (show all)</option>
@@ -461,7 +482,7 @@ paymentElement.mount('#payment-element');`;
       
       <div className="space-y-2">
         <label className="flex items-center justify-between py-1.5">
-          <span className="text-xs">Default Collapsed</span>
+          <span className="text-sm">Default Collapsed</span>
           <input 
             type="checkbox" 
             checked={layout.defaultCollapsed} 
@@ -470,7 +491,7 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1.5">
-          <span className="text-xs">Show Radios</span>
+          <span className="text-sm">Show Radios</span>
           <input 
             type="checkbox" 
             checked={layout.radios} 
@@ -479,7 +500,7 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1.5">
-          <span className="text-xs">Spaced Items</span>
+          <span className="text-sm">Spaced Items</span>
           <input 
             type="checkbox" 
             checked={layout.spacedAccordionItems} 
@@ -487,27 +508,6 @@ paymentElement.mount('#payment-element');`;
             className="w-4 h-4 rounded" 
           />
         </label>
-        <label className="flex items-center justify-between py-1.5">
-          <span className="text-xs">One-Click on Top</span>
-          <input 
-            type="checkbox" 
-            checked={displayOneClickPaymentMethodsOnTop} 
-            onChange={(e) => setDisplayOneClickPaymentMethodsOnTop(e.target.checked)} 
-            className="w-4 h-4 rounded" 
-          />
-        </label>
-      </div>
-      
-      <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1.5">Saved Methods Grouping</label>
-        <select 
-          value={savedMethodCustomization.groupingBehavior} 
-          onChange={(e) => setSavedMethodCustomization({groupingBehavior: e.target.value})}
-          className="w-full px-3 py-2 border rounded-lg text-xs"
-        >
-          <option value="groupByPaymentMethods">Group by Payment Methods</option>
-          <option value="none">None</option>
-        </select>
       </div>
     </div>
   );
@@ -515,56 +515,56 @@ paymentElement.mount('#payment-element');`;
   const renderWalletSection = () => (
     <div className="space-y-4">
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1.5">Wallet Return URL</label>
+        <label className="block text-sm font-medium text-gray-600 mb-1.5">Wallet Return URL</label>
         <input 
           type="text" 
           value={wallets.walletReturnUrl} 
           onChange={(e) => setWallets({...wallets, walletReturnUrl: e.target.value})} 
           placeholder="https://your-site.com/return"
-          className="w-full px-3 py-2 border rounded-lg text-xs"
+          className="w-full px-3 py-2 border rounded-lg text-sm"
         />
       </div>
       
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1.5">Apple Pay</label>
+          <label className="block text-sm font-medium text-gray-600 mb-1.5">Apple Pay</label>
           <select 
             value={wallets.applePay} 
             onChange={(e) => setWallets({...wallets, applePay: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-xs"
+            className="w-full px-3 py-2 border rounded-lg text-sm"
           >
             <option value="auto">Auto</option>
             <option value="never">Never</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1.5">Google Pay</label>
+          <label className="block text-sm font-medium text-gray-600 mb-1.5">Google Pay</label>
           <select 
             value={wallets.googlePay} 
             onChange={(e) => setWallets({...wallets, googlePay: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-xs"
+            className="w-full px-3 py-2 border rounded-lg text-sm"
           >
             <option value="auto">Auto</option>
             <option value="never">Never</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1.5">PayPal</label>
+          <label className="block text-sm font-medium text-gray-600 mb-1.5">PayPal</label>
           <select 
             value={wallets.payPal} 
             onChange={(e) => setWallets({...wallets, payPal: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-xs"
+            className="w-full px-3 py-2 border rounded-lg text-sm"
           >
             <option value="auto">Auto</option>
             <option value="never">Never</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1.5">Klarna</label>
+          <label className="block text-sm font-medium text-gray-600 mb-1.5">Klarna</label>
           <select 
             value={wallets.klarna} 
             onChange={(e) => setWallets({...wallets, klarna: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-xs"
+            className="w-full px-3 py-2 border rounded-lg text-sm"
           >
             <option value="auto">Auto</option>
             <option value="never">Never</option>
@@ -573,14 +573,14 @@ paymentElement.mount('#payment-element');`;
       </div>
       
       <div className="border-t pt-3">
-        <p className="text-xs font-medium text-gray-600 mb-2">Wallet Button Style</p>
+        <p className="text-sm font-medium text-gray-600 mb-2">Wallet Button Style</p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Theme</label>
+            <label className="block text-sm text-gray-500 mb-1">Theme</label>
             <select 
               value={wallets.style.theme} 
               onChange={(e) => setWallets({...wallets, style: {...wallets.style, theme: e.target.value}})}
-              className="w-full px-3 py-2 border rounded-lg text-xs"
+              className="w-full px-3 py-2 border rounded-lg text-sm"
             >
               <option value="light">Light</option>
               <option value="dark">Dark</option>
@@ -588,31 +588,31 @@ paymentElement.mount('#payment-element');`;
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Type</label>
+            <label className="block text-sm text-gray-500 mb-1">Type</label>
             <select 
               value={wallets.style.type} 
               onChange={(e) => setWallets({...wallets, style: {...wallets.style, type: e.target.value}})}
-              className="w-full px-3 py-2 border rounded-lg text-xs"
+              className="w-full px-3 py-2 border rounded-lg text-sm"
             >
               {walletTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Height (px)</label>
+            <label className="block text-sm text-gray-500 mb-1">Height (px)</label>
             <input 
               type="number" 
               value={wallets.style.height} 
               onChange={(e) => setWallets({...wallets, style: {...wallets.style, height: parseInt(e.target.value) || 0}})}
-              className="w-full px-3 py-2 border rounded-lg text-xs"
+              className="w-full px-3 py-2 border rounded-lg text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Button Radius</label>
+            <label className="block text-sm text-gray-500 mb-1">Button Radius</label>
             <input 
               type="number" 
               value={wallets.style.buttonRadius} 
               onChange={(e) => setWallets({...wallets, style: {...wallets.style, buttonRadius: parseInt(e.target.value) || 0}})}
-              className="w-full px-3 py-2 border rounded-lg text-xs"
+              className="w-full px-3 py-2 border rounded-lg text-sm"
             />
           </div>
         </div>
@@ -623,7 +623,7 @@ paymentElement.mount('#payment-element');`;
   const renderAppearanceSection = () => (
     <div className="space-y-4">
       <div>
-        <p className="text-xs font-medium text-gray-600 mb-2">Colors</p>
+        <p className="text-sm font-medium text-gray-600 mb-2">Colors</p>
         <div className="grid grid-cols-2 gap-2">
           {[
             ['colorPrimary', 'Primary'],
@@ -642,60 +642,60 @@ paymentElement.mount('#payment-element');`;
                 onChange={(e) => setAppearanceVars({...appearanceVars, [key]: e.target.value})}
                 className="w-6 h-6 rounded border-0 cursor-pointer" 
               />
-              <span className="text-xs text-gray-600">{label}</span>
+              <span className="text-sm text-gray-600">{label}</span>
             </div>
           ))}
         </div>
       </div>
 
       <div className="border-t pt-3">
-        <p className="text-xs font-medium text-gray-600 mb-2">Typography</p>
+        <p className="text-sm font-medium text-gray-600 mb-2">Typography</p>
         <div className="space-y-2">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Font Family</label>
+            <label className="block text-sm text-gray-500 mb-1">Font Family</label>
             <input 
               type="text" 
               value={appearanceVars.fontFamily} 
               onChange={(e) => setAppearanceVars({...appearanceVars, fontFamily: e.target.value})}
               placeholder="e.g., Inter, sans-serif"
-              className="w-full px-3 py-2 border rounded-lg text-xs"
+              className="w-full px-3 py-2 border rounded-lg text-sm"
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Base Size</label>
+              <label className="block text-sm text-gray-500 mb-1">Base Size</label>
               <input 
                 type="text" 
                 value={appearanceVars.fontSizeBase} 
                 onChange={(e) => setAppearanceVars({...appearanceVars, fontSizeBase: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg text-xs"
+                className="w-full px-3 py-2 border rounded-lg text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Border Radius</label>
+              <label className="block text-sm text-gray-500 mb-1">Border Radius</label>
               <input 
                 type="text" 
                 value={appearanceVars.borderRadius} 
                 onChange={(e) => setAppearanceVars({...appearanceVars, borderRadius: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg text-xs"
+                className="w-full px-3 py-2 border rounded-lg text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Spacing Unit</label>
+              <label className="block text-sm text-gray-500 mb-1">Spacing Unit</label>
               <input 
                 type="text" 
                 value={appearanceVars.spacingUnit} 
                 onChange={(e) => setAppearanceVars({...appearanceVars, spacingUnit: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg text-xs"
+                className="w-full px-3 py-2 border rounded-lg text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Line Height</label>
+              <label className="block text-sm text-gray-500 mb-1">Line Height</label>
               <input 
                 type="text" 
                 value={appearanceVars.fontLineHeight} 
                 onChange={(e) => setAppearanceVars({...appearanceVars, fontLineHeight: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg text-xs"
+                className="w-full px-3 py-2 border rounded-lg text-sm"
               />
             </div>
           </div>
@@ -708,7 +708,7 @@ paymentElement.mount('#payment-element');`;
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Background</label>
+          <label className="block text-sm text-gray-500 mb-1">Background</label>
           <div className="flex gap-2">
             <input 
               type="color" 
@@ -720,12 +720,12 @@ paymentElement.mount('#payment-element');`;
               type="text" 
               value={buttonVars.buttonBackgroundColor} 
               onChange={(e) => setButtonVars({...buttonVars, buttonBackgroundColor: e.target.value})}
-              className="flex-1 px-2 py-1 border rounded text-xs"
+              className="flex-1 px-2 py-1 border rounded text-sm"
             />
           </div>
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Text Color</label>
+          <label className="block text-sm text-gray-500 mb-1">Text Color</label>
           <div className="flex gap-2">
             <input 
               type="color" 
@@ -737,7 +737,7 @@ paymentElement.mount('#payment-element');`;
               type="text" 
               value={buttonVars.buttonTextColor} 
               onChange={(e) => setButtonVars({...buttonVars, buttonTextColor: e.target.value})}
-              className="flex-1 px-2 py-1 border rounded text-xs"
+              className="flex-1 px-2 py-1 border rounded text-sm"
             />
           </div>
         </div>
@@ -745,45 +745,45 @@ paymentElement.mount('#payment-element');`;
       
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Height</label>
+          <label className="block text-sm text-gray-500 mb-1">Height</label>
           <input 
             type="text" 
             value={buttonVars.buttonHeight} 
             onChange={(e) => setButtonVars({...buttonVars, buttonHeight: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-xs"
+            className="w-full px-3 py-2 border rounded-lg text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Width</label>
+          <label className="block text-sm text-gray-500 mb-1">Width</label>
           <input 
             type="text" 
             value={buttonVars.buttonWidth} 
             onChange={(e) => setButtonVars({...buttonVars, buttonWidth: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-xs"
+            className="w-full px-3 py-2 border rounded-lg text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Border Radius</label>
+          <label className="block text-sm text-gray-500 mb-1">Border Radius</label>
           <input 
             type="text" 
             value={buttonVars.buttonBorderRadius} 
             onChange={(e) => setButtonVars({...buttonVars, buttonBorderRadius: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-xs"
+            className="w-full px-3 py-2 border rounded-lg text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Border Width</label>
+          <label className="block text-sm text-gray-500 mb-1">Border Width</label>
           <input 
             type="text" 
             value={buttonVars.buttonBorderWidth} 
             onChange={(e) => setButtonVars({...buttonVars, buttonBorderWidth: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-xs"
+            className="w-full px-3 py-2 border rounded-lg text-sm"
           />
         </div>
       </div>
       
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Border Color</label>
+        <label className="block text-sm text-gray-500 mb-1">Border Color</label>
         <div className="flex gap-2">
           <input 
             type="color" 
@@ -795,28 +795,28 @@ paymentElement.mount('#payment-element');`;
             type="text" 
             value={buttonVars.buttonBorderColor} 
             onChange={(e) => setButtonVars({...buttonVars, buttonBorderColor: e.target.value})}
-            className="flex-1 px-3 py-2 border rounded-lg text-xs"
+            className="flex-1 px-3 py-2 border rounded-lg text-sm"
           />
         </div>
       </div>
       
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Text Size</label>
+          <label className="block text-sm text-gray-500 mb-1">Text Size</label>
           <input 
             type="text" 
             value={buttonVars.buttonTextFontSize} 
             onChange={(e) => setButtonVars({...buttonVars, buttonTextFontSize: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-xs"
+            className="w-full px-3 py-2 border rounded-lg text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Text Weight</label>
+          <label className="block text-sm text-gray-500 mb-1">Text Weight</label>
           <input 
             type="text" 
             value={buttonVars.buttonTextFontWeight} 
             onChange={(e) => setButtonVars({...buttonVars, buttonTextFontWeight: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-xs"
+            className="w-full px-3 py-2 border rounded-lg text-sm"
           />
         </div>
       </div>
@@ -825,15 +825,15 @@ paymentElement.mount('#payment-element');`;
 
   const renderLanguageSection = () => (
     <div>
-      <label className="block text-xs font-medium text-gray-600 mb-1.5">Locale</label>
+      <label className="block text-sm font-medium text-gray-600 mb-1.5">Locale</label>
       <select 
         value={locale} 
         onChange={(e) => setLocale(e.target.value)}
-        className="w-full px-3 py-2 border rounded-lg text-xs"
+        className="w-full px-3 py-2 border rounded-lg text-sm"
       >
         {locales.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
       </select>
-      <p className="text-xs text-gray-500 mt-2">
+      <p className="text-sm text-gray-500 mt-2">
         The SDK will auto-detect the browser locale if set to "Auto-detect"
       </p>
     </div>
@@ -842,11 +842,11 @@ paymentElement.mount('#payment-element');`;
   const renderMoreSection = () => (
     <div className="space-y-3">
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1.5">Branding</label>
+        <label className="block text-sm font-medium text-gray-600 mb-1.5">Branding</label>
         <select 
           value={moreConfig.branding} 
           onChange={(e) => setMoreConfig({...moreConfig, branding: e.target.value})}
-          className="w-full px-3 py-2 border rounded-lg text-xs"
+          className="w-full px-3 py-2 border rounded-lg text-sm"
         >
           <option value="always">Always Show</option>
           <option value="never">Never Show</option>
@@ -854,64 +854,64 @@ paymentElement.mount('#payment-element');`;
       </div>
       
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1.5">Payment Methods Header</label>
+        <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Methods Header</label>
         <input 
           type="text" 
           value={moreConfig.paymentMethodsHeaderText} 
           onChange={(e) => setMoreConfig({...moreConfig, paymentMethodsHeaderText: e.target.value})}
           placeholder="Select Payment Method"
-          className="w-full px-3 py-2 border rounded-lg text-xs"
+          className="w-full px-3 py-2 border rounded-lg text-sm"
         />
       </div>
       
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1.5">Saved Methods Header</label>
+        <label className="block text-sm font-medium text-gray-600 mb-1.5">Saved Methods Header</label>
         <input 
           type="text" 
           value={moreConfig.savedPaymentMethodsHeaderText} 
           onChange={(e) => setMoreConfig({...moreConfig, savedPaymentMethodsHeaderText: e.target.value})}
           placeholder="Saved Payment Methods"
-          className="w-full px-3 py-2 border rounded-lg text-xs"
+          className="w-full px-3 py-2 border rounded-lg text-sm"
         />
       </div>
       
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1.5">Custom Card Terms</label>
+        <label className="block text-sm font-medium text-gray-600 mb-1.5">Custom Card Terms</label>
         <textarea 
           value={moreConfig.customMessageForCardTerms} 
           onChange={(e) => setMoreConfig({...moreConfig, customMessageForCardTerms: e.target.value})}
           placeholder="Custom message for card terms..."
           rows="2"
-          className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
+          className="w-full px-3 py-2 border rounded-lg text-sm resize-none"
         />
       </div>
       
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1.5">Business Name</label>
+        <label className="block text-sm font-medium text-gray-600 mb-1.5">Business Name</label>
         <input 
           type="text" 
           value={moreConfig.businessName} 
           onChange={(e) => setMoreConfig({...moreConfig, businessName: e.target.value})}
           placeholder="Your Business Name"
-          className="w-full px-3 py-2 border rounded-lg text-xs"
+          className="w-full px-3 py-2 border rounded-lg text-sm"
         />
       </div>
       
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1.5">Payment Method Order</label>
+        <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Method Order</label>
         <input 
           type="text" 
           value={paymentMethodOrder} 
           onChange={(e) => setPaymentMethodOrder(e.target.value)}
           placeholder="card, ideal, sepa_debit, sofort"
-          className="w-full px-3 py-2 border rounded-lg text-xs"
+          className="w-full px-3 py-2 border rounded-lg text-sm"
         />
-        <p className="text-xs text-gray-500 mt-1">Comma-separated list</p>
+        <p className="text-sm text-gray-500 mt-1">Comma-separated list</p>
       </div>
       
       <div className="space-y-2 pt-2 border-t">
         <label className="flex items-center justify-between py-1">
-          <span className="text-xs">Hide Card Nickname</span>
+          <span className="text-sm">Hide Card Nickname</span>
           <input 
             type="checkbox" 
             checked={moreConfig.hideCardNicknameField} 
@@ -920,7 +920,7 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1">
-          <span className="text-xs">Hide Expired Methods</span>
+          <span className="text-sm">Hide Expired Methods</span>
           <input 
             type="checkbox" 
             checked={moreConfig.hideExpiredPaymentMethods} 
@@ -929,7 +929,7 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1">
-          <span className="text-xs">Display Saved Methods</span>
+          <span className="text-sm">Display Saved Methods</span>
           <input 
             type="checkbox" 
             checked={moreConfig.displaySavedPaymentMethods} 
@@ -938,7 +938,7 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1">
-          <span className="text-xs">Show Save Checkbox</span>
+          <span className="text-sm">Show Save Checkbox</span>
           <input 
             type="checkbox" 
             checked={moreConfig.displaySavedPaymentMethodsCheckbox} 
@@ -947,7 +947,7 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1">
-          <span className="text-xs">Checkbox Checked by Default</span>
+          <span className="text-sm">Checkbox Checked by Default</span>
           <input 
             type="checkbox" 
             checked={moreConfig.savedPaymentMethodsCheckboxCheckedByDefault} 
@@ -956,7 +956,7 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1">
-          <span className="text-xs">Read Only Mode</span>
+          <span className="text-sm">Read Only Mode</span>
           <input 
             type="checkbox" 
             checked={moreConfig.readOnly} 
@@ -965,7 +965,7 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1">
-          <span className="text-xs">Short Surcharge Message</span>
+          <span className="text-sm">Short Surcharge Message</span>
           <input 
             type="checkbox" 
             checked={moreConfig.showShortSurchargeMessage} 
@@ -979,15 +979,15 @@ paymentElement.mount('#payment-element');`;
 
   const renderTermsSection = () => (
     <div className="space-y-3">
-      <p className="text-xs text-gray-500 mb-2">Configure when to display terms for each payment method</p>
+      <p className="text-sm text-gray-500 mb-2">Configure when to display terms for each payment method</p>
       <div className="grid grid-cols-2 gap-3">
         {Object.entries(terms).map(([key, value]) => (
           <div key={key}>
-            <label className="block text-xs text-gray-600 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</label>
-            <select 
-              value={value} 
+            <label className="block text-sm text-gray-600 mb-1 capitalize">{key.replace(/_/g, ' ')}</label>
+            <select
+              value={value}
               onChange={(e) => setTerms({...terms, [key]: e.target.value})}
-              className="w-full px-3 py-2 border rounded-lg text-xs"
+              className="w-full px-3 py-2 border rounded-lg text-sm"
             >
               {termOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
@@ -1017,12 +1017,12 @@ paymentElement.mount('#payment-element');`;
               <Settings size={16} />
               SDK Customization
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">70+ options to customize your checkout</p>
+            <p className="text-sm text-gray-500 mt-0.5">70+ options to customize your checkout</p>
           </div>
           
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
             <div>
-              <SectionHeader title="Layout" icon={Layout} section="layout" count={7} />
+              <SectionHeader title="Layout" icon={Layout} section="layout" count={5} />
               {expandedSections.layout && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                   {renderLayoutSection()}
@@ -1094,7 +1094,7 @@ paymentElement.mount('#payment-element');`;
             </h3>
             <button
               onClick={() => setShowCode(!showCode)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <Code size={14} />
               {showCode ? 'Hide Code' : 'View Code'}
@@ -1114,27 +1114,36 @@ paymentElement.mount('#payment-element');`;
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
               </div>
             ) : (
-              <div className="space-y-4 w-full max-w-2xl mx-auto">
+              <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-2xl mx-auto">
                 <div id="sdk-customization-payment-element" className="bg-white rounded-lg border border-gray-200 p-4" />
+
+                {clientSecret && (
+                  <button
+                    type="submit"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                  >
+                    Pay $65.00
+                  </button>
+                )}
 
                 {showCode && (
                   <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-gray-400">JavaScript</span>
+                      <span className="text-sm text-gray-400">JavaScript</span>
                       <button
                         onClick={copyCode}
-                        className="flex items-center gap-1 text-xs text-gray-400 hover:text-white transition-colors"
+                        className="flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors"
                       >
                         {copied ? <Check size={12} /> : <Copy size={12} />}
                         {copied ? 'Copied!' : 'Copy'}
                       </button>
                     </div>
-                    <pre className="text-xs text-gray-300 overflow-x-auto">
+                    <pre className="text-sm text-gray-300 overflow-x-auto">
                       <code>{generateCode()}</code>
                     </pre>
                   </div>
                 )}
-              </div>
+              </form>
             )}
           </div>
         </div>
