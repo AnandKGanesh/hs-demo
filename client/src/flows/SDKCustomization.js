@@ -1266,7 +1266,19 @@ paymentElement.mount('#payment-element');`;
                 {clientSecret && (
                   <button
                     type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                    style={{
+                      backgroundColor: buttonVars.buttonBackgroundColor,
+                      color: buttonVars.buttonTextColor,
+                      height: buttonVars.buttonHeight,
+                      width: buttonVars.buttonWidth,
+                      borderRadius: buttonVars.buttonBorderRadius,
+                      borderWidth: buttonVars.buttonBorderWidth,
+                      borderColor: buttonVars.buttonBorderColor,
+                      borderStyle: 'solid',
+                      fontSize: buttonVars.buttonTextFontSize,
+                      fontWeight: buttonVars.buttonTextFontWeight,
+                    }}
+                    className="w-full font-medium py-3 px-6 transition-colors hover:opacity-90"
                   >
                     Pay $65.00
                   </button>
