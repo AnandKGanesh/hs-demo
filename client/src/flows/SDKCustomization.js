@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { 
   Palette, Layout, Wallet, Languages, Settings, ChevronDown, ChevronUp, 
@@ -19,7 +19,6 @@ const SDKCustomization = () => {
   const [error, setError] = useState(null);
   const [showCode, setShowCode] = useState(false);
   const [copied, setCopied] = useState(false);
-  const paymentElementRef = useRef(null);
   const [sdkErrorLog, setSdkErrorLog] = useState([]);
 
   const [layout, setLayout] = useState({
@@ -139,28 +138,7 @@ const SDKCustomization = () => {
     { key: 'bancontact', label: 'Bancontact' },
   ];
 
-  const availablePaymentMethods = [
-    { id: 'card', label: 'Card', icon: '💳' },
-    { id: 'klarna', label: 'Klarna', icon: '💰' },
-    { id: 'affirm', label: 'Affirm', icon: '✅' },
-    { id: 'givex', label: 'Givex', icon: '🎁' },
-    { id: 'paypal', label: 'PayPal', icon: '💸' },
-    { id: 'google_pay', label: 'Google Pay', icon: '📱' },
-    { id: 'apple_pay', label: 'Apple Pay', icon: '🍎' },
-    { id: 'ideal', label: 'iDEAL', icon: '🏦' },
-    { id: 'sepa_debit', label: 'SEPA Debit', icon: '💶' },
-    { id: 'sofort', label: 'Sofort', icon: '🔒' },
-    { id: 'bancontact', label: 'Bancontact', icon: '🇧🇪' },
-    { id: 'afterpay', label: 'After Pay', icon: '⏰' },
-    { id: 'alipay', label: 'Alipay', icon: '🔵' },
-    { id: 'wechat', label: 'WeChat', icon: '💬' },
-    { id: 'ach_debit', label: 'ACH Debit', icon: '🏛️' },
-    { id: 'paysafecard', label: 'Paysafecard', icon: '🎫' },
-  ];
-
-  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState([
-    'card', 'klarna', 'affirm', 'givex', 'paypal', 'google_pay'
-  ]);
+  const [paymentMethodOrder, setPaymentMethodOrder] = useState('card, ideal, sepaDebit, sofort, bancontact');
 
   const [rules, setRules] = useState({
     '.Tab--selected': {
@@ -258,7 +236,6 @@ const SDKCustomization = () => {
     const initializeSDK = async () => {
       setIsLoading(true);
       setError(null);
-      setClientSecret(null);
 
       try {
         const customerData = await makeAuthenticatedRequest('/api/create-customer', {
@@ -366,7 +343,7 @@ const SDKCustomization = () => {
     };
 
     initializeSDK();
-  }, [hyper, mode, debugCreds, currency, setApiResponse]);
+  }, [hyper, mode, debugCreds, setApiResponse]);
 
   const buildAppearance = () => {
     const vars = {};
@@ -440,9 +417,9 @@ const SDKCustomization = () => {
     if (moreConfig.readOnly) options.readOnly = true;
     if (moreConfig.showShortSurchargeMessage) options.showShortSurchargeMessage = true;
 
-    if (Array.isArray(selectedPaymentMethods) && selectedPaymentMethods.length > 0) {
-      const cardIndex = selectedPaymentMethods.indexOf('card');
-      let orderList = [...selectedPaymentMethods];
+    if (paymentMethodOrder && paymentMethodOrder.trim() !== '') {
+      const orderList = paymentMethodOrder.split(',').map(s => s.trim()).filter(s => s !== '');
+      const cardIndex = orderList.indexOf('card');
       if (cardIndex > 0) {
         orderList.splice(cardIndex, 1);
         orderList.unshift('card');
@@ -472,40 +449,25 @@ const SDKCustomization = () => {
   useEffect(() => {
     if (!hyper || !clientSecret) return;
 
-    const mountPaymentElement = () => {
-      const container = document.getElementById('sdk-customization-payment-element');
-      if (!container) return;
+    const appearance = buildAppearance();
+    const options = buildOptions();
 
-      const appearance = buildAppearance();
-      const options = buildOptions();
+    const elementsInstance = hyper.elements({
+      clientSecret,
+      appearance,
+      locale: locale === 'auto' ? undefined : locale,
+    });
 
-      const elementsInstance = hyper.elements({
-        clientSecret,
-        appearance,
-        locale: locale === 'auto' ? undefined : locale,
-      });
-
-      const paymentEl = elementsInstance.create('payment', options);
-      paymentEl.mount(container);
-      paymentElementRef.current = paymentEl;
-    };
-
-    mountPaymentElement();
+    const paymentEl = elementsInstance.create('payment', options);
+    paymentEl.mount('#sdk-customization-payment-element');
 
     return () => {
-      if (paymentElementRef.current) {
-        try {
-          paymentElementRef.current.destroy();
-        } catch (e) {
-          console.log('Payment element already destroyed');
-        }
-        paymentElementRef.current = null;
-      }
+      paymentEl.destroy();
     };
   }, [
     hyper, clientSecret, locale, layout, paymentMethodsArrangementForTabs,
     wallets, appearanceVars, buttonVars, currency,
-    moreConfig, selectedPaymentMethods, rules
+    moreConfig, paymentMethodOrder, rules
   ]);
 
   const toggleSection = (section) => {
@@ -1100,23 +1062,14 @@ paymentElement.mount('#payment-element');`;
       
       <div>
         <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Method Order</label>
-        <input
-          type="text"
-          value={selectedPaymentMethods.join(', ')}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (typeof value === 'string') {
-              const values = value.split(',').map(s => s.trim()).filter(s => s);
-              setSelectedPaymentMethods(values);
-            }
-          }}
-          className="w-full px-3 py-2 border rounded-lg text-sm font-mono"
+        <input 
+          type="text" 
+          value={paymentMethodOrder} 
+          onChange={(e) => setPaymentMethodOrder(e.target.value)}
+          placeholder='card, ideal, sepaDebit, sofort, bancontact'
+          className="w-full px-3 py-2 border rounded-lg text-sm"
         />
-        <div className="mt-2 text-xs text-gray-500 space-y-1">
-          <p>Enter comma-separated payment method IDs. Card must be first.</p>
-          <p className="font-medium text-gray-600">Available methods:</p>
-          <p className="font-mono text-gray-400">card, klarna, affirm, givex, paypal, google_pay, apple_pay, ideal, sepa_debit, sofort, bancontact, afterpay, alipay, wechat, ach_debit, paysafecard</p>
-        </div>
+        <p className="text-sm text-gray-500 mt-1">Comma-separated list without quotes. Card must be first. Example: card, klarna, affirm</p>
       </div>
       
       <div className="space-y-2 pt-2 border-t">
@@ -1335,7 +1288,7 @@ paymentElement.mount('#payment-element');`;
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-2xl mx-auto" key={currency}>
+              <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-2xl mx-auto">
                 <div id="sdk-customization-payment-element" className="bg-white rounded-lg border border-gray-200 p-4" />
 
                 {clientSecret && (
@@ -1344,7 +1297,7 @@ paymentElement.mount('#payment-element');`;
                     disabled={isLoading}
                     className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
                   >
-                    Pay {currencies.find(c => c.code === currency)?.symbol}${(6500 / 100).toFixed(2)}
+                    Pay $65.00
                   </button>
                 )}
 
