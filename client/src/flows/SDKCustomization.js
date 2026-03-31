@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { 
   Palette, Layout, Wallet, Languages, Settings, ChevronDown, ChevronUp, 
@@ -19,6 +19,7 @@ const SDKCustomization = () => {
   const [error, setError] = useState(null);
   const [showCode, setShowCode] = useState(false);
   const [copied, setCopied] = useState(false);
+  const paymentElementRef = useRef(null);
   const [sdkErrorLog, setSdkErrorLog] = useState([]);
 
   const [layout, setLayout] = useState({
@@ -471,20 +472,35 @@ const SDKCustomization = () => {
   useEffect(() => {
     if (!hyper || !clientSecret) return;
 
-    const appearance = buildAppearance();
-    const options = buildOptions();
+    const mountPaymentElement = () => {
+      const container = document.getElementById('sdk-customization-payment-element');
+      if (!container) return;
 
-    const elementsInstance = hyper.elements({
-      clientSecret,
-      appearance,
-      locale: locale === 'auto' ? undefined : locale,
-    });
+      const appearance = buildAppearance();
+      const options = buildOptions();
 
-    const paymentEl = elementsInstance.create('payment', options);
-    paymentEl.mount('#sdk-customization-payment-element');
+      const elementsInstance = hyper.elements({
+        clientSecret,
+        appearance,
+        locale: locale === 'auto' ? undefined : locale,
+      });
+
+      const paymentEl = elementsInstance.create('payment', options);
+      paymentEl.mount(container);
+      paymentElementRef.current = paymentEl;
+    };
+
+    mountPaymentElement();
 
     return () => {
-      paymentEl.destroy();
+      if (paymentElementRef.current) {
+        try {
+          paymentElementRef.current.destroy();
+        } catch (e) {
+          console.log('Payment element already destroyed');
+        }
+        paymentElementRef.current = null;
+      }
     };
   }, [
     hyper, clientSecret, locale, layout, paymentMethodsArrangementForTabs,
