@@ -1316,7 +1316,7 @@ paymentElement.mount('#payment-element');`;
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-2xl mx-auto">
+              <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-2xl mx-auto" key={currency}>
                 <div id="sdk-customization-payment-element" className="bg-white rounded-lg border border-gray-200 p-4" />
 
                 {clientSecret && (
