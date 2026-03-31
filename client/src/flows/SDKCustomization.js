@@ -440,7 +440,7 @@ const SDKCustomization = () => {
     if (moreConfig.readOnly) options.readOnly = true;
     if (moreConfig.showShortSurchargeMessage) options.showShortSurchargeMessage = true;
 
-    if (selectedPaymentMethods.length > 0) {
+    if (Array.isArray(selectedPaymentMethods) && selectedPaymentMethods.length > 0) {
       const cardIndex = selectedPaymentMethods.indexOf('card');
       let orderList = [...selectedPaymentMethods];
       if (cardIndex > 0) {
@@ -1104,8 +1104,11 @@ paymentElement.mount('#payment-element');`;
           type="text"
           value={selectedPaymentMethods.join(', ')}
           onChange={(e) => {
-            const values = e.target.value.split(',').map(s => s.trim()).filter(s => s);
-            setSelectedPaymentMethods(values);
+            const value = e.target.value;
+            if (typeof value === 'string') {
+              const values = value.split(',').map(s => s.trim()).filter(s => s);
+              setSelectedPaymentMethods(values);
+            }
           }}
           className="w-full px-3 py-2 border rounded-lg text-sm font-mono"
         />
