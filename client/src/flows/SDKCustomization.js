@@ -37,7 +37,6 @@ const SDKCustomization = () => {
       theme: 'light',
       type: 'default',
       height: 55,
-      buttonRadius: 4,
     },
   });
 
@@ -106,11 +105,8 @@ const SDKCustomization = () => {
   const [terms, setTerms] = useState({
     card: 'auto',
     ideal: 'auto',
-    sepa_debit: 'auto',
     sofort: 'auto',
     bancontact: 'auto',
-    au_becs_debit: 'auto',
-    us_bank_account: 'auto',
   });
 
   const [paymentMethodOrder, setPaymentMethodOrder] = useState('card, ideal, sepa_debit, sofort, bancontact');
@@ -346,10 +342,6 @@ const SDKCustomization = () => {
       radios: layout.radios,
       spacedAccordionItems: layout.spacedAccordionItems,
     };
-
-    if (layout.type === 'tabs') {
-      layoutConfig.paymentMethodsArrangementForTabs = paymentMethodsArrangementForTabs;
-    }
 
     return layoutConfig;
   };
