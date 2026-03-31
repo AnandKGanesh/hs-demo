@@ -140,19 +140,25 @@ const SDKCustomization = () => {
 
   const availablePaymentMethods = [
     { id: 'card', label: 'Card', icon: '💳' },
-    { id: 'ideal', label: 'iDEAL', icon: '🏦' },
-    { id: 'sepaDebit', label: 'SEPA Debit', icon: '🏛️' },
-    { id: 'sofort', label: 'Sofort', icon: '🔒' },
-    { id: 'bancontact', label: 'Bancontact', icon: '🇧🇪' },
     { id: 'klarna', label: 'Klarna', icon: '💰' },
     { id: 'affirm', label: 'Affirm', icon: '✅' },
+    { id: 'afterPay', label: 'After Pay', icon: '⏰' },
+    { id: 'alipay', label: 'Alipay', icon: '🔵' },
+    { id: 'weChat', label: 'WeChat', icon: '💬' },
+    { id: 'achDebit', label: 'ACH Debit', icon: '🏛️' },
+    { id: 'paysafecard', label: 'Paysafecard', icon: '🎫' },
+    { id: 'givex', label: 'Givex', icon: '🎁' },
+    { id: 'ideal', label: 'iDEAL', icon: '🏦' },
+    { id: 'sepaDebit', label: 'SEPA Debit', icon: '💶' },
+    { id: 'sofort', label: 'Sofort', icon: '🔒' },
+    { id: 'bancontact', label: 'Bancontact', icon: '🇧🇪' },
     { id: 'paypal', label: 'PayPal', icon: '💸' },
     { id: 'applePay', label: 'Apple Pay', icon: '🍎' },
     { id: 'googlePay', label: 'Google Pay', icon: '📱' },
   ];
 
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState([
-    'card', 'ideal', 'sepaDebit', 'sofort', 'bancontact'
+    'card', 'klarna', 'affirm', 'afterPay', 'alipay', 'weChat', 'achDebit', 'paysafecard', 'givex'
   ]);
 
   const [rules, setRules] = useState({
