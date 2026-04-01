@@ -39,12 +39,10 @@ const RecurringCharge = () => {
 
       setResult(chargeData);
 
-      // Step 3: Retrieve Payment
       const retrieveData = await makeAuthenticatedRequest(`/api/payment/${chargeData.payment_id}`, {
         method: 'GET',
       }, mode, debugCreds);
 
-      // Update API response panel - Step 2 and Step 4
       setApiResponse({
         steps: [
           {

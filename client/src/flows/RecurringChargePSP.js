@@ -50,7 +50,6 @@ const RecurringChargePSP = () => {
 
       setResult(chargeData);
 
-      // Step 4: Retrieve Payment
       const retrieveData = await makeAuthenticatedRequest(`/api/payment/${chargeData.payment_id}`, {
         method: 'GET',
       }, mode, debugCreds);

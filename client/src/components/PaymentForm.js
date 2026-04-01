@@ -376,7 +376,6 @@ const PaymentForm = ({ flow }) => {
         return { steps, currentStep: sdkStepIndex + 1 };
       });
 
-      // Add Step 4: Retrieve Payment for Recurring Flows
       if (['zero_setup', 'setup_and_charge'].includes(flow.id)) {
         const retrieveResponse = await fetch(`${API_BASE_URL}/api/payment/${paymentId}`);
         const retrieveData = await retrieveResponse.json();
