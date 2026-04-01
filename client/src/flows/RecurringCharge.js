@@ -39,7 +39,12 @@ const RecurringCharge = () => {
 
       setResult(chargeData);
 
-      // Update API response panel - Step 2 only (no Step 1 for Recurring Charge)
+      // Step 3: Retrieve Payment
+      const retrieveData = await makeAuthenticatedRequest(`/api/payment/${chargeData.payment_id}`, {
+        method: 'GET',
+      }, mode, debugCreds);
+
+      // Update API response panel - Step 2 and Step 4
       setApiResponse({
         steps: [
           {
@@ -60,8 +65,16 @@ const RecurringCharge = () => {
             },
             response: filters.recurringCharge(chargeData),
           },
+          {
+            title: 'Step 4: Retrieve Payment',
+            request: {
+              method: 'GET',
+              url: `/payments/${chargeData.payment_id}`,
+            },
+            response: filters.recurringChargeRetrieve(retrieveData),
+          },
         ],
-        currentStep: 1,
+        currentStep: 2,
       });
 
     } catch (err) {

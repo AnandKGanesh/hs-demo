@@ -1456,18 +1456,31 @@ paymentElement.mount('#payment-element');`;
         </div>
 
         <div className="flex-1 bg-gray-50 flex flex-col">
-          <div className="p-4 border-b bg-white flex items-center justify-between">
-            <h3 className="font-semibold flex items-center gap-2 text-sm">
-              <Eye size={18} />
-              Live Preview
-            </h3>
-            <button
-              onClick={() => setShowCode(!showCode)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <Code size={14} />
-              {showCode ? 'Hide Code' : 'View Code'}
-            </button>
+          <div className="p-4 border-b bg-white">
+            <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg max-w-xs">
+              <button
+                onClick={() => setShowCode(false)}
+                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all ${
+                  !showCode 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Eye size={16} />
+                Live Preview
+              </button>
+              <button
+                onClick={() => setShowCode(true)}
+                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all ${
+                  showCode 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Code size={16} />
+                View Code
+              </button>
+            </div>
           </div>
           
           <div className="flex-1 overflow-y-auto p-6">
@@ -1483,20 +1496,8 @@ paymentElement.mount('#payment-element');`;
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-2xl mx-auto">
-                <div id="sdk-customization-payment-element" className="bg-white rounded-lg border border-gray-200 p-4" />
-
-                {clientSecret && (
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    Pay $65.00
-                  </button>
-                )}
-
-                {showCode && (
+              <div className="space-y-4 w-full max-w-2xl mx-auto">
+                {showCode ? (
                   <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-gray-400">JavaScript</span>
@@ -1512,8 +1513,22 @@ paymentElement.mount('#payment-element');`;
                       <code>{generateCode()}</code>
                     </pre>
                   </div>
+                ) : (
+                  <form onSubmit={handleSubmit}>
+                    <div id="sdk-customization-payment-element" className="bg-white rounded-lg border border-gray-200 p-4" />
+
+                    {clientSecret && (
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50 mt-4"
+                      >
+                        Pay $65.00
+                      </button>
+                    )}
+                  </form>
                 )}
-              </form>
+              </div>
             )}
           </div>
         </div>

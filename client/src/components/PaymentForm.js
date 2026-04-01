@@ -297,7 +297,7 @@ const PaymentForm = ({ flow }) => {
       const paymentDetailsRes = await fetch(`${API_BASE_URL}/api/payment/${paymentId}`);
       const paymentDetails = await paymentDetailsRes.json();
 
-        // Update API response with SDK result - preserve all steps
+      // Update API response with SDK result - preserve all steps
       setApiResponse((prev) => {
         const steps = [...prev.steps];
         const hasStep1 = ['automatic', 'manual', 'manual_partial', 'repeat_user', 'three_ds_psp', 'frm_pre', 'vault_3', 'zero_setup', 'setup_and_charge'].includes(flow.id);
@@ -375,6 +375,25 @@ const PaymentForm = ({ flow }) => {
 
         return { steps, currentStep: sdkStepIndex + 1 };
       });
+
+      // Add Step 4: Retrieve Payment for Recurring Flows
+      if (['zero_setup', 'setup_and_charge'].includes(flow.id)) {
+        const retrieveResponse = await fetch(`${API_BASE_URL}/api/payment/${paymentId}`);
+        const retrieveData = await retrieveResponse.json();
+        
+        setApiResponse((prev) => {
+          const steps = [...prev.steps];
+          steps.push({
+            title: 'Step 4: Retrieve Payment',
+            request: {
+              method: 'GET',
+              url: `/payments/${paymentId}`,
+            },
+            response: filters.recurringRetrieve(retrieveData),
+          });
+          return { steps, currentStep: steps.length };
+        });
+      }
 
     } catch (err) {
       setError(err.message);

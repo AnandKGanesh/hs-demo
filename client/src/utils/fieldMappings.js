@@ -21,18 +21,26 @@ export const FIELD_MAPPINGS = {
     step1_customer: ['customer_id'],
     step2_payment_intent: ['payment_id', 'client_secret', 'status', 'capture_method', 'amount', 'customer_id'],
     step3_sdk: ['status', 'payment_id', 'payment_method_id', 'mandate_id', 'connector_mandate_id', 'network_transaction_id'],
+    step4_retrieve: ['status', 'payment_id', 'payment_method_id', 'mandate_id', 'connector_mandate_id', 'network_transaction_id'],
   },
 
   // Recurring Charge (Server-side)
   recurring_charge: {
     step2_server: ['payment_id', 'status', 'payment_method_id', 'connector_mandate_id', 'network_transaction_id', 'customer_id'],
+    step4_retrieve: ['status', 'payment_id', 'payment_method_id', 'mandate_id', 'connector_mandate_id', 'network_transaction_id'],
+  },
+
+  // Recurring Charge PSP (Server-side)
+  recurring_charge_psp: {
+    step2_server: ['payment_id', 'status', 'payment_method_id', 'connector_mandate_id', 'network_transaction_id', 'customer_id'],
+    step4_retrieve: ['status', 'payment_id', 'payment_method_id', 'mandate_id', 'connector_mandate_id', 'network_transaction_id'],
   },
 
   // 3DS Flows
   three_ds: {
     step1_customer: ['customer_id'],
     step2_payment_intent: ['payment_id', 'client_secret', 'status', 'capture_method', 'amount', 'customer_id'],
-    step3_sdk: ['status', 'payment_id', 'authentication_type'],
+    step3_sdk: ['status', 'payment_id', 'authentication_type', 'external_authentication_details', 'external_3ds_authentication_attempted', 'expires_on'],
   },
 
   // Import 3DS Results
@@ -170,6 +178,18 @@ export const filters = {
 
   // Recurring charge server response
   recurringCharge: (response) => filterApiResponse(response, 'recurring_charge', 'step2_server'),
+
+  // Recurring charge retrieve response
+  recurringChargeRetrieve: (response) => filterApiResponse(response, 'recurring_charge', 'step4_retrieve'),
+
+  // Recurring charge PSP server response
+  recurringChargePSP: (response) => filterApiResponse(response, 'recurring_charge_psp', 'step2_server'),
+
+  // Recurring charge PSP retrieve response
+  recurringChargePSPRetrieve: (response) => filterApiResponse(response, 'recurring_charge_psp', 'step4_retrieve'),
+
+  // Recurring Retrieve (for Step 4 in zero_setup and setup_and_charge)
+  recurringRetrieve: (response) => filterApiResponse(response, 'recurring', 'step4_retrieve'),
 
   // Vault SDK response
   vaultSDK: (response) => filterApiResponse(response, 'vault', 'step3_sdk'),

@@ -50,7 +50,11 @@ const RecurringChargePSP = () => {
 
       setResult(chargeData);
 
-      // Update API response panel - Step 2 only (no Step 1 for Recurring Charge)
+      // Step 4: Retrieve Payment
+      const retrieveData = await makeAuthenticatedRequest(`/api/payment/${chargeData.payment_id}`, {
+        method: 'GET',
+      }, mode, debugCreds);
+
       setApiResponse({
         steps: [
           {
@@ -72,10 +76,18 @@ const RecurringChargePSP = () => {
                 },
               },
             },
-            response: filters.recurringCharge(chargeData),
+            response: filters.recurringChargePSP(chargeData),
+          },
+          {
+            title: 'Step 4: Retrieve Payment',
+            request: {
+              method: 'GET',
+              url: `/payments/${chargeData.payment_id}`,
+            },
+            response: filters.recurringChargePSPRetrieve(retrieveData),
           },
         ],
-        currentStep: 1,
+        currentStep: 2,
       });
 
     } catch (err) {

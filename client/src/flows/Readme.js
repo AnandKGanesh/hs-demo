@@ -186,56 +186,45 @@ const Readme = () => {
         })}
       </div>
 
-      <footer className="border-t border-gray-200 dark:border-gray-700 pt-8 pb-4">
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-8 mb-8">
-          <div>
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Product</h4>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="https://hyperswitch.io"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  Website
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://docs.hyperswitch.io"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  Documentation
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://github.com/juspay/hyperswitch"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  GitHub
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://docs.hyperswitch.io/api-reference"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  API Reference
-                </a>
-              </li>
-            </ul>
+      <footer className="border-t border-gray-200 dark:border-gray-700 pt-6 pb-4">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-6">
+            <a
+              href="https://hyperswitch.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
+            >
+              Website
+            </a>
+            <a
+              href="https://docs.hyperswitch.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
+            >
+              Documentation
+            </a>
+            <a
+              href="https://github.com/juspay/hyperswitch"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
+            >
+              GitHub
+            </a>
+            <a
+              href="https://docs.hyperswitch.io/api-reference"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
+            >
+              API Reference
+            </a>
           </div>
         </div>
 
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-500 dark:text-gray-500">
             © {new Date().getFullYear()} Hyperswitch. All rights reserved.
           </p>
