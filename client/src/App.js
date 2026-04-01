@@ -168,7 +168,6 @@ const App = () => {
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
         <div className="text-lg text-gray-600 dark:text-gray-300">Loading Hyperswitch SDK...</div>
-        <div className="mt-4 text-sm text-gray-500">Make sure backend server is running on port 5252</div>
       </div>
     );
   }

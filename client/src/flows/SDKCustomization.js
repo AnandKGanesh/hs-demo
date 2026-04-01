@@ -1497,8 +1497,22 @@ paymentElement.mount('#payment-element');`;
               </div>
             ) : (
               <div className="space-y-4 w-full max-w-2xl mx-auto">
-                {showCode ? (
-                  <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+                <form onSubmit={handleSubmit}>
+                  <div id="sdk-customization-payment-element" className="bg-white rounded-lg border border-gray-200 p-4" />
+
+                  {clientSecret && (
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50 mt-4"
+                    >
+                      Pay $65.00
+                    </button>
+                  )}
+                </form>
+
+                {showCode && (
+                  <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto mt-6">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-gray-400">JavaScript</span>
                       <button
@@ -1513,20 +1527,6 @@ paymentElement.mount('#payment-element');`;
                       <code>{generateCode()}</code>
                     </pre>
                   </div>
-                ) : (
-                  <form onSubmit={handleSubmit}>
-                    <div id="sdk-customization-payment-element" className="bg-white rounded-lg border border-gray-200 p-4" />
-
-                    {clientSecret && (
-                      <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50 mt-4"
-                      >
-                        Pay $65.00
-                      </button>
-                    )}
-                  </form>
                 )}
               </div>
             )}

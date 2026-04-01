@@ -223,31 +223,6 @@ const Readme = () => {
             </a>
           </div>
         </div>
-
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-gray-500 dark:text-gray-500">
-            © {new Date().getFullYear()} Hyperswitch. All rights reserved.
-          </p>
-          <div className="flex items-center gap-4">
-            <a
-              href="https://hyperswitch.io"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-gray-500 dark:text-gray-500 hover:text-primary transition-colors"
-            >
-              Juspay Hyperswitch
-            </a>
-            <span className="text-gray-300 dark:text-gray-600">|</span>
-            <a
-              href="https://hyperswitch.io/privacy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-gray-500 dark:text-gray-500 hover:text-primary transition-colors"
-            >
-              Privacy Policy
-            </a>
-          </div>
-        </div>
       </footer>
     </div>
   );
