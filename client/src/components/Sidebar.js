@@ -162,10 +162,29 @@ const Sidebar = ({ onFlowSelect, currentFlow }) => {
   };
 
   const toggleCategory = (categoryId) => {
-    setExpandedCategories(prev => ({
-      ...prev,
-      [categoryId]: !prev[categoryId]
-    }));
+    setExpandedCategories(prev => {
+      const isExpanding = !prev[categoryId];
+      if (isExpanding) {
+        // Close all others when opening a new one
+        return {
+          payment: categoryId === 'payment',
+          recurring: categoryId === 'recurring',
+          threeds: categoryId === 'threeds',
+          frm: categoryId === 'frm',
+          relay: categoryId === 'relay',
+          vault: categoryId === 'vault',
+          smart_retry: categoryId === 'smart_retry',
+          intelligent_routing: categoryId === 'intelligent_routing',
+          decision_manager: categoryId === 'decision_manager',
+          organization: categoryId === 'organization',
+        };
+      }
+      // Just toggle the clicked one when closing
+      return {
+        ...prev,
+        [categoryId]: false,
+      };
+    });
   };
 
   return (
