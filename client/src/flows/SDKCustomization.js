@@ -555,19 +555,52 @@ const paymentElement = elements.create('payment', ${JSON.stringify(options, null
 paymentElement.mount('#payment-element');`;
   };
 
-  const Tooltip = ({ children, title, description }) => (
-    <div className="group relative inline-flex items-center gap-1">
-      {children}
-      <div className="relative">
-        <HelpCircle size={14} className="text-gray-400 cursor-help" />
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
-          <p className="font-semibold mb-1">{title}</p>
-          <p className="text-gray-300 leading-relaxed">{description}</p>
-          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
-        </div>
-      </div>
-    </div>
-  );
+  const Tooltip = ({ children, title, description }) => {
+    const [show, setShow] = useState(false);
+    const [pos, setPos] = useState({ x: 0, y: 0 });
+    const ref = React.useRef(null);
+
+    const handleEnter = () => {
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect();
+        setPos({
+          x: rect.left + rect.width / 2,
+          y: rect.top
+        });
+      }
+      setShow(true);
+    };
+
+    return (
+      <>
+        <span
+          ref={ref}
+          className="inline-flex items-center gap-1 cursor-help"
+          onMouseEnter={handleEnter}
+          onMouseLeave={() => setShow(false)}
+        >
+          {children}
+          <HelpCircle size={14} className="text-gray-400" />
+        </span>
+        {show && (
+          <div
+            className="fixed z-[9999] pointer-events-none"
+            style={{
+              left: pos.x,
+              top: pos.y,
+              transform: 'translate(-50%, -100%) translateY(-8px)'
+            }}
+          >
+            <div className="w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl">
+              <p className="font-semibold mb-1">{title}</p>
+              <p className="text-gray-300 leading-relaxed">{description}</p>
+            </div>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+          </div>
+        )}
+      </>
+    );
+  };
 
   const SectionHeader = ({ title, icon: Icon, section }) => (
     <button
