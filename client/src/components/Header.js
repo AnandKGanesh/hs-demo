@@ -5,6 +5,16 @@ import { Sun, Moon } from 'lucide-react';
 import juspayLogo from '../assets/juspay-logo.png';
 import DebugCredentialsModal from './DebugCredentialsModal';
 
+const ComingSoonTooltip = ({ children }) => (
+  <div className="group relative">
+    {children}
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+      Coming Soon
+      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+    </div>
+  </div>
+);
+
 const Header = () => {
   const [theme, setTheme] = useRecoilState(themeState);
   const [demoMode, setDemoMode] = useRecoilState(demoModeState);
@@ -90,16 +100,14 @@ const Header = () => {
             >
               Demo
             </button>
-            <button
-              onClick={() => handleModeChange('debug')}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                demoMode === 'debug'
-                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-              }`}
-            >
-              Debug
-            </button>
+            <ComingSoonTooltip>
+              <button
+                disabled
+                className="px-3 py-1.5 rounded-md text-sm font-medium text-gray-400 cursor-not-allowed"
+              >
+                Debug
+              </button>
+            </ComingSoonTooltip>
           </div>
 
           <button

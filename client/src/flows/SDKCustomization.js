@@ -138,22 +138,15 @@ const SDKCustomization = () => {
     { key: 'bancontact', label: 'Bancontact' },
   ];
 
-  const [paymentMethodOrder, setPaymentMethodOrder] = useState('card, ideal, sepaDebit, sofort, bancontact');
+  const [paymentMethodOrder, setPaymentMethodOrder] = useState('card, wechat, klarna, affirm, paysafecard, achdebit');
 
   const availablePaymentMethods = [
     'card',
-    'ideal',
-    'sepaDebit',
-    'sofort',
-    'bancontact',
+    'wechat',
     'klarna',
     'affirm',
-    'afterpay_clearpay',
-    'eps',
-    'giropay',
-    'paypal',
-    'applePay',
-    'googlePay',
+    'paysafecard',
+    'achdebit',
   ];
 
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState(['card', 'ideal', 'sepaDebit', 'sofort', 'bancontact']);
@@ -1293,19 +1286,19 @@ paymentElement.mount('#payment-element');`;
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-500">Custom CSS rules for granular styling</p>
-        <Tooltip title={sdkTooltips.rules.inspectorMode.title} description={sdkTooltips.rules.inspectorMode.description}>
-          <button
-            onClick={() => setInspectorMode(!inspectorMode)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors ${
-              inspectorMode
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            <Eye size={14} />
-            {inspectorMode ? 'Exit Inspector' : 'Element Inspector'}
-          </button>
-        </Tooltip>
+        <button
+          onClick={() => setInspectorMode(!inspectorMode)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors ${
+            inspectorMode
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          <Eye size={14} />
+          <Tooltip title={sdkTooltips.rules.inspectorMode.title} description={sdkTooltips.rules.inspectorMode.description}>
+            <span>{inspectorMode ? 'Exit Inspector' : 'Element Inspector'}</span>
+          </Tooltip>
+        </button>
       </div>
 
       {inspectorMode && (

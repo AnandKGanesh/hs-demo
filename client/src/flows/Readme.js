@@ -186,55 +186,8 @@ const Readme = () => {
         })}
       </div>
 
-      <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-6 mb-12">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Quick Start
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
-            <div className="text-2xl mb-2">1️⃣</div>
-            <h4 className="font-medium text-gray-900 dark:text-white mb-1">SDK Customization</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Start here to customize your checkout appearance with 100+ options
-            </p>
-            <button
-              onClick={() => handleNavigate('sdk_customization')}
-              className="mt-3 text-sm text-primary hover:underline"
-            >
-              Try it →
-            </button>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
-            <div className="text-2xl mb-2">2️⃣</div>
-            <h4 className="font-medium text-gray-900 dark:text-white mb-1">Payment Flows</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Test standard payment processing with automatic or manual capture
-            </p>
-            <button
-              onClick={() => handleNavigate('automatic')}
-              className="mt-3 text-sm text-primary hover:underline"
-            >
-              Try it →
-            </button>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
-            <div className="text-2xl mb-2">3️⃣</div>
-            <h4 className="font-medium text-gray-900 dark:text-white mb-1">3DS Decision</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              See how risk scores determine 3DS authentication challenges
-            </p>
-            <button
-              onClick={() => handleNavigate('three_ds_decision')}
-              className="mt-3 text-sm text-primary hover:underline"
-            >
-              Try it →
-            </button>
-          </div>
-        </div>
-      </div>
-
       <footer className="border-t border-gray-200 dark:border-gray-700 pt-8 pb-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-8 mb-8">
           <div>
             <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Product</h4>
             <ul className="space-y-2">
@@ -268,21 +221,6 @@ const Readme = () => {
                   GitHub
                 </a>
               </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Resources</h4>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="https://docs.hyperswitch.io/quickstart"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  Quick Start
-                </a>
-              </li>
               <li>
                 <a
                   href="https://docs.hyperswitch.io/api-reference"
@@ -291,86 +229,6 @@ const Readme = () => {
                   className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
                 >
                   API Reference
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://docs.hyperswitch.io/sdk-reference"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  SDK Reference
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Community</h4>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="https://github.com/juspay/hyperswitch/discussions"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  Discussions
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://discord.com/invite/wJZ7DVqH"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  Discord
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://x.com/HyperswitchIO"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  Twitter
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Company</h4>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="https://juspay.in"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  Juspay
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://hyperswitch.io/about"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  About Us
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://hyperswitch.io/careers"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
-                >
-                  Careers
                 </a>
               </li>
             </ul>
@@ -383,12 +241,12 @@ const Readme = () => {
           </p>
           <div className="flex items-center gap-4">
             <a
-              href="https://github.com/juspay/hyperswitch-demo-app"
+              href="https://hyperswitch.io"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-gray-500 dark:text-gray-500 hover:text-primary transition-colors"
             >
-              Demo App Source
+              Juspay Hyperswitch
             </a>
             <span className="text-gray-300 dark:text-gray-600">|</span>
             <a
