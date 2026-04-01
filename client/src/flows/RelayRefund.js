@@ -41,7 +41,7 @@ const RelayRefund = () => {
         throw new Error(authData.error.message || 'Adyen auth+capture failed');
       }
 
-      setAdyenTransactionId(authData.adyenTransactionId);
+      setAdyenTransactionId(authData.adyen_transaction_id);
       setStep(2);
       setHasClicked(false);
 
@@ -67,9 +67,9 @@ const RelayRefund = () => {
               },
             },
             response: {
-              adyen_transaction_id: authData.adyenTransactionId,
-              resultCode: authData.adyenResponse.resultCode,
-              authCode: authData.adyenResponse.authCode,
+              adyen_transaction_id: authData.adyen_transaction_id,
+              resultCode: authData.adyen_response?.resultCode,
+              authCode: authData.adyen_response?.authCode,
             },
           },
         ],
@@ -129,11 +129,12 @@ const RelayRefund = () => {
               },
             },
             response: filters.relay({
-              payment_id: relayData.relayId,
+              relay_id: relayData.relay_id,
               status: relayData.status,
-              amount: 10000,
-              amount_capturable: 0,
-              amount_received: 0,
+              type: relayData.type,
+              connector_id: relayData.connector_id,
+              connector_resource_id: relayData.connector_resource_id,
+              adyen_transaction_id: relayData.adyen_transaction_id,
             }),
           },
         ],

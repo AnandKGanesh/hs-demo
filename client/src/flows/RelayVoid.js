@@ -43,7 +43,7 @@ const RelayVoid = () => {
         throw new Error(authData.error.message || 'Adyen authorization failed');
       }
 
-      setAdyenTransactionId(authData.adyenTransactionId);
+      setAdyenTransactionId(authData.adyen_transaction_id);
       setStep(2);
       setHasClicked(false);
 
@@ -69,9 +69,9 @@ const RelayVoid = () => {
               },
             },
             response: {
-              adyen_transaction_id: authData.adyenTransactionId,
-              resultCode: authData.adyenResponse.resultCode,
-              authCode: authData.adyenResponse.authCode,
+              adyen_transaction_id: authData.adyen_transaction_id,
+              resultCode: authData.adyen_response?.resultCode,
+              authCode: authData.adyen_response?.authCode,
             },
           },
         ],
@@ -126,11 +126,12 @@ const RelayVoid = () => {
               },
             },
             response: filters.relay({
-              payment_id: relayData.relayId,
+              relay_id: relayData.relay_id,
               status: relayData.status,
-              amount: 10000,
-              amount_capturable: 0,
-              amount_received: 0,
+              type: relayData.type,
+              connector_id: relayData.connector_id,
+              connector_resource_id: relayData.connector_resource_id,
+              adyen_transaction_id: relayData.adyen_transaction_id,
             }),
           },
         ],
@@ -194,9 +195,9 @@ const RelayVoid = () => {
         <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           <h4 className="font-medium text-green-900 dark:text-green-300 mb-2">Void Successful!</h4>
           <div className="text-sm text-green-700 dark:text-green-400 space-y-1">
-            <p><strong>Relay ID:</strong> {result.relayId}</p>
+            <p><strong>Relay ID:</strong> {result.relay_id}</p>
             <p><strong>Status:</strong> {result.status}</p>
-            <p><strong>Adyen Transaction ID:</strong> {result.adyenTransactionId}</p>
+            <p><strong>Adyen Transaction ID:</strong> {result.adyen_transaction_id}</p>
           </div>
         </div>
       )}
