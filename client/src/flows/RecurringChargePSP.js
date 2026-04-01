@@ -57,7 +57,7 @@ const RecurringChargePSP = () => {
       setApiResponse({
         steps: [
           {
-            title: 'Step 2: Server Recurring Charge with PSP Token',
+            title: 'Step 1: Server Recurring Charge with PSP Token',
             request: {
               method: 'POST',
               url: '/payments',
@@ -78,7 +78,7 @@ const RecurringChargePSP = () => {
             response: filters.recurringChargePSP(chargeData),
           },
           {
-            title: 'Step 4: Retrieve Payment',
+            title: 'Step 2: Retrieve Payment',
             request: {
               method: 'GET',
               url: `/payments/${chargeData.payment_id}`,

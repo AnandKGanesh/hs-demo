@@ -46,7 +46,7 @@ const RecurringCharge = () => {
       setApiResponse({
         steps: [
           {
-            title: 'Step 2: Server Recurring Charge',
+            title: 'Step 1: Server Recurring Charge',
             request: {
               method: 'POST',
               url: '/payments',
@@ -64,7 +64,7 @@ const RecurringCharge = () => {
             response: filters.recurringCharge(chargeData),
           },
           {
-            title: 'Step 4: Retrieve Payment',
+            title: 'Step 2: Retrieve Payment',
             request: {
               method: 'GET',
               url: `/payments/${chargeData.payment_id}`,
