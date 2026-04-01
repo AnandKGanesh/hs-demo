@@ -215,8 +215,7 @@ const SDKCustomization = () => {
     rules: false,
   });
 
-  const [inspectorMode, setInspectorMode] = useState(false);
-  const [inspectorMessage, setInspectorMessage] = useState(null);
+
 
   const locales = [
     { code: 'auto', label: 'Auto-detect' },
@@ -1282,73 +1281,79 @@ paymentElement.mount('#payment-element');`;
     </div>
   );
 
-  const renderRulesSection = () => (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">Custom CSS rules for granular styling</p>
-        <button
-          onClick={() => setInspectorMode(!inspectorMode)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors ${
-            inspectorMode
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          <Eye size={14} />
-          <Tooltip title={sdkTooltips.rules.inspectorMode.title} description={sdkTooltips.rules.inspectorMode.description}>
-            <span>{inspectorMode ? 'Exit Inspector' : 'Element Inspector'}</span>
-          </Tooltip>
-        </button>
-      </div>
+  const renderRulesSection = () => {
+    const ruleDefinitions = {
+      '.Tab--selected': { label: 'Selected Tab', desc: 'Active payment method tab', colorProps: ['background', 'color'] },
+      '.Tab:hover': { label: 'Tab Hover', desc: 'Tab on mouse hover', colorProps: ['background', 'color'] },
+      '.Input': { label: 'Input Fields', desc: 'Card number, expiry, CVC', colorProps: ['borderColor'] },
+      '.Input--invalid': { label: 'Invalid Input', desc: 'Fields with errors', colorProps: ['borderColor'] },
+      '.Input::placeholder': { label: 'Placeholder', desc: 'Placeholder text', colorProps: ['color'] },
+      '.Label': { label: 'Labels', desc: 'Field labels', colorProps: ['color'] },
+      '.Checkbox--checked': { label: 'Checkbox', desc: 'Checked state', colorProps: ['background', 'borderColor'] },
+      '.OrPayUsingLabel': { label: 'Divider', desc: '"Or pay using" text', colorProps: ['color'] },
+      '.TermsTextLabel': { label: 'Terms', desc: 'Terms text', colorProps: ['color'] },
+    };
 
-      {inspectorMode && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-          <p className="text-sm text-amber-800">
-            Inspector mode active. Click on any element in the preview to see its CSS selector.
-          </p>
-        </div>
-      )}
-      
-      {Object.entries(rules).map(([selector, styles]) => {
-        const ruleTooltip = {
-          '.Tab--selected': sdkTooltips.rules.tabSelected,
-          '.Tab:hover': sdkTooltips.rules.tabHover,
-          '.Input': sdkTooltips.rules.input,
-          '.Input--invalid': sdkTooltips.rules.inputInvalid,
-          '.Input::placeholder': sdkTooltips.rules.inputPlaceholder,
-          '.Label': sdkTooltips.rules.label,
-          '.Checkbox--checked': sdkTooltips.rules.checkboxChecked,
-          '.OrPayUsingLabel': sdkTooltips.rules.orPayUsingLabel,
-          '.TermsTextLabel': sdkTooltips.rules.termsTextLabel,
-        }[selector];
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-gray-500">Customize checkout appearance</p>
         
-        return (
-          <div key={selector} className="border rounded-lg p-3 bg-white">
-            <Tooltip title={ruleTooltip?.title || selector} description={ruleTooltip?.description || 'Custom CSS selector'}>
-              <p className="text-sm font-medium text-gray-700 mb-2">{selector}</p>
-            </Tooltip>
-            <div className="grid grid-cols-2 gap-2">
-              {Object.entries(styles).map(([prop, value]) => (
-                <div key={prop}>
-                  <label className="block text-xs text-gray-500 mb-1">{prop}</label>
-                  <input
-                    type="text"
-                    value={value}
-                    onChange={(e) => setRules({
-                      ...rules,
-                      [selector]: { ...styles, [prop]: e.target.value }
-                    })}
-                    placeholder="e.g., #0066FF"
-                    className="w-full px-2 py-1 border rounded text-sm"
-                  />
-                </div>
-              ))}
+        {Object.entries(rules).map(([selector, styles]) => {
+          const def = ruleDefinitions[selector];
+          
+          return (
+            <div key={selector} className="border rounded-lg p-3 bg-white">
+              <div className="mb-2">
+                <p className="text-sm font-medium text-gray-800">{def?.label || selector}</p>
+                <p className="text-xs text-gray-500">{def?.desc}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {Object.entries(styles).map(([prop, value]) => (
+                  <div key={prop}>
+                    <label className="block text-xs text-gray-600 mb-1 capitalize">{prop.replace(/([A-Z])/g, ' $1').trim()}</label>
+                    {def?.colorProps?.includes(prop) ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={value || '#000000'}
+                          onChange={(e) => setRules({
+                            ...rules,
+                            [selector]: { ...styles, [prop]: e.target.value }
+                          })}
+                          className="w-8 h-8 rounded border-0 cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={value}
+                          onChange={(e) => setRules({
+                            ...rules,
+                            [selector]: { ...styles, [prop]: e.target.value }
+                          })}
+                          placeholder="#0066FF"
+                          className="flex-1 px-2 py-1 border rounded text-sm"
+                        />
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        value={value}
+                        onChange={(e) => setRules({
+                          ...rules,
+                          [selector]: { ...styles, [prop]: e.target.value }
+                        })}
+                        placeholder={prop.includes('Radius') ? '4px' : prop.includes('Size') ? '14px' : 'value'}
+                        className="w-full px-2 py-1 border rounded text-sm"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+          );
+        })}
+      </div>
+    );
+  };
 
   const renderTermsSection = () => (
     <div className="space-y-3">
@@ -1422,15 +1427,6 @@ paymentElement.mount('#payment-element');`;
             </div>
 
             <div>
-              <SectionHeader title="Currency" icon={CreditCard} section="currency" />
-              {expandedSections.currency && (
-                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                  {renderCurrencySection()}
-                </div>
-              )}
-            </div>
-
-            <div>
               <SectionHeader title="Language" icon={Languages} section="language" />
               {expandedSections.language && (
                 <div className="mt-2 p-3 bg-gray-50 rounded-lg">
@@ -1487,50 +1483,8 @@ paymentElement.mount('#payment-element');`;
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-2xl mx-auto relative">
-                {inspectorMode && (
-                  <div
-                    className="absolute inset-0 z-50 cursor-crosshair"
-                    onClick={(e) => {
-                      const paymentEl = document.getElementById('sdk-customization-payment-element');
-                      if (!paymentEl) return;
-                      
-                      const rect = paymentEl.getBoundingClientRect();
-                      const elements = document.elementsFromPoint(e.clientX, e.clientY);
-                      const sdkElement = elements.find(el => 
-                        el.closest('#sdk-customization-payment-element') && 
-                        el !== paymentEl
-                      );
-                      
-                      if (sdkElement) {
-                        const classes = Array.from(sdkElement.classList);
-                        const selector = classes.length > 0 ? '.' + classes[0] : sdkElement.tagName.toLowerCase();
-                        setInspectorMessage({
-                          selector: selector,
-                          classes: classes.slice(0, 3)
-                        });
-                        setTimeout(() => setInspectorMessage(null), 3000);
-                      }
-                    }}
-                  >
-                    {inspectorMessage && (
-                      <div className="absolute top-2 right-2 bg-blue-500 text-white px-3 py-2 rounded-lg text-sm shadow-lg">
-                        <p className="font-mono">{inspectorMessage.selector}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-                <div id="sdk-customization-payment-element" className={`bg-white rounded-lg border border-gray-200 p-4 ${inspectorMode ? 'pointer-events-none' : ''}`} />
-                {inspectorMessage && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <p className="text-sm text-blue-800">
-                      Selected element: <code className="font-mono bg-blue-100 px-1 rounded">{inspectorMessage.selector}</code>
-                    </p>
-                    <p className="text-xs text-blue-600 mt-1">
-                      Classes: {inspectorMessage.classes.join(', ')}
-                    </p>
-                  </div>
-                )}
+              <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-2xl mx-auto">
+                <div id="sdk-customization-payment-element" className="bg-white rounded-lg border border-gray-200 p-4" />
 
                 {clientSecret && (
                   <button
