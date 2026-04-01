@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { 
   Palette, Layout, Wallet, Languages, Settings, ChevronDown, ChevronUp, 
-  Type, CreditCard, ToggleLeft, Eye, Code, Copy, Check
+  Type, CreditCard, ToggleLeft, Eye, Code, Copy, Check, HelpCircle
 } from 'lucide-react';
 import { makeAuthenticatedRequest } from '../utils/api';
 import { hyperState, demoModeState, debugCredentialsState, apiResponseState } from '../utils/atoms';
 import { filters } from '../utils/fieldMappings';
+import { sdkTooltips } from '../utils/sdkTooltips';
 
 const SDKCustomization = () => {
   const hyper = useRecoilValue(hyperState);
@@ -554,6 +555,20 @@ const paymentElement = elements.create('payment', ${JSON.stringify(options, null
 paymentElement.mount('#payment-element');`;
   };
 
+  const Tooltip = ({ children, title, description }) => (
+    <div className="group relative inline-flex items-center gap-1">
+      {children}
+      <div className="relative">
+        <HelpCircle size={14} className="text-gray-400 cursor-help" />
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
+          <p className="font-semibold mb-1">{title}</p>
+          <p className="text-gray-300 leading-relaxed">{description}</p>
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+        </div>
+      </div>
+    </div>
+  );
+
   const SectionHeader = ({ title, icon: Icon, section }) => (
     <button
       onClick={() => toggleSection(section)}
@@ -570,7 +585,9 @@ paymentElement.mount('#payment-element');`;
   const renderLayoutSection = () => (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1.5">Layout Type</label>
+        <Tooltip title={sdkTooltips.layout.type.title} description={sdkTooltips.layout.type.description}>
+          <label className="block text-sm font-medium text-gray-600 mb-1.5">Layout Type</label>
+        </Tooltip>
         <div className="flex gap-2">
           <button 
             onClick={() => setLayout({...layout, type: 'accordion'})} 
@@ -585,7 +602,9 @@ paymentElement.mount('#payment-element');`;
       
       {layout.type === 'tabs' && (
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">Arrangement</label>
+          <Tooltip title={sdkTooltips.layout.paymentMethodsArrangementForTabs.title} description={sdkTooltips.layout.paymentMethodsArrangementForTabs.description}>
+            <label className="block text-sm font-medium text-gray-600 mb-1.5">Arrangement</label>
+          </Tooltip>
           <select 
             value={paymentMethodsArrangementForTabs} 
             onChange={(e) => setPaymentMethodsArrangementForTabs(e.target.value)}
@@ -599,7 +618,9 @@ paymentElement.mount('#payment-element');`;
       
       <div className="space-y-2">
         <label className="flex items-center justify-between py-1.5">
-          <span className="text-sm">Default Collapsed</span>
+          <Tooltip title={sdkTooltips.layout.defaultCollapsed.title} description={sdkTooltips.layout.defaultCollapsed.description}>
+            <span className="text-sm">Default Collapsed</span>
+          </Tooltip>
           <input 
             type="checkbox" 
             checked={layout.defaultCollapsed} 
@@ -608,7 +629,9 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1.5">
-          <span className="text-sm">Show Radios</span>
+          <Tooltip title={sdkTooltips.layout.radios.title} description={sdkTooltips.layout.radios.description}>
+            <span className="text-sm">Show Radios</span>
+          </Tooltip>
           <input 
             type="checkbox" 
             checked={layout.radios} 
@@ -617,7 +640,9 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1.5">
-          <span className="text-sm">Spaced Items</span>
+          <Tooltip title={sdkTooltips.layout.spacedAccordionItems.title} description={sdkTooltips.layout.spacedAccordionItems.description}>
+            <span className="text-sm">Spaced Items</span>
+          </Tooltip>
           <input 
             type="checkbox" 
             checked={layout.spacedAccordionItems} 
@@ -633,7 +658,9 @@ paymentElement.mount('#payment-element');`;
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">Apple Pay</label>
+          <Tooltip title={sdkTooltips.wallets.applePay.title} description={sdkTooltips.wallets.applePay.description}>
+            <label className="block text-sm font-medium text-gray-600 mb-1.5">Apple Pay</label>
+          </Tooltip>
           <select 
             value={wallets.applePay} 
             onChange={(e) => setWallets({...wallets, applePay: e.target.value})}
@@ -644,7 +671,9 @@ paymentElement.mount('#payment-element');`;
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">Google Pay</label>
+          <Tooltip title={sdkTooltips.wallets.googlePay.title} description={sdkTooltips.wallets.googlePay.description}>
+            <label className="block text-sm font-medium text-gray-600 mb-1.5">Google Pay</label>
+          </Tooltip>
           <select 
             value={wallets.googlePay} 
             onChange={(e) => setWallets({...wallets, googlePay: e.target.value})}
@@ -655,7 +684,9 @@ paymentElement.mount('#payment-element');`;
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">PayPal</label>
+          <Tooltip title={sdkTooltips.wallets.payPal.title} description={sdkTooltips.wallets.payPal.description}>
+            <label className="block text-sm font-medium text-gray-600 mb-1.5">PayPal</label>
+          </Tooltip>
           <select 
             value={wallets.payPal} 
             onChange={(e) => setWallets({...wallets, payPal: e.target.value})}
@@ -668,10 +699,14 @@ paymentElement.mount('#payment-element');`;
       </div>
       
       <div className="border-t pt-3">
-        <p className="text-sm font-medium text-gray-600 mb-2">Wallet Button Style</p>
+        <Tooltip title={sdkTooltips.wallets.style.title} description={sdkTooltips.wallets.style.description}>
+          <p className="text-sm font-medium text-gray-600 mb-2">Wallet Button Style</p>
+        </Tooltip>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm text-gray-500 mb-1">Theme</label>
+            <Tooltip title={sdkTooltips.wallets.theme.title} description={sdkTooltips.wallets.theme.description}>
+              <label className="block text-sm text-gray-500 mb-1">Theme</label>
+            </Tooltip>
             <select 
               value={wallets.style.theme} 
               onChange={(e) => setWallets({...wallets, style: {...wallets.style, theme: e.target.value}})}
@@ -683,7 +718,9 @@ paymentElement.mount('#payment-element');`;
             </select>
           </div>
           <div>
-            <label className="block text-sm text-gray-500 mb-1">Type</label>
+            <Tooltip title={sdkTooltips.wallets.type.title} description={sdkTooltips.wallets.type.description}>
+              <label className="block text-sm text-gray-500 mb-1">Type</label>
+            </Tooltip>
             <select 
               value={wallets.style.type} 
               onChange={(e) => setWallets({...wallets, style: {...wallets.style, type: e.target.value}})}
@@ -693,7 +730,9 @@ paymentElement.mount('#payment-element');`;
             </select>
           </div>
           <div>
-            <label className="block text-sm text-gray-500 mb-1">Height (px)</label>
+            <Tooltip title={sdkTooltips.wallets.height.title} description={sdkTooltips.wallets.height.description}>
+              <label className="block text-sm text-gray-500 mb-1">Height (px)</label>
+            </Tooltip>
             <input 
               type="number" 
               value={wallets.style.height} 
@@ -712,15 +751,15 @@ paymentElement.mount('#payment-element');`;
         <p className="text-sm font-medium text-gray-600 mb-2">Colors</p>
         <div className="grid grid-cols-2 gap-2">
           {[
-            ['colorPrimary', 'Primary'],
-            ['colorBackground', 'Background'],
-            ['colorText', 'Text'],
-            ['colorDanger', 'Danger'],
-            ['colorSuccess', 'Success'],
-            ['colorWarning', 'Warning'],
-            ['colorTextSecondary', 'Text Secondary'],
-            ['colorTextPlaceholder', 'Placeholder'],
-          ].map(([key, label]) => (
+            ['colorPrimary', 'Primary', sdkTooltips.appearance.colorPrimary],
+            ['colorBackground', 'Background', sdkTooltips.appearance.colorBackground],
+            ['colorText', 'Text', sdkTooltips.appearance.colorText],
+            ['colorDanger', 'Danger', sdkTooltips.appearance.colorDanger],
+            ['colorSuccess', 'Success', sdkTooltips.appearance.colorSuccess],
+            ['colorWarning', 'Warning', sdkTooltips.appearance.colorWarning],
+            ['colorTextSecondary', 'Text Secondary', sdkTooltips.appearance.colorTextSecondary],
+            ['colorTextPlaceholder', 'Placeholder', sdkTooltips.appearance.colorTextPlaceholder],
+          ].map(([key, label, tooltip]) => (
             <div key={key} className="flex items-center gap-2">
               <input 
                 type="color" 
@@ -728,7 +767,9 @@ paymentElement.mount('#payment-element');`;
                 onChange={(e) => setAppearanceVars({...appearanceVars, [key]: e.target.value})}
                 className="w-6 h-6 rounded border-0 cursor-pointer" 
               />
-              <span className="text-sm text-gray-600">{label}</span>
+              <Tooltip title={tooltip.title} description={tooltip.description}>
+                <span className="text-sm text-gray-600">{label}</span>
+              </Tooltip>
             </div>
           ))}
         </div>
@@ -738,7 +779,9 @@ paymentElement.mount('#payment-element');`;
         <p className="text-sm font-medium text-gray-600 mb-2">Typography</p>
         <div className="space-y-2">
           <div>
-            <label className="block text-sm text-gray-500 mb-1">Font Family</label>
+            <Tooltip title={sdkTooltips.typography.fontFamily.title} description={sdkTooltips.typography.fontFamily.description}>
+              <label className="block text-sm text-gray-500 mb-1">Font Family</label>
+            </Tooltip>
             <select
               value={appearanceVars.fontFamily}
               onChange={(e) => setAppearanceVars({...appearanceVars, fontFamily: e.target.value})}
@@ -757,7 +800,9 @@ paymentElement.mount('#payment-element');`;
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-sm text-gray-500 mb-1">Base Size</label>
+              <Tooltip title={sdkTooltips.typography.fontSizeBase.title} description={sdkTooltips.typography.fontSizeBase.description}>
+                <label className="block text-sm text-gray-500 mb-1">Base Size</label>
+              </Tooltip>
               <div className="flex items-center">
                 <button
                   onClick={() => setAppearanceVars({...appearanceVars, fontSizeBase: (parseInt(appearanceVars.fontSizeBase) - 1) + 'px'})}
@@ -776,7 +821,9 @@ paymentElement.mount('#payment-element');`;
               </div>
             </div>
             <div>
-              <label className="block text-sm text-gray-500 mb-1">Border Radius</label>
+              <Tooltip title={sdkTooltips.typography.borderRadius.title} description={sdkTooltips.typography.borderRadius.description}>
+                <label className="block text-sm text-gray-500 mb-1">Border Radius</label>
+              </Tooltip>
               <div className="flex items-center">
                 <button
                   onClick={() => setAppearanceVars({...appearanceVars, borderRadius: (parseInt(appearanceVars.borderRadius) - 1) + 'px'})}
@@ -795,7 +842,9 @@ paymentElement.mount('#payment-element');`;
               </div>
             </div>
             <div>
-              <label className="block text-sm text-gray-500 mb-1">Spacing Unit</label>
+              <Tooltip title={sdkTooltips.typography.spacingUnit.title} description={sdkTooltips.typography.spacingUnit.description}>
+                <label className="block text-sm text-gray-500 mb-1">Spacing Unit</label>
+              </Tooltip>
               <div className="flex items-center">
                 <button
                   onClick={() => setAppearanceVars({...appearanceVars, spacingUnit: (parseInt(appearanceVars.spacingUnit) - 1) + 'px'})}
@@ -842,7 +891,9 @@ paymentElement.mount('#payment-element');`;
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm text-gray-500 mb-1">Background</label>
+          <Tooltip title={sdkTooltips.button.buttonBackgroundColor.title} description={sdkTooltips.button.buttonBackgroundColor.description}>
+            <label className="block text-sm text-gray-500 mb-1">Background</label>
+          </Tooltip>
           <div className="flex gap-2">
             <input 
               type="color" 
@@ -859,7 +910,9 @@ paymentElement.mount('#payment-element');`;
           </div>
         </div>
         <div>
-          <label className="block text-sm text-gray-500 mb-1">Text Color</label>
+          <Tooltip title={sdkTooltips.button.buttonTextColor.title} description={sdkTooltips.button.buttonTextColor.description}>
+            <label className="block text-sm text-gray-500 mb-1">Text Color</label>
+          </Tooltip>
           <div className="flex gap-2">
             <input 
               type="color" 
@@ -879,7 +932,9 @@ paymentElement.mount('#payment-element');`;
       
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm text-gray-500 mb-1">Height</label>
+          <Tooltip title={sdkTooltips.button.buttonHeight.title} description={sdkTooltips.button.buttonHeight.description}>
+            <label className="block text-sm text-gray-500 mb-1">Height</label>
+          </Tooltip>
           <div className="flex items-center">
             <button
               onClick={() => setButtonVars({...buttonVars, buttonHeight: (parseInt(buttonVars.buttonHeight) - 1) + 'px'})}
@@ -898,7 +953,9 @@ paymentElement.mount('#payment-element');`;
           </div>
         </div>
         <div>
-          <label className="block text-sm text-gray-500 mb-1">Width</label>
+          <Tooltip title={sdkTooltips.button.buttonWidth.title} description={sdkTooltips.button.buttonWidth.description}>
+            <label className="block text-sm text-gray-500 mb-1">Width</label>
+          </Tooltip>
           <input
             type="text"
             value={buttonVars.buttonWidth}
@@ -907,7 +964,9 @@ paymentElement.mount('#payment-element');`;
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-500 mb-1">Border Radius</label>
+          <Tooltip title={sdkTooltips.button.buttonBorderRadius.title} description={sdkTooltips.button.buttonBorderRadius.description}>
+            <label className="block text-sm text-gray-500 mb-1">Border Radius</label>
+          </Tooltip>
           <div className="flex items-center">
             <button
               onClick={() => setButtonVars({...buttonVars, buttonBorderRadius: (parseInt(buttonVars.buttonBorderRadius) - 1) + 'px'})}
@@ -926,7 +985,9 @@ paymentElement.mount('#payment-element');`;
           </div>
         </div>
         <div>
-          <label className="block text-sm text-gray-500 mb-1">Border Width</label>
+          <Tooltip title={sdkTooltips.button.buttonBorderWidth.title} description={sdkTooltips.button.buttonBorderWidth.description}>
+            <label className="block text-sm text-gray-500 mb-1">Border Width</label>
+          </Tooltip>
           <div className="flex items-center">
             <button
               onClick={() => setButtonVars({...buttonVars, buttonBorderWidth: (parseInt(buttonVars.buttonBorderWidth) - 1) + 'px'})}
@@ -947,7 +1008,9 @@ paymentElement.mount('#payment-element');`;
       </div>
       
       <div>
-        <label className="block text-sm text-gray-500 mb-1">Border Color</label>
+        <Tooltip title={sdkTooltips.button.buttonBorderColor.title} description={sdkTooltips.button.buttonBorderColor.description}>
+          <label className="block text-sm text-gray-500 mb-1">Border Color</label>
+        </Tooltip>
         <div className="flex gap-2">
           <input 
             type="color" 
@@ -966,7 +1029,9 @@ paymentElement.mount('#payment-element');`;
       
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm text-gray-500 mb-1">Text Size</label>
+          <Tooltip title={sdkTooltips.button.buttonTextFontSize.title} description={sdkTooltips.button.buttonTextFontSize.description}>
+            <label className="block text-sm text-gray-500 mb-1">Text Size</label>
+          </Tooltip>
           <div className="flex items-center">
             <button
               onClick={() => setButtonVars({...buttonVars, buttonTextFontSize: (parseInt(buttonVars.buttonTextFontSize) - 1) + 'px'})}
@@ -985,7 +1050,9 @@ paymentElement.mount('#payment-element');`;
           </div>
         </div>
         <div>
-          <label className="block text-sm text-gray-500 mb-1">Text Weight</label>
+          <Tooltip title={sdkTooltips.button.buttonTextFontWeight.title} description={sdkTooltips.button.buttonTextFontWeight.description}>
+            <label className="block text-sm text-gray-500 mb-1">Text Weight</label>
+          </Tooltip>
           <div className="flex items-center">
             <button
               onClick={() => setButtonVars({...buttonVars, buttonTextFontWeight: (parseInt(buttonVars.buttonTextFontWeight) - 100).toString()})}
@@ -1010,7 +1077,9 @@ paymentElement.mount('#payment-element');`;
   const renderCurrencySection = () => (
     <div className="space-y-3">
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1.5">Transaction Currency</label>
+        <Tooltip title={sdkTooltips.currency.title} description={sdkTooltips.currency.description}>
+          <label className="block text-sm font-medium text-gray-600 mb-1.5">Transaction Currency</label>
+        </Tooltip>
         <select 
           value={currency} 
           onChange={(e) => setCurrency(e.target.value)}
@@ -1031,7 +1100,9 @@ paymentElement.mount('#payment-element');`;
 
   const renderLanguageSection = () => (
     <div>
-      <label className="block text-sm font-medium text-gray-600 mb-1.5">Locale</label>
+      <Tooltip title={sdkTooltips.locale.title} description={sdkTooltips.locale.description}>
+        <label className="block text-sm font-medium text-gray-600 mb-1.5">Locale</label>
+      </Tooltip>
       <select 
         value={locale} 
         onChange={(e) => setLocale(e.target.value)}
@@ -1048,7 +1119,9 @@ paymentElement.mount('#payment-element');`;
   const renderMoreSection = () => (
     <div className="space-y-3">
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1.5">Branding</label>
+        <Tooltip title={sdkTooltips.moreConfig.branding.title} description={sdkTooltips.moreConfig.branding.description}>
+          <label className="block text-sm font-medium text-gray-600 mb-1.5">Branding</label>
+        </Tooltip>
         <select 
           value={moreConfig.branding} 
           onChange={(e) => setMoreConfig({...moreConfig, branding: e.target.value})}
@@ -1060,7 +1133,9 @@ paymentElement.mount('#payment-element');`;
       </div>
       
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Methods Header</label>
+        <Tooltip title={sdkTooltips.moreConfig.paymentMethodsHeaderText.title} description={sdkTooltips.moreConfig.paymentMethodsHeaderText.description}>
+          <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Methods Header</label>
+        </Tooltip>
         <input 
           type="text" 
           value={moreConfig.paymentMethodsHeaderText} 
@@ -1071,7 +1146,9 @@ paymentElement.mount('#payment-element');`;
       </div>
       
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1.5">Saved Methods Header</label>
+        <Tooltip title={sdkTooltips.moreConfig.savedPaymentMethodsHeaderText.title} description={sdkTooltips.moreConfig.savedPaymentMethodsHeaderText.description}>
+          <label className="block text-sm font-medium text-gray-600 mb-1.5">Saved Methods Header</label>
+        </Tooltip>
         <input 
           type="text" 
           value={moreConfig.savedPaymentMethodsHeaderText} 
@@ -1082,7 +1159,9 @@ paymentElement.mount('#payment-element');`;
       </div>
       
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Method Order</label>
+        <Tooltip title={sdkTooltips.moreConfig.paymentMethodOrder.title} description={sdkTooltips.moreConfig.paymentMethodOrder.description}>
+          <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Method Order</label>
+        </Tooltip>
         <input 
           type="text" 
           value={paymentMethodOrder} 
@@ -1119,7 +1198,9 @@ paymentElement.mount('#payment-element');`;
       
       <div className="space-y-2 pt-2 border-t">
         <label className="flex items-center justify-between py-1">
-          <span className="text-sm">Hide Card Nickname</span>
+          <Tooltip title={sdkTooltips.moreConfig.hideCardNicknameField.title} description={sdkTooltips.moreConfig.hideCardNicknameField.description}>
+            <span className="text-sm">Hide Card Nickname</span>
+          </Tooltip>
           <input 
             type="checkbox" 
             checked={moreConfig.hideCardNicknameField} 
@@ -1128,7 +1209,9 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1">
-          <span className="text-sm">Hide Expired Methods</span>
+          <Tooltip title={sdkTooltips.moreConfig.hideExpiredPaymentMethods.title} description={sdkTooltips.moreConfig.hideExpiredPaymentMethods.description}>
+            <span className="text-sm">Hide Expired Methods</span>
+          </Tooltip>
           <input 
             type="checkbox" 
             checked={moreConfig.hideExpiredPaymentMethods} 
@@ -1137,7 +1220,9 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1">
-          <span className="text-sm">Display Saved Methods</span>
+          <Tooltip title={sdkTooltips.moreConfig.displaySavedPaymentMethods.title} description={sdkTooltips.moreConfig.displaySavedPaymentMethods.description}>
+            <span className="text-sm">Display Saved Methods</span>
+          </Tooltip>
           <input 
             type="checkbox" 
             checked={moreConfig.displaySavedPaymentMethods} 
@@ -1146,7 +1231,9 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1">
-          <span className="text-sm">Show Save Checkbox</span>
+          <Tooltip title={sdkTooltips.moreConfig.displaySavedPaymentMethodsCheckbox.title} description={sdkTooltips.moreConfig.displaySavedPaymentMethodsCheckbox.description}>
+            <span className="text-sm">Show Save Checkbox</span>
+          </Tooltip>
           <input 
             type="checkbox" 
             checked={moreConfig.displaySavedPaymentMethodsCheckbox} 
@@ -1155,7 +1242,9 @@ paymentElement.mount('#payment-element');`;
           />
         </label>
         <label className="flex items-center justify-between py-1">
-          <span className="text-sm">Checkbox Checked by Default</span>
+          <Tooltip title={sdkTooltips.moreConfig.savedPaymentMethodsCheckboxCheckedByDefault.title} description={sdkTooltips.moreConfig.savedPaymentMethodsCheckboxCheckedByDefault.description}>
+            <span className="text-sm">Checkbox Checked by Default</span>
+          </Tooltip>
           <input 
             type="checkbox" 
             checked={moreConfig.savedPaymentMethodsCheckboxCheckedByDefault} 
@@ -1171,17 +1260,19 @@ paymentElement.mount('#payment-element');`;
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-500">Custom CSS rules for granular styling</p>
-        <button
-          onClick={() => setInspectorMode(!inspectorMode)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors ${
-            inspectorMode
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          <Eye size={14} />
-          {inspectorMode ? 'Exit Inspector' : 'Element Inspector'}
-        </button>
+        <Tooltip title={sdkTooltips.rules.inspectorMode.title} description={sdkTooltips.rules.inspectorMode.description}>
+          <button
+            onClick={() => setInspectorMode(!inspectorMode)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              inspectorMode
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <Eye size={14} />
+            {inspectorMode ? 'Exit Inspector' : 'Element Inspector'}
+          </button>
+        </Tooltip>
       </div>
 
       {inspectorMode && (
@@ -1192,28 +1283,44 @@ paymentElement.mount('#payment-element');`;
         </div>
       )}
       
-      {Object.entries(rules).map(([selector, styles]) => (
-        <div key={selector} className="border rounded-lg p-3 bg-white">
-          <p className="text-sm font-medium text-gray-700 mb-2">{selector}</p>
-          <div className="grid grid-cols-2 gap-2">
-            {Object.entries(styles).map(([prop, value]) => (
-              <div key={prop}>
-                <label className="block text-xs text-gray-500 mb-1">{prop}</label>
-                <input
-                  type="text"
-                  value={value}
-                  onChange={(e) => setRules({
-                    ...rules,
-                    [selector]: { ...styles, [prop]: e.target.value }
-                  })}
-                  placeholder="e.g., #0066FF"
-                  className="w-full px-2 py-1 border rounded text-sm"
-                />
-              </div>
-            ))}
+      {Object.entries(rules).map(([selector, styles]) => {
+        const ruleTooltip = {
+          '.Tab--selected': sdkTooltips.rules.tabSelected,
+          '.Tab:hover': sdkTooltips.rules.tabHover,
+          '.Input': sdkTooltips.rules.input,
+          '.Input--invalid': sdkTooltips.rules.inputInvalid,
+          '.Input::placeholder': sdkTooltips.rules.inputPlaceholder,
+          '.Label': sdkTooltips.rules.label,
+          '.Checkbox--checked': sdkTooltips.rules.checkboxChecked,
+          '.OrPayUsingLabel': sdkTooltips.rules.orPayUsingLabel,
+          '.TermsTextLabel': sdkTooltips.rules.termsTextLabel,
+        }[selector];
+        
+        return (
+          <div key={selector} className="border rounded-lg p-3 bg-white">
+            <Tooltip title={ruleTooltip?.title || selector} description={ruleTooltip?.description || 'Custom CSS selector'}>
+              <p className="text-sm font-medium text-gray-700 mb-2">{selector}</p>
+            </Tooltip>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(styles).map(([prop, value]) => (
+                <div key={prop}>
+                  <label className="block text-xs text-gray-500 mb-1">{prop}</label>
+                  <input
+                    type="text"
+                    value={value}
+                    onChange={(e) => setRules({
+                      ...rules,
+                      [selector]: { ...styles, [prop]: e.target.value }
+                    })}
+                    placeholder="e.g., #0066FF"
+                    className="w-full px-2 py-1 border rounded text-sm"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 
