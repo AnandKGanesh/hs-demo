@@ -130,6 +130,21 @@ app.post('/api/create-intent', async (req, res) => {
       paymentData.capture_method = 'manual';
     }
 
+    if (flowType === 'zero_setup') {
+      paymentData.setup_future_usage = 'off_session';
+      paymentData.payment_type = 'setup_mandate';
+      paymentData.customer_acceptance = {
+        acceptance_type: 'offline',
+      };
+    }
+
+    if (flowType === 'setup_and_charge') {
+      paymentData.setup_future_usage = 'off_session';
+      paymentData.customer_acceptance = {
+        acceptance_type: 'offline',
+      };
+    }
+
     const response = await fetch(`${creds.serverUrl}/payments`, {
       method: 'POST',
       headers: {

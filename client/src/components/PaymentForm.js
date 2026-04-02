@@ -75,14 +75,9 @@ const getRequestBodyForFlow = (flow) => {
         ...base,
         amount: 0,
         setup_future_usage: 'off_session',
+        payment_type: 'setup_mandate',
         mandate_data: {
           customer_acceptance: { acceptance_type: 'offline' },
-          mandate_type: {
-            multi_use: {
-              amount: 10000,
-              currency: 'USD',
-            },
-          },
         },
       };
     case 'setup_and_charge':
@@ -90,15 +85,7 @@ const getRequestBodyForFlow = (flow) => {
         ...base,
         amount: 10000,
         setup_future_usage: 'off_session',
-        mandate_data: {
-          customer_acceptance: { acceptance_type: 'offline' },
-          mandate_type: {
-            multi_use: {
-              amount: 10000,
-              currency: 'USD',
-            },
-          },
-        },
+        customer_acceptance: { acceptance_type: 'offline' },
       };
     case 'recurring_charge':
       return {
