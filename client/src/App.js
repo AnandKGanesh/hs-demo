@@ -213,7 +213,7 @@ const App = () => {
           )}
         </div>
       ) : (
-        <div className={`${currentFlow?.id === 'routing_simulator' || currentFlow?.id === 'three_ds_decision' ? 'max-w-7xl' : 'max-w-4xl'} mx-auto`}>
+        <div className={`${currentFlow?.id === 'routing_simulator' || currentFlow?.id === 'three_ds_decision' ? 'max-w-7xl' : 'max-w-4xl'} mx-auto w-full px-2 sm:px-0 overflow-x-hidden`}>
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               {currentFlow?.name || 'Select a Flow'}
@@ -225,7 +225,7 @@ const App = () => {
 
           {currentFlow && (
             <>
-              <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 ${currentFlow.id === 'chargeback_unification' || currentFlow.id === 'routing_simulator' || currentFlow.id === 'three_ds_decision' ? 'w-full max-w-none' : 'max-w-2xl mx-auto'}`}>
+              <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-6 overflow-hidden ${currentFlow.id === 'chargeback_unification' || currentFlow.id === 'routing_simulator' || currentFlow.id === 'three_ds_decision' ? 'w-full max-w-none' : 'max-w-2xl mx-auto w-full'}`}>
               {currentFlow.id === 'recurring_charge' ? (
                 <RecurringCharge key={currentFlow.id} />
               ) : currentFlow.id === 'recurring_charge_ntid' ? (

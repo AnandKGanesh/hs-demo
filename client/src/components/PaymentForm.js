@@ -409,14 +409,14 @@ const PaymentForm = ({ flow }) => {
   return (
     <>
       <TestDataPrompt />
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-full overflow-x-hidden">
         <div className="space-y-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Card Details
           </label>
           <div 
             id="payment-element" 
-            className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+            className="p-3 sm:p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 overflow-x-auto"
           >
             {/* PaymentElement mounts here */}
           </div>
