@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { hyperState, apiResponseState, paymentStatusState, customerState, captureCompleteState, demoModeState, debugCredentialsState } from '../utils/atoms';
+import { hyperState, apiResponseState, paymentStatusState, customerState, captureCompleteState, demoModeState, debugCredentialsState, themeState } from '../utils/atoms';
 import ServerButton from './ServerButton';
 import API_BASE_URL from '../config';
 import { createCustomer, createPaymentIntent } from '../utils/api';
@@ -50,7 +50,7 @@ const captureApiCall = (request, response, setApiResponse, stepTitle) => {
 
 // Test data display component
 const TestDataPrompt = () => (
-  <div className="absolute top-20 right-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 shadow-lg max-w-xs z-10">
+  <div className="relative sm:absolute sm:top-20 sm:right-6 mb-4 sm:mb-0 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4 shadow-lg sm:max-w-xs z-10">
     <h4 className="font-semibold text-blue-900 dark:text-blue-300 text-sm mb-2">
       Test Data
     </h4>
@@ -148,6 +148,7 @@ const PaymentForm = ({ flow }) => {
   const [hasClicked, setHasClicked] = useState(false);
   const [error, setError] = useState(null);
   const [status, setStatus] = useState(null);
+  const theme = useRecoilValue(themeState);
 
   // Create payment intent on mount or when flow changes
   useEffect(() => {
@@ -241,11 +242,19 @@ const PaymentForm = ({ flow }) => {
   useEffect(() => {
     if (!hyper || !clientSecret) return;
 
+    const isDark = theme === 'dark';
+    
     const elements = hyper.elements({
       clientSecret,
       appearance: {
-        theme: 'default',
+        theme: isDark ? 'night' : 'default',
         labels: 'floating',
+        variables: isDark ? {
+          colorBackground: '#1f2937',
+          colorText: '#f9fafb',
+          colorPrimary: '#3b82f6',
+          colorSurface: '#374151',
+        } : undefined,
       },
     });
 
@@ -255,7 +264,7 @@ const PaymentForm = ({ flow }) => {
     return () => {
       paymentElement.destroy();
     };
-  }, [hyper, clientSecret]);
+  }, [hyper, clientSecret, theme]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -419,7 +428,7 @@ const PaymentForm = ({ flow }) => {
           </div>
         )}
 
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <button
             type="submit"
             disabled={isProcessing || !clientSecret || hasClicked}

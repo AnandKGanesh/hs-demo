@@ -172,19 +172,19 @@ const OrganizationManager = () => {
         
         <div className="flex flex-col items-center pt-2">
           <div 
-            className="bg-orange-100 border-2 border-orange-300 rounded-lg px-16 py-3 mb-4 cursor-pointer hover:ring-4 hover:ring-orange-200 transition-all"
+            className="bg-orange-100 dark:bg-orange-900/30 border-2 border-orange-300 dark:border-orange-700 rounded-lg px-16 py-3 mb-4 cursor-pointer hover:ring-4 hover:ring-orange-200 dark:hover:ring-orange-900 transition-all"
             onMouseEnter={() => handleMouseEnter('operator')}
             onMouseLeave={handleMouseLeave}
           >
-            <span className="font-bold text-lg text-orange-800">Operator</span>
+            <span className="font-bold text-lg text-orange-800 dark:text-orange-300">Operator</span>
           </div>
           <div className="w-0.5 h-6 bg-gray-300 mb-4"></div>
           <div 
-            className="bg-green-100 border-2 border-green-300 rounded-lg px-10 py-2 mb-6 cursor-pointer hover:ring-4 hover:ring-green-200 transition-all"
+            className="bg-green-100 dark:bg-green-900/30 border-2 border-green-300 dark:border-green-700 rounded-lg px-10 py-2 mb-6 cursor-pointer hover:ring-4 hover:ring-green-200 dark:hover:ring-green-900 transition-all"
             onMouseEnter={() => handleMouseEnter('organization')}
             onMouseLeave={handleMouseLeave}
           >
-            <span className="font-bold text-lg text-green-800">Organization</span>
+            <span className="font-bold text-lg text-green-800 dark:text-green-300">Organization</span>
           </div>
           <div className="w-0.5 h-6 bg-gray-300"></div>
           
@@ -197,29 +197,29 @@ const OrganizationManager = () => {
           </div>
 
           <div className="grid grid-cols-[3fr_2fr] gap-6 w-full min-w-max pt-3">
-            <div className="border-2 border-blue-300 rounded-xl p-4 bg-blue-50/20">
-              <h4 className="text-sm font-bold text-gray-800 mb-6 text-center border-b border-blue-200 pb-2">
+            <div className="border-2 border-blue-300 dark:border-blue-700 rounded-xl p-4 bg-blue-50/20 dark:bg-blue-900/10">
+              <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-6 text-center border-b border-blue-200 dark:border-blue-800 pb-2">
                 Shared Customers and Payment methods
               </h4>
               
               <div className="flex flex-col gap-6">
                 <div className="flex justify-center gap-8">
                   <div 
-                    className="bg-cyan-100 border-2 border-cyan-400 rounded-full px-10 py-4 cursor-pointer hover:ring-4 hover:ring-cyan-200 transition-all"
+                    className="bg-cyan-100 dark:bg-cyan-900/30 border-2 border-cyan-400 dark:border-cyan-700 rounded-full px-10 py-4 cursor-pointer hover:ring-4 hover:ring-cyan-200 dark:hover:ring-cyan-900 transition-all"
                     onMouseEnter={() => handleMouseEnter('sharedCustomers')}
                     onMouseLeave={handleMouseLeave}
                   >
-                    <div className="flex items-center gap-2 text-cyan-900 font-semibold text-sm">
+                    <div className="flex items-center gap-2 text-cyan-900 dark:text-cyan-300 font-semibold text-sm">
                       <User size={16} />
                       <span>Customers</span>
                     </div>
                   </div>
                   <div 
-                    className="bg-cyan-100 border-2 border-cyan-400 rounded-full px-10 py-4 cursor-pointer hover:ring-4 hover:ring-cyan-200 transition-all"
+                    className="bg-cyan-100 dark:bg-cyan-900/30 border-2 border-cyan-400 dark:border-cyan-700 rounded-full px-10 py-4 cursor-pointer hover:ring-4 hover:ring-cyan-200 dark:hover:ring-cyan-900 transition-all"
                     onMouseEnter={() => handleMouseEnter('sharedCardvault')}
                     onMouseLeave={handleMouseLeave}
                   >
-                    <div className="flex items-center gap-2 text-cyan-900 font-semibold text-sm">
+                    <div className="flex items-center gap-2 text-cyan-900 dark:text-cyan-300 font-semibold text-sm">
                       <CreditCard size={16} />
                       <span>Cardvault</span>
                     </div>
@@ -229,12 +229,12 @@ const OrganizationManager = () => {
                 <div className="flex justify-center gap-5 overflow-x-auto pb-2">
                   <div className="flex flex-col items-center gap-1 w-44 shrink-0">
                     <div 
-                      className="bg-teal-100 border border-teal-300 rounded-lg p-3 w-full h-full cursor-pointer hover:ring-4 hover:ring-teal-200 transition-all"
+                      className="bg-teal-100 dark:bg-teal-900/30 border border-teal-300 dark:border-teal-700 rounded-lg p-3 w-full h-full cursor-pointer hover:ring-4 hover:ring-teal-200 dark:hover:ring-teal-900 transition-all"
                       onMouseEnter={() => handleMouseEnter('platformMerchant')}
                       onMouseLeave={handleMouseLeave}
                     >
-                      <div className="text-xs font-bold text-teal-800 mb-1">Platform Merchant</div>
-                      <div className="text-[10px] text-gray-600 space-y-0.5">
+                      <div className="text-xs font-bold text-teal-800 dark:text-teal-300 mb-1">Platform Merchant</div>
+                      <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0.5">
                         <div className="flex items-center gap-0.5"><Settings size={8} /><span>API key</span></div>
                       </div>
                     </div>
@@ -244,23 +244,23 @@ const OrganizationManager = () => {
 
                   <div className="flex flex-col items-center gap-1 w-44 shrink-0">
                     <div 
-                      className="bg-blue-100 border border-blue-300 rounded-lg p-3 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
+                      className="bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-lg p-3 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 dark:hover:ring-blue-900 transition-all"
                       onMouseEnter={() => handleMouseEnter('connectedMerchant')}
                       onMouseLeave={handleMouseLeave}
                     >
-                      <div className="text-xs font-bold text-blue-900 mb-1">Merchant 2</div>
-                      <div className="text-[10px] text-gray-600 space-y-0.5">
+                      <div className="text-xs font-bold text-blue-900 dark:text-blue-300 mb-1">Merchant 2</div>
+                      <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0.5">
                         <div className="flex items-center gap-0.5"><Settings size={8} /><span>API key</span></div>
                       </div>
                     </div>
                     <div className="w-0.5 h-4 bg-gray-300"></div>
                     <div 
-                      className="bg-purple-100 border border-purple-300 rounded-lg p-3 w-full cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
+                      className="bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-700 rounded-lg p-3 w-full cursor-pointer hover:ring-4 hover:ring-purple-200 dark:hover:ring-purple-900 transition-all"
                       onMouseEnter={() => handleMouseEnter('profile')}
                       onMouseLeave={handleMouseLeave}
                     >
-                      <div className="text-[10px] font-semibold text-purple-800 mb-0.5">Profile 2A</div>
-                      <div className="text-[10px] text-gray-600 space-y-0">
+                      <div className="text-[10px] font-semibold text-purple-800 dark:text-purple-300 mb-0.5">Profile 2A</div>
+                      <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0">
                         <div className="flex items-center gap-0.5"><Settings size={6} /><span>Transactions</span></div>
                         <div className="flex items-center gap-0.5"><Settings size={6} /><span>Routing Rules</span></div>
                       </div>
@@ -269,35 +269,35 @@ const OrganizationManager = () => {
 
                   <div className="flex flex-col items-center gap-1 w-44 shrink-0">
                     <div 
-                      className="bg-blue-100 border border-blue-300 rounded-lg p-3 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
+                      className="bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-lg p-3 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 dark:hover:ring-blue-900 transition-all"
                       onMouseEnter={() => handleMouseEnter('connectedMerchant')}
                       onMouseLeave={handleMouseLeave}
                     >
-                      <div className="text-xs font-bold text-blue-900 mb-1">Merchant 3</div>
-                      <div className="text-[10px] text-gray-600 space-y-0.5">
+                      <div className="text-xs font-bold text-blue-900 dark:text-blue-300 mb-1">Merchant 3</div>
+                      <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0.5">
                         <div className="flex items-center gap-0.5"><Settings size={8} /><span>API key</span></div>
                       </div>
                     </div>
                     <div className="w-0.5 h-4 bg-gray-300"></div>
                     <div className="space-y-1 w-full">
                       <div 
-                        className="bg-purple-100 border border-purple-300 rounded-lg p-3 cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
+                        className="bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-700 rounded-lg p-3 cursor-pointer hover:ring-4 hover:ring-purple-200 dark:hover:ring-purple-900 transition-all"
                         onMouseEnter={() => handleMouseEnter('profile')}
                         onMouseLeave={handleMouseLeave}
                       >
-                        <div className="text-[10px] font-semibold text-purple-800 mb-0.5">Profile 3A</div>
-                        <div className="text-[10px] text-gray-600 space-y-0">
+                        <div className="text-[10px] font-semibold text-purple-800 dark:text-purple-300 mb-0.5">Profile 3A</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0">
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Transactions</span></div>
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Routing Rules</span></div>
                         </div>
                       </div>
                       <div 
-                        className="bg-purple-100 border border-purple-300 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
+                        className="bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-700 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 dark:hover:ring-purple-900 transition-all"
                         onMouseEnter={() => handleMouseEnter('profile')}
                         onMouseLeave={handleMouseLeave}
                       >
-                        <div className="text-[10px] font-semibold text-purple-800 mb-0.5">Profile 3B</div>
-                        <div className="text-[10px] text-gray-600 space-y-0">
+                        <div className="text-[10px] font-semibold text-purple-800 dark:text-purple-300 mb-0.5">Profile 3B</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0">
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Transactions</span></div>
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Routing Rules</span></div>
                         </div>
@@ -308,23 +308,23 @@ const OrganizationManager = () => {
                   {merchants.shared.map((merchant) => (
                     <div key={merchant.id} className="flex flex-col items-center gap-1 w-36 shrink-0">
                       <div 
-                        className="bg-blue-100 border border-blue-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
+                        className="bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 dark:hover:ring-blue-900 transition-all"
                         onMouseEnter={() => handleMouseEnter('connectedMerchant')}
                         onMouseLeave={handleMouseLeave}
                       >
-                        <div className="text-xs font-bold text-blue-900 mb-1">{merchant.name}</div>
-                        <div className="text-[10px] text-gray-600 space-y-0.5">
+                        <div className="text-xs font-bold text-blue-900 dark:text-blue-300 mb-1">{merchant.name}</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0.5">
                           <div className="flex items-center gap-0.5"><Settings size={8} /><span>API key</span></div>
                         </div>
                       </div>
                       <div className="w-0.5 h-3 bg-gray-300"></div>
                       <div 
-                        className="bg-purple-100 border border-purple-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
+                        className="bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-700 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-purple-200 dark:hover:ring-purple-900 transition-all"
                         onMouseEnter={() => handleMouseEnter('profile')}
                         onMouseLeave={handleMouseLeave}
                       >
-                        <div className="text-[10px] font-semibold text-purple-800 mb-0.5">Profile {merchant.id}A</div>
-                        <div className="text-[10px] text-gray-600 space-y-0">
+                        <div className="text-[10px] font-semibold text-purple-800 dark:text-purple-300 mb-0.5">Profile {merchant.id}A</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0">
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Transactions</span></div>
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Routing Rules</span></div>
                         </div>
@@ -335,21 +335,21 @@ const OrganizationManager = () => {
               </div>
             </div>
 
-            <div className="border-2 border-blue-300 rounded-xl p-4 bg-blue-50/20">
-              <h4 className="text-sm font-bold text-gray-800 mb-6 text-center border-b border-blue-200 pb-2">
+            <div className="border-2 border-blue-300 dark:border-blue-700 rounded-xl p-4 bg-blue-50/20 dark:bg-blue-900/10">
+              <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-6 text-center border-b border-blue-200 dark:border-blue-800 pb-2">
                 Isolated Customers and Payment methods
               </h4>
               
               <div className="flex flex-col gap-6">
                 <div className="flex justify-center gap-6 min-h-[58px]">
                   <div className="invisible bg-cyan-100 border-2 border-cyan-400 rounded-full px-8 py-3">
-                    <div className="flex items-center gap-2 text-cyan-900 font-semibold text-sm">
+                    <div className="flex items-center gap-2 text-cyan-900 dark:text-cyan-300 font-semibold text-sm">
                       <User size={14} />
                       <span>Customers</span>
                     </div>
                   </div>
                   <div className="invisible bg-cyan-100 border-2 border-cyan-400 rounded-full px-8 py-3">
-                    <div className="flex items-center gap-2 text-cyan-900 font-semibold text-sm">
+                    <div className="flex items-center gap-2 text-cyan-900 dark:text-cyan-300 font-semibold text-sm">
                       <CreditCard size={14} />
                       <span>Cardvault</span>
                     </div>
@@ -359,12 +359,12 @@ const OrganizationManager = () => {
                 <div className="flex justify-center gap-3 overflow-x-auto pb-2">
                   <div className="flex flex-col items-center gap-1 w-36 shrink-0">
                     <div 
-                      className="bg-blue-100 border border-blue-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
+                      className="bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 dark:hover:ring-blue-900 transition-all"
                       onMouseEnter={() => handleMouseEnter('standardMerchant')}
                       onMouseLeave={handleMouseLeave}
                     >
-                      <div className="text-xs font-bold text-blue-900 mb-1">Merchant 4</div>
-                      <div className="text-[10px] text-gray-600 space-y-0.5">
+                      <div className="text-xs font-bold text-blue-900 dark:text-blue-300 mb-1">Merchant 4</div>
+                      <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0.5">
                         <div className="flex items-center gap-0.5"><Settings size={8} /><span>API key</span></div>
                         <div className="flex items-center gap-0.5"><User size={8} /><span>Customers</span></div>
                         <div className="flex items-center gap-0.5"><CreditCard size={8} /><span>Cardvault</span></div>
@@ -373,23 +373,23 @@ const OrganizationManager = () => {
                     <div className="w-0.5 h-3 bg-gray-300"></div>
                     <div className="space-y-1 w-full">
                       <div 
-                        className="bg-purple-100 border border-purple-300 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
+                        className="bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-700 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 dark:hover:ring-purple-900 transition-all"
                         onMouseEnter={() => handleMouseEnter('profile')}
                         onMouseLeave={handleMouseLeave}
                       >
-                        <div className="text-[10px] font-semibold text-purple-800 mb-0.5">Profile 4A</div>
-                        <div className="text-[10px] text-gray-600 space-y-0">
+                        <div className="text-[10px] font-semibold text-purple-800 dark:text-purple-300 mb-0.5">Profile 4A</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0">
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Transactions</span></div>
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Routing Rules</span></div>
                         </div>
                       </div>
                       <div 
-                        className="bg-purple-100 border border-purple-300 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
+                        className="bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-700 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 dark:hover:ring-purple-900 transition-all"
                         onMouseEnter={() => handleMouseEnter('profile')}
                         onMouseLeave={handleMouseLeave}
                       >
-                        <div className="text-[10px] font-semibold text-purple-800 mb-0.5">Profile 4B</div>
-                        <div className="text-[10px] text-gray-600 space-y-0">
+                        <div className="text-[10px] font-semibold text-purple-800 dark:text-purple-300 mb-0.5">Profile 4B</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0">
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Transactions</span></div>
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Routing Rules</span></div>
                         </div>
@@ -399,12 +399,12 @@ const OrganizationManager = () => {
                   
                   <div className="flex flex-col items-center gap-1 w-36 shrink-0">
                     <div 
-                      className="bg-blue-100 border border-blue-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
+                      className="bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 dark:hover:ring-blue-900 transition-all"
                       onMouseEnter={() => handleMouseEnter('standardMerchant')}
                       onMouseLeave={handleMouseLeave}
                     >
-                      <div className="text-xs font-bold text-blue-900 mb-1">Merchant 5</div>
-                      <div className="text-[10px] text-gray-600 space-y-0.5">
+                      <div className="text-xs font-bold text-blue-900 dark:text-blue-300 mb-1">Merchant 5</div>
+                      <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0.5">
                         <div className="flex items-center gap-0.5"><Settings size={8} /><span>API key</span></div>
                         <div className="flex items-center gap-0.5"><User size={8} /><span>Customers</span></div>
                         <div className="flex items-center gap-0.5"><CreditCard size={8} /><span>Cardvault</span></div>
@@ -413,23 +413,23 @@ const OrganizationManager = () => {
                     <div className="w-0.5 h-3 bg-gray-300"></div>
                     <div className="space-y-1 w-full">
                       <div 
-                        className="bg-purple-100 border border-purple-300 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
+                        className="bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-700 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 dark:hover:ring-purple-900 transition-all"
                         onMouseEnter={() => handleMouseEnter('profile')}
                         onMouseLeave={handleMouseLeave}
                       >
-                        <div className="text-[10px] font-semibold text-purple-800 mb-0.5">Profile 5A</div>
-                        <div className="text-[10px] text-gray-600 space-y-0">
+                        <div className="text-[10px] font-semibold text-purple-800 dark:text-purple-300 mb-0.5">Profile 5A</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0">
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Transactions</span></div>
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Routing Rules</span></div>
                         </div>
                       </div>
                       <div 
-                        className="bg-purple-100 border border-purple-300 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
+                        className="bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-700 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 dark:hover:ring-purple-900 transition-all"
                         onMouseEnter={() => handleMouseEnter('profile')}
                         onMouseLeave={handleMouseLeave}
                       >
-                        <div className="text-[10px] font-semibold text-purple-800 mb-0.5">Profile 5B</div>
-                        <div className="text-[10px] text-gray-600 space-y-0">
+                        <div className="text-[10px] font-semibold text-purple-800 dark:text-purple-300 mb-0.5">Profile 5B</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0">
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Transactions</span></div>
                           <div className="flex items-center gap-0.5"><Settings size={6} /><span>Routing Rules</span></div>
                         </div>
@@ -440,12 +440,12 @@ const OrganizationManager = () => {
                   {merchants.isolated.map((merchant) => (
                     <div key={merchant.id} className="flex flex-col items-center gap-1 w-36 shrink-0">
                       <div 
-                        className="bg-blue-100 border border-blue-300 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 transition-all"
+                        className="bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-lg p-2 w-full cursor-pointer hover:ring-4 hover:ring-blue-200 dark:hover:ring-blue-900 transition-all"
                         onMouseEnter={() => handleMouseEnter('standardMerchant')}
                         onMouseLeave={handleMouseLeave}
                       >
-                        <div className="text-xs font-bold text-blue-900 mb-1">{merchant.name}</div>
-                        <div className="text-[10px] text-gray-600 space-y-0.5">
+                        <div className="text-xs font-bold text-blue-900 dark:text-blue-300 mb-1">{merchant.name}</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0.5">
                           <div className="flex items-center gap-0.5"><Settings size={8} /><span>API key</span></div>
                           <div className="flex items-center gap-0.5"><User size={8} /><span>Customers</span></div>
                           <div className="flex items-center gap-0.5"><CreditCard size={8} /><span>Cardvault</span></div>
@@ -454,23 +454,23 @@ const OrganizationManager = () => {
                       <div className="w-0.5 h-3 bg-gray-300"></div>
                       <div className="space-y-1 w-full">
                         <div 
-                          className="bg-purple-100 border border-purple-300 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
+                          className="bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-700 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 dark:hover:ring-purple-900 transition-all"
                           onMouseEnter={() => handleMouseEnter('profile')}
                           onMouseLeave={handleMouseLeave}
                         >
-                          <div className="text-[10px] font-semibold text-purple-800 mb-0.5">Profile {merchant.id}A</div>
-                          <div className="text-[10px] text-gray-600 space-y-0">
+                          <div className="text-[10px] font-semibold text-purple-800 dark:text-purple-300 mb-0.5">Profile {merchant.id}A</div>
+                          <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0">
                             <div className="flex items-center gap-0.5"><Settings size={6} /><span>Transactions</span></div>
                             <div className="flex items-center gap-0.5"><Settings size={6} /><span>Routing Rules</span></div>
                           </div>
                         </div>
                         <div 
-                          className="bg-purple-100 border border-purple-300 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 transition-all"
+                          className="bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-700 rounded-lg p-2 cursor-pointer hover:ring-4 hover:ring-purple-200 dark:hover:ring-purple-900 transition-all"
                           onMouseEnter={() => handleMouseEnter('profile')}
                           onMouseLeave={handleMouseLeave}
                         >
-                          <div className="text-[10px] font-semibold text-purple-800 mb-0.5">Profile {merchant.id}B</div>
-                          <div className="text-[10px] text-gray-600 space-y-0">
+                          <div className="text-[10px] font-semibold text-purple-800 dark:text-purple-300 mb-0.5">Profile {merchant.id}B</div>
+                          <div className="text-[10px] text-gray-600 dark:text-gray-400 space-y-0">
                             <div className="flex items-center gap-0.5"><Settings size={6} /><span>Transactions</span></div>
                             <div className="flex items-center gap-0.5"><Settings size={6} /><span>Routing Rules</span></div>
                           </div>

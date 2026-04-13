@@ -24,12 +24,12 @@ const DebugModeBanner = () => {
   };
 
   return (
-    <div data-debug-banner className="fixed top-16 left-0 right-0 h-8 bg-amber-500 text-white flex items-center justify-center text-sm font-medium z-40">
-      <div className="flex items-center gap-4">
+    <div data-debug-banner className="fixed top-16 left-0 right-0 h-8 bg-amber-500 text-white flex items-center justify-center text-xs sm:text-sm font-medium z-40 px-3">
+      <div className="flex items-center gap-2 sm:gap-4 flex-wrap justify-center">
         <span>Debug Mode</span>
         <button
           onClick={handleClearCredentials}
-          className="text-xs underline hover:text-amber-100 ml-4"
+          className="text-xs underline hover:text-amber-100"
         >
           Clear & Reset
         </button>

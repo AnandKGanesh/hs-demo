@@ -119,10 +119,10 @@ const routingCategories = [
 
 const StatusBadge = ({ status, text }) => {
   const styles = {
-    eligible: 'bg-green-100 text-green-700 border-green-300',
+    eligible: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700',
     selected: 'bg-primary text-white border-primary',
-    fallback: 'bg-gray-100 text-gray-600 border-gray-300',
-    notEligible: 'bg-gray-200 text-gray-400 border-gray-300 line-through',
+    fallback: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600',
+    notEligible: 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 border-gray-300 dark:border-gray-600 line-through',
   };
   return <span className={`px-2 py-0.5 text-xs font-medium rounded border ${styles[status] || styles.eligible}`}>{text}</span>;
 };
@@ -131,7 +131,7 @@ const PspAvatar = ({ psp, size = 'md', status = 'normal' }) => {
   const sizeClasses = { sm: 'w-10 h-10 text-xs', md: 'w-12 h-12 text-sm', lg: 'w-14 h-14 text-base' };
   const statusStyles = {
     normal: pspConfig[psp]?.color || 'bg-gray-400',
-    eliminated: 'bg-gray-300',
+    eliminated: 'bg-gray-300 dark:bg-gray-600',
     selected: `${pspConfig[psp]?.color || 'bg-gray-400'} ring-4 ring-primary-light`,
   };
   const letter = psp.replace('PSP-', '');
@@ -144,10 +144,10 @@ const PspAvatar = ({ psp, size = 'md', status = 'normal' }) => {
 
 const RuleChip = ({ type, value, color = 'blue' }) => {
   const colors = {
-    blue: 'bg-primary-50 text-primary border-primary-light',
-    green: 'bg-green-100 text-green-700 border-green-300',
-    amber: 'bg-amber-100 text-amber-700 border-amber-300',
-    purple: 'bg-purple-100 text-purple-700 border-purple-300',
+    blue: 'bg-primary-50 dark:bg-primary-900/30 text-primary dark:text-primary-300 border-primary-light dark:border-primary-700',
+    green: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700',
+    amber: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-700',
+    purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-300 dark:border-purple-700',
   };
   return <span className={`px-2 py-1 text-xs font-medium rounded border ${colors[color]}`}>{type}: {value}</span>;
 };
@@ -192,66 +192,62 @@ const RoutingSimulator = () => {
   
   return (
     <div className="flex gap-6">
-
       <div className="w-56 flex-shrink-0">
-        <h3 className="text-xs font-bold text-gray-500 mb-4 uppercase tracking-wide">Routing Types</h3>
+        <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-4 uppercase tracking-wide">Routing Types</h3>
         <div className="space-y-3">
           {routingCategories.map((cat, idx) => (
-            <div key={idx} className="bg-white rounded-lg border border-gray-200 p-3">
+            <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="font-semibold text-gray-800 text-sm">{cat.name}</span>
-                <span className={`text-xs px-1.5 py-0.5 rounded ${cat.type === 'Static' ? 'bg-gray-100 text-gray-600' : 'bg-primary-50 text-primary'}`}>
+                <span className="font-semibold text-gray-800 dark:text-gray-200 text-sm">{cat.name}</span>
+                <span className={`text-xs px-1.5 py-0.5 rounded ${cat.type === 'Static' ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400' : 'bg-primary-50 dark:bg-primary-900/30 text-primary dark:text-primary-300'}`}>
                   {cat.type}
                 </span>
               </div>
-              <p className="text-xs text-gray-500">{cat.description}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{cat.description}</p>
             </div>
           ))}
         </div>
       </div>
       
-
       <div className="flex-1 min-w-0 space-y-4">
-
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <h3 className="text-xs font-bold text-gray-500 mb-3 text-center uppercase tracking-wide">Sample Merchant Configuration</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 text-center uppercase tracking-wide">Sample Merchant Configuration</h3>
           <div className="grid grid-cols-4 gap-4">
             {Object.entries(pspConfig).map(([psp, config]) => (
               <div key={psp} className="flex items-center gap-3">
                 <PspAvatar psp={psp} size="sm" />
                 <div>
-                  <p className="font-semibold text-sm text-gray-800">{psp}</p>
-                  <p className="text-xs text-gray-500">{config.description}</p>
+                  <p className="font-semibold text-sm text-gray-800 dark:text-gray-200">{psp}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{config.description}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
         
-
-        <div className="bg-primary-50 rounded-xl border border-primary-light p-4">
+        <div className="bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-light dark:border-primary-700 p-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <span className="text-xs text-gray-500 uppercase font-medium">Transaction</span>
-              <div className="flex items-center gap-4 bg-white rounded-lg px-4 py-2 border border-primary-light">
+              <span className="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium">Transaction</span>
+              <div className="flex items-center gap-4 bg-white dark:bg-gray-800 rounded-lg px-4 py-2 border border-primary-light dark:border-primary-700">
                 <div className="text-center">
-                  <p className="text-xs text-gray-400 uppercase">Amount</p>
-                  <p className="font-bold text-gray-900">${currentScenario.transaction.amount} {currentScenario.transaction.currency}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 uppercase">Amount</p>
+                  <p className="font-bold text-gray-900 dark:text-white">${currentScenario.transaction.amount} {currentScenario.transaction.currency}</p>
                 </div>
-                <div className="h-8 w-px bg-gray-200" />
+                <div className="h-8 w-px bg-gray-200 dark:bg-gray-600" />
                 <div className="text-center">
-                  <p className="text-xs text-gray-400 uppercase">Card</p>
-                  <p className="font-bold text-gray-900 uppercase">{currentScenario.transaction.cardNetwork}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 uppercase">Card</p>
+                  <p className="font-bold text-gray-900 dark:text-white uppercase">{currentScenario.transaction.cardNetwork}</p>
                 </div>
-                <div className="h-8 w-px bg-gray-200" />
+                <div className="h-8 w-px bg-gray-200 dark:bg-gray-600" />
                 <div className="text-center">
-                  <p className="text-xs text-gray-400 uppercase">Type</p>
-                  <p className="font-bold text-gray-900 capitalize">{currentScenario.transaction.cardType}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 uppercase">Type</p>
+                  <p className="font-bold text-gray-900 dark:text-white capitalize">{currentScenario.transaction.cardType}</p>
                 </div>
-                <div className="h-8 w-px bg-gray-200" />
+                <div className="h-8 w-px bg-gray-200 dark:bg-gray-600" />
                 <div className="text-center">
-                  <p className="text-xs text-gray-400 uppercase">Country</p>
-                  <p className="font-bold text-gray-900">{currentScenario.transaction.country}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 uppercase">Country</p>
+                  <p className="font-bold text-gray-900 dark:text-white">{currentScenario.transaction.country}</p>
                 </div>
               </div>
             </div>
@@ -266,12 +262,12 @@ const RoutingSimulator = () => {
                   Run Simulation ({currentScenarioIndex + 1}/{scenarios.length})
                 </button>
               ) : (
-                <div className="flex items-center gap-2 text-gray-600 text-sm px-4 py-2">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm px-4 py-2">
                   <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                   <span>Step {currentStep + 1}...</span>
                 </div>
               )}
-              <button onClick={reset} className="flex items-center gap-2 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm">
+              <button onClick={reset} className="flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm">
                 <RotateCcw className="w-4 h-4" />
                 Reset
               </button>
@@ -279,12 +275,11 @@ const RoutingSimulator = () => {
           </div>
         </div>
         
-
         {showScenario ? (
           <div className="space-y-3">
             <div className="flex gap-4">
-              <div className={`flex-1 bg-gray-50 rounded-xl border-2 p-4 ${currentStep >= 1 ? 'border-primary shadow-md' : 'border-gray-300'}`}>
-                <p className="text-xs text-gray-400 uppercase mb-3 text-center font-medium">All PSPs</p>
+              <div className={`flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 p-4 ${currentStep >= 1 ? 'border-primary shadow-md' : 'border-gray-300 dark:border-gray-600'}`}>
+                <p className="text-xs text-gray-400 dark:text-gray-500 uppercase mb-3 text-center font-medium">All PSPs</p>
                 <div className="flex justify-center gap-3">
                   {currentScenario.step1.allPsps.map((psp) => (
                     <div key={psp} className="flex flex-col items-center gap-1">
@@ -301,23 +296,23 @@ const RoutingSimulator = () => {
                 <ArrowRight className="w-6 h-6 text-primary" />
               </div>
               
-              <div className={`flex-1 bg-primary-50 rounded-xl border-2 p-4 ${currentStep >= 1 ? 'border-primary shadow-md' : 'border-primary-light'}`}>
+              <div className={`flex-1 bg-primary-50 dark:bg-primary-900/20 rounded-xl border-2 p-4 ${currentStep >= 1 ? 'border-primary shadow-md' : 'border-primary-light dark:border-primary-700'}`}>
                 <h4 className="font-bold text-primary mb-2 text-sm">Step 1: Eligibility Analysis</h4>
-                <p className="text-sm text-gray-600 mb-3">Shortlist eligible PSP from the pre-configured list</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Shortlist eligible PSP from the pre-configured list</p>
                 {currentStep >= 1 && (
                   <div className="space-y-1.5">
                     {currentScenario.step1.eligible.map((psp) => (
                       <div key={psp} className="flex items-center gap-2 text-sm">
                         <CheckCircle className="w-4 h-4 text-green-500" />
-                        <span className="font-medium">{psp}</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{psp}</span>
                         <StatusBadge status="eligible" text="Eligible" />
                       </div>
                     ))}
                     {currentScenario.step1.eliminated.map((psp) => (
                       <div key={psp} className="flex items-center gap-2 text-sm">
-                        <XCircle className="w-4 h-4 text-gray-400" />
-                        <span className="font-medium text-gray-400 line-through">{psp}</span>
-                        <span className="text-xs text-gray-400">- {currentScenario.step1.eliminationReason[psp]}</span>
+                        <XCircle className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                        <span className="font-medium text-gray-400 dark:text-gray-500 line-through">{psp}</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">- {currentScenario.step1.eliminationReason[psp]}</span>
                       </div>
                     ))}
                   </div>
@@ -326,18 +321,18 @@ const RoutingSimulator = () => {
             </div>
             
             <div className="text-center py-1">
-              <span className="text-xs text-gray-400 uppercase tracking-wide font-medium">Static Routing</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-medium">Static Routing</span>
             </div>
             
             <div className="flex gap-4">
-              <div className={`flex-1 bg-gray-50 rounded-xl border-2 p-4 ${currentStep >= 2 ? 'border-primary shadow-md' : 'border-gray-300'}`}>
-                <p className="text-xs text-gray-400 uppercase mb-3 text-center font-medium">Filtered PSPs</p>
+              <div className={`flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 p-4 ${currentStep >= 2 ? 'border-primary shadow-md' : 'border-gray-300 dark:border-gray-600'}`}>
+                <p className="text-xs text-gray-400 dark:text-gray-500 uppercase mb-3 text-center font-medium">Filtered PSPs</p>
                 <div className="flex justify-center gap-3">
                   {currentScenario.step1.eligible.map((psp) => (
                     <div key={psp} className="flex flex-col items-center gap-1">
                       <PspAvatar psp={psp} status={currentStep >= 2 && psp === currentScenario.step2.selected ? 'selected' : 'normal'} />
                       {currentStep >= 2 && (
-                        <span className={`text-xs ${psp === currentScenario.step2.selected ? 'text-primary font-medium' : 'text-gray-500'}`}>
+                        <span className={`text-xs ${psp === currentScenario.step2.selected ? 'text-primary font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
                           {psp === currentScenario.step2.selected ? 'Selected' : 'Fallback'}
                         </span>
                       )}
@@ -350,12 +345,12 @@ const RoutingSimulator = () => {
                 <ArrowRight className="w-6 h-6 text-primary" />
               </div>
               
-              <div className={`flex-1 bg-primary-50 rounded-xl border-2 p-4 ${currentStep >= 2 ? 'border-primary shadow-md' : 'border-primary-light'}`}>
+              <div className={`flex-1 bg-primary-50 dark:bg-primary-900/20 rounded-xl border-2 p-4 ${currentStep >= 2 ? 'border-primary shadow-md' : 'border-primary-light dark:border-primary-700'}`}>
                 <h4 className="font-bold text-primary mb-2 text-sm">Step 2: Filtering PSPs</h4>
-                <p className="text-sm text-gray-600 mb-3">Select {currentScenario.step2.selected} as the optimal processor</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Select {currentScenario.step2.selected} as the optimal processor</p>
                 {currentStep >= 2 && (
                   <div className="space-y-2">
-                    <p className="text-xs text-gray-500 uppercase font-medium">Sample Merchant Rule</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium">Sample Merchant Rule</p>
                     <div className="flex flex-wrap gap-1">
                       <RuleChip type="condition" value={currentScenario.step2.rule.condition} color="blue" />
                       <RuleChip type="operator" value={currentScenario.step2.rule.operator} color="purple" />
@@ -368,12 +363,12 @@ const RoutingSimulator = () => {
             </div>
             
             <div className="text-center py-1">
-              <span className="text-xs text-gray-400 uppercase tracking-wide font-medium">Dynamic Routing</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide font-medium">Dynamic Routing</span>
             </div>
             
             <div className="flex gap-4">
-              <div className={`flex-1 bg-gray-50 rounded-xl border-2 p-4 ${currentStep >= 3 ? 'border-primary shadow-md' : 'border-gray-300'}`}>
-                <p className="text-xs text-gray-400 uppercase mb-3 text-center font-medium">Final Selection</p>
+              <div className={`flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 p-4 ${currentStep >= 3 ? 'border-primary shadow-md' : 'border-gray-300 dark:border-gray-600'}`}>
+                <p className="text-xs text-gray-400 dark:text-gray-500 uppercase mb-3 text-center font-medium">Final Selection</p>
                 <div className="flex justify-center gap-3">
                   {currentScenario.step1.eligible.map((psp) => (
                     <div key={psp} className="flex flex-col items-center gap-1">
@@ -384,8 +379,8 @@ const RoutingSimulator = () => {
                       />
                       {currentStep >= 3 && (
                         <span className={`text-xs ${
-                          psp === currentScenario.step3.final ? 'text-green-600 font-medium' : 
-                          psp === currentScenario.step3.original && psp !== currentScenario.step3.final ? 'text-red-400' : 'text-gray-500'
+                          psp === currentScenario.step3.final ? 'text-green-600 dark:text-green-400 font-medium' : 
+                          psp === currentScenario.step3.original && psp !== currentScenario.step3.final ? 'text-red-400 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'
                         }`}>
                           {psp === currentScenario.step3.final ? 'Final' : 
                            psp === currentScenario.step3.original && psp !== currentScenario.step3.final ? 'Overridden' : 'Alternative'}
@@ -400,49 +395,49 @@ const RoutingSimulator = () => {
                 <ArrowRight className="w-6 h-6 text-primary" />
               </div>
               
-              <div className={`flex-1 bg-primary-50 rounded-xl border-2 p-4 ${currentStep >= 3 ? 'border-primary shadow-md' : 'border-primary-light'}`}>
+              <div className={`flex-1 bg-primary-50 dark:bg-primary-900/20 rounded-xl border-2 p-4 ${currentStep >= 3 ? 'border-primary shadow-md' : 'border-primary-light dark:border-primary-700'}`}>
                 <h4 className="font-bold text-primary mb-2 text-sm">Step 3: Ranking on real-time data</h4>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                   {currentScenario.step3.overridden 
                     ? `Select ${currentScenario.step3.final} due to ${currentScenario.step3.reason}`
                     : `${currentScenario.step3.final} confirmed - no override needed`
                   }
                 </p>
                 {currentStep >= 3 && currentScenario.step3.overridden && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
+                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-2">
                     <div className="flex items-center gap-2">
                       <PspAvatar psp={currentScenario.step3.original} size="sm" status="eliminated" />
                       <ArrowRight className="w-4 h-4 text-amber-500" />
                       <PspAvatar psp={currentScenario.step3.final} size="sm" status="selected" />
                     </div>
-                    <p className="text-xs text-amber-700 mt-1">Override: {currentScenario.step3.reason}</p>
+                    <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">Override: {currentScenario.step3.reason}</p>
                   </div>
                 )}
               </div>
             </div>
             
             {currentStep === 3 && (
-              <div className="bg-green-50 border-2 border-green-400 rounded-xl p-4 text-center">
+              <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-400 dark:border-green-700 rounded-xl p-4 text-center">
                 <div className="flex items-center justify-center gap-3">
                   <div className={`w-12 h-12 ${pspConfig[currentScenario.step3.final]?.color || 'bg-green-500'} rounded-full flex items-center justify-center text-white font-bold`}>
                     {currentScenario.step3.final.replace('PSP-', '')}
                   </div>
                   <div className="text-left">
-                    <p className="font-bold text-green-800">Payment done with {currentScenario.step3.final}</p>
-                    <p className="text-sm text-green-600">Transaction completed successfully</p>
+                    <p className="font-bold text-green-800 dark:text-green-400">Payment done with {currentScenario.step3.final}</p>
+                    <p className="text-sm text-green-600 dark:text-green-500">Transaction completed successfully</p>
                   </div>
                 </div>
               </div>
             )}
           </div>
         ) : (
-          <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
+          <div className="bg-gray-50 dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center">
             <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-3">
               <Play className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-base font-bold text-gray-700 mb-1">Ready to Route Transactions</h3>
-            <p className="text-sm text-gray-500 mb-1">Click &quot;Run Simulation&quot; to see how transactions flow</p>
-            <p className="text-xs text-gray-400">Scenario: {currentScenario.name}</p>
+            <h3 className="text-base font-bold text-gray-700 dark:text-gray-300 mb-1">Ready to Route Transactions</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Click &quot;Run Simulation&quot; to see how transactions flow</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Scenario: {currentScenario.name}</p>
           </div>
         )}
       </div>

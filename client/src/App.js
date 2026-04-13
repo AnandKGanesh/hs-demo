@@ -21,17 +21,26 @@ import ThreeDSDecisionManager from './flows/ThreeDSDecisionManager';
 import OrganizationManager from './flows/OrganizationManager';
 import DecisionEnginePlayground from './flows/decision-engine/DecisionEnginePlayground';
 import SDKCustomization from './flows/SDKCustomization';
-import { useRecoilState } from 'recoil';
-import { currentFlowState, apiResponseState, hyperState } from './utils/atoms';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { currentFlowState, apiResponseState, hyperState, themeState } from './utils/atoms';
 import API_BASE_URL from './config';
 
 const App = () => {
   const [currentFlow, setCurrentFlow] = useRecoilState(currentFlowState);
   const [apiResponse, setApiResponse] = useRecoilState(apiResponseState);
   const [hyper, setHyper] = useRecoilState(hyperState);
+  const theme = useRecoilValue(themeState);
   const [isLoading, setIsLoading] = useState(true);
   const [config, setConfig] = useState(null);
   const [initError, setInitError] = useState(null);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   // Read flow from URL on mount
   useEffect(() => {

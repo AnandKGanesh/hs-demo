@@ -5,7 +5,7 @@ import {
   Type, CreditCard, ToggleLeft, Eye, Code, Copy, Check, HelpCircle
 } from 'lucide-react';
 import { makeAuthenticatedRequest } from '../utils/api';
-import { hyperState, demoModeState, debugCredentialsState, apiResponseState } from '../utils/atoms';
+import { hyperState, demoModeState, debugCredentialsState, apiResponseState, themeState } from '../utils/atoms';
 import { filters } from '../utils/fieldMappings';
 import { sdkTooltips } from '../utils/sdkTooltips';
 
@@ -14,6 +14,7 @@ const SDKCustomization = () => {
   const mode = useRecoilValue(demoModeState);
   const debugCreds = useRecoilValue(debugCredentialsState);
   const setApiResponse = useSetRecoilState(apiResponseState);
+  const theme = useRecoilValue(themeState);
   
   const [isLoading, setIsLoading] = useState(false);
   const [clientSecret, setClientSecret] = useState(null);
@@ -374,10 +375,28 @@ const SDKCustomization = () => {
 
   const buildAppearance = () => {
     const vars = {};
+    
+    const isDark = theme === 'dark';
+    
+    const defaultColors = isDark ? {
+      colorBackground: '#1f2937',
+      colorText: '#f9fafb',
+      colorTextSecondary: '#9ca3af',
+      colorTextPlaceholder: '#6b7280',
+      colorBackgroundText: '#f9fafb',
+    } : {
+      colorBackground: '#ffffff',
+      colorText: '#30313d',
+      colorTextSecondary: '#6b7280',
+      colorTextPlaceholder: '#6b7280',
+      colorBackgroundText: '#30313d',
+    };
 
     Object.entries(appearanceVars).forEach(([key, value]) => {
       if (value !== '' && value !== undefined) {
         vars[key] = value;
+      } else if (defaultColors[key]) {
+        vars[key] = defaultColors[key];
       }
     });
     
@@ -387,7 +406,17 @@ const SDKCustomization = () => {
       }
     });
     
-    return { theme: 'default', variables: vars };
+    return {
+      theme: isDark ? 'night' : 'default',
+      variables: {
+        ...vars,
+        ...(isDark ? {
+          colorBackground: '#1f2937',
+          colorText: '#f9fafb',
+          colorSurface: '#374151',
+        } : {}),
+      },
+    };
   };
 
   const buildLayoutOptions = () => {
@@ -492,7 +521,7 @@ const SDKCustomization = () => {
   }, [
     hyper, clientSecret, locale, layout, paymentMethodsArrangementForTabs,
     wallets, appearanceVars, buttonVars, currency,
-    moreConfig, paymentMethodOrder, rules
+    moreConfig, paymentMethodOrder, rules, theme
   ]);
 
   const toggleSection = (section) => {
@@ -597,13 +626,13 @@ paymentElement.mount('#payment-element');`;
   const SectionHeader = ({ title, icon: Icon, section }) => (
     <button
       onClick={() => toggleSection(section)}
-      className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+      className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
     >
       <div className="flex items-center gap-2">
-        <Icon size={18} className="text-gray-600" />
-        <span className="font-medium text-base">{title}</span>
+        <Icon size={18} className="text-gray-600 dark:text-gray-400" />
+        <span className="font-medium text-base dark:text-gray-200">{title}</span>
       </div>
-      {expandedSections[section] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+      {expandedSections[section] ? <ChevronUp size={16} className="dark:text-gray-400" /> : <ChevronDown size={16} className="dark:text-gray-400" />}
     </button>
   );
 
@@ -611,16 +640,16 @@ paymentElement.mount('#payment-element');`;
     <div className="space-y-4">
       <div>
         <Tooltip title={sdkTooltips.layout.type.title} description={sdkTooltips.layout.type.description}>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">Layout Type</label>
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">Layout Type</label>
         </Tooltip>
         <div className="flex gap-2">
           <button 
             onClick={() => setLayout({...layout, type: 'accordion'})} 
-            className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium ${layout.type === 'accordion' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white border-gray-300'}`}
+            className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium ${layout.type === 'accordion' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 dark:text-gray-300'}`}
           >Accordion</button>
           <button 
             onClick={() => setLayout({...layout, type: 'tabs'})} 
-            className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium ${layout.type === 'tabs' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white border-gray-300'}`}
+            className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium ${layout.type === 'tabs' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 dark:text-gray-300'}`}
           >Tabs</button>
         </div>
       </div>
@@ -628,12 +657,12 @@ paymentElement.mount('#payment-element');`;
       {layout.type === 'tabs' && (
         <div>
           <Tooltip title={sdkTooltips.layout.paymentMethodsArrangementForTabs.title} description={sdkTooltips.layout.paymentMethodsArrangementForTabs.description}>
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">Arrangement</label>
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">Arrangement</label>
           </Tooltip>
           <select 
             value={paymentMethodsArrangementForTabs} 
             onChange={(e) => setPaymentMethodsArrangementForTabs(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
           >
             <option value="default">Default (dropdown for excess)</option>
             <option value="grid">Grid (show all)</option>
@@ -684,12 +713,12 @@ paymentElement.mount('#payment-element');`;
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Tooltip title={sdkTooltips.wallets.applePay.title} description={sdkTooltips.wallets.applePay.description}>
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">Apple Pay</label>
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">Apple Pay</label>
           </Tooltip>
           <select 
             value={wallets.applePay} 
             onChange={(e) => setWallets({...wallets, applePay: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
           >
             <option value="auto">Auto</option>
             <option value="never">Never</option>
@@ -697,12 +726,12 @@ paymentElement.mount('#payment-element');`;
         </div>
         <div>
           <Tooltip title={sdkTooltips.wallets.googlePay.title} description={sdkTooltips.wallets.googlePay.description}>
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">Google Pay</label>
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">Google Pay</label>
           </Tooltip>
           <select 
             value={wallets.googlePay} 
             onChange={(e) => setWallets({...wallets, googlePay: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
           >
             <option value="auto">Auto</option>
             <option value="never">Never</option>
@@ -710,12 +739,12 @@ paymentElement.mount('#payment-element');`;
         </div>
         <div>
           <Tooltip title={sdkTooltips.wallets.payPal.title} description={sdkTooltips.wallets.payPal.description}>
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">PayPal</label>
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">PayPal</label>
           </Tooltip>
           <select 
             value={wallets.payPal} 
             onChange={(e) => setWallets({...wallets, payPal: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
           >
             <option value="auto">Auto</option>
             <option value="never">Never</option>
@@ -723,19 +752,19 @@ paymentElement.mount('#payment-element');`;
         </div>
       </div>
       
-      <div className="border-t pt-3">
+      <div className="border-t border-gray-200 dark:border-gray-600 pt-3">
         <Tooltip title={sdkTooltips.wallets.style.title} description={sdkTooltips.wallets.style.description}>
-          <p className="text-sm font-medium text-gray-600 mb-2">Wallet Button Style</p>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Wallet Button Style</p>
         </Tooltip>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Tooltip title={sdkTooltips.wallets.theme.title} description={sdkTooltips.wallets.theme.description}>
-              <label className="block text-sm text-gray-500 mb-1">Theme</label>
+              <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Theme</label>
             </Tooltip>
             <select 
               value={wallets.style.theme} 
               onChange={(e) => setWallets({...wallets, style: {...wallets.style, theme: e.target.value}})}
-              className="w-full px-3 py-2 border rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
             >
               <option value="light">Light</option>
               <option value="dark">Dark</option>
@@ -744,25 +773,25 @@ paymentElement.mount('#payment-element');`;
           </div>
           <div>
             <Tooltip title={sdkTooltips.wallets.type.title} description={sdkTooltips.wallets.type.description}>
-              <label className="block text-sm text-gray-500 mb-1">Type</label>
+              <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Type</label>
             </Tooltip>
             <select 
               value={wallets.style.type} 
               onChange={(e) => setWallets({...wallets, style: {...wallets.style, type: e.target.value}})}
-              className="w-full px-3 py-2 border rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
             >
               {walletTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
           </div>
           <div>
             <Tooltip title={sdkTooltips.wallets.height.title} description={sdkTooltips.wallets.height.description}>
-              <label className="block text-sm text-gray-500 mb-1">Height (px)</label>
+              <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Height (px)</label>
             </Tooltip>
             <input 
               type="number" 
               value={wallets.style.height} 
               onChange={(e) => setWallets({...wallets, style: {...wallets.style, height: parseInt(e.target.value) || 0}})}
-              className="w-full px-3 py-2 border rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
             />
           </div>
         </div>
@@ -773,7 +802,7 @@ paymentElement.mount('#payment-element');`;
   const renderAppearanceSection = () => (
     <div className="space-y-4">
       <div>
-        <p className="text-sm font-medium text-gray-600 mb-2">Colors</p>
+        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Colors</p>
         <div className="grid grid-cols-2 gap-2">
           {[
             ['colorPrimary', 'Primary', sdkTooltips.appearance.colorPrimary],
@@ -793,24 +822,24 @@ paymentElement.mount('#payment-element');`;
                 className="w-6 h-6 rounded border-0 cursor-pointer" 
               />
               <Tooltip title={tooltip.title} description={tooltip.description}>
-                <span className="text-sm text-gray-600">{label}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{label}</span>
               </Tooltip>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="border-t pt-3">
-        <p className="text-sm font-medium text-gray-600 mb-2">Typography</p>
+      <div className="border-t border-gray-200 dark:border-gray-600 pt-3">
+        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Typography</p>
         <div className="space-y-2">
           <div>
             <Tooltip title={sdkTooltips.typography.fontFamily.title} description={sdkTooltips.typography.fontFamily.description}>
-              <label className="block text-sm text-gray-500 mb-1">Font Family</label>
+              <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Font Family</label>
             </Tooltip>
             <select
               value={appearanceVars.fontFamily}
               onChange={(e) => setAppearanceVars({...appearanceVars, fontFamily: e.target.value})}
-              className="w-full px-3 py-2 border rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
             >
               <option value="">System Default</option>
               <option value="Inter, sans-serif">Inter</option>
@@ -826,83 +855,83 @@ paymentElement.mount('#payment-element');`;
           <div className="grid grid-cols-2 gap-2">
             <div>
               <Tooltip title={sdkTooltips.typography.fontSizeBase.title} description={sdkTooltips.typography.fontSizeBase.description}>
-                <label className="block text-sm text-gray-500 mb-1">Base Size</label>
+                <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Base Size</label>
               </Tooltip>
               <div className="flex items-center">
                 <button
                   onClick={() => setAppearanceVars({...appearanceVars, fontSizeBase: (parseInt(appearanceVars.fontSizeBase) - 1) + 'px'})}
-                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+                  className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-l-lg border-y border-l border-gray-300 dark:border-gray-600 dark:text-gray-300"
                 >-</button>
                 <input
                   type="text"
                   value={appearanceVars.fontSizeBase}
                   onChange={(e) => setAppearanceVars({...appearanceVars, fontSizeBase: e.target.value})}
-                  className="w-full px-2 py-2 border-y text-center text-sm"
+                  className="w-full px-2 py-2 border-y border-gray-300 dark:border-gray-600 text-center text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
                 />
                 <button
                   onClick={() => setAppearanceVars({...appearanceVars, fontSizeBase: (parseInt(appearanceVars.fontSizeBase) + 1) + 'px'})}
-                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+                  className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-r-lg border-y border-r border-gray-300 dark:border-gray-600 dark:text-gray-300"
                 >+</button>
               </div>
             </div>
             <div>
               <Tooltip title={sdkTooltips.typography.borderRadius.title} description={sdkTooltips.typography.borderRadius.description}>
-                <label className="block text-sm text-gray-500 mb-1">Border Radius</label>
+                <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Border Radius</label>
               </Tooltip>
               <div className="flex items-center">
                 <button
                   onClick={() => setAppearanceVars({...appearanceVars, borderRadius: (parseInt(appearanceVars.borderRadius) - 1) + 'px'})}
-                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+                  className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-l-lg border-y border-l border-gray-300 dark:border-gray-600 dark:text-gray-300"
                 >-</button>
                 <input
                   type="text"
                   value={appearanceVars.borderRadius}
                   onChange={(e) => setAppearanceVars({...appearanceVars, borderRadius: e.target.value})}
-                  className="w-full px-2 py-2 border-y text-center text-sm"
+                  className="w-full px-2 py-2 border-y border-gray-300 dark:border-gray-600 text-center text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
                 />
                 <button
                   onClick={() => setAppearanceVars({...appearanceVars, borderRadius: (parseInt(appearanceVars.borderRadius) + 1) + 'px'})}
-                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+                  className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-r-lg border-y border-r border-gray-300 dark:border-gray-600 dark:text-gray-300"
                 >+</button>
               </div>
             </div>
             <div>
               <Tooltip title={sdkTooltips.typography.spacingUnit.title} description={sdkTooltips.typography.spacingUnit.description}>
-                <label className="block text-sm text-gray-500 mb-1">Spacing Unit</label>
+                <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Spacing Unit</label>
               </Tooltip>
               <div className="flex items-center">
                 <button
                   onClick={() => setAppearanceVars({...appearanceVars, spacingUnit: (parseInt(appearanceVars.spacingUnit) - 1) + 'px'})}
-                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+                  className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-l-lg border-y border-l border-gray-300 dark:border-gray-600 dark:text-gray-300"
                 >-</button>
                 <input
                   type="text"
                   value={appearanceVars.spacingUnit}
                   onChange={(e) => setAppearanceVars({...appearanceVars, spacingUnit: e.target.value})}
-                  className="w-full px-2 py-2 border-y text-center text-sm"
+                  className="w-full px-2 py-2 border-y border-gray-300 dark:border-gray-600 text-center text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
                 />
                 <button
                   onClick={() => setAppearanceVars({...appearanceVars, spacingUnit: (parseInt(appearanceVars.spacingUnit) + 1) + 'px'})}
-                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+                  className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-r-lg border-y border-r border-gray-300 dark:border-gray-600 dark:text-gray-300"
                 >+</button>
               </div>
             </div>
             <div>
-              <label className="block text-sm text-gray-500 mb-1">Line Height</label>
+              <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Line Height</label>
               <div className="flex items-center">
                 <button
                   onClick={() => setAppearanceVars({...appearanceVars, fontLineHeight: (parseFloat(appearanceVars.fontLineHeight) - 0.1).toFixed(1)})}
-                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+                  className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-l-lg border-y border-l border-gray-300 dark:border-gray-600 dark:text-gray-300"
                 >-</button>
                 <input
                   type="text"
                   value={appearanceVars.fontLineHeight}
                   onChange={(e) => setAppearanceVars({...appearanceVars, fontLineHeight: e.target.value})}
-                  className="w-full px-2 py-2 border-y text-center text-sm"
+                  className="w-full px-2 py-2 border-y border-gray-300 dark:border-gray-600 text-center text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
                 />
                 <button
                   onClick={() => setAppearanceVars({...appearanceVars, fontLineHeight: (parseFloat(appearanceVars.fontLineHeight) + 0.1).toFixed(1)})}
-                  className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+                  className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-r-lg border-y border-r border-gray-300 dark:border-gray-600 dark:text-gray-300"
                 >+</button>
               </div>
             </div>
@@ -917,7 +946,7 @@ paymentElement.mount('#payment-element');`;
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Tooltip title={sdkTooltips.button.buttonBackgroundColor.title} description={sdkTooltips.button.buttonBackgroundColor.description}>
-            <label className="block text-sm text-gray-500 mb-1">Background</label>
+            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Background</label>
           </Tooltip>
           <div className="flex gap-2">
             <input 
@@ -930,13 +959,13 @@ paymentElement.mount('#payment-element');`;
               type="text" 
               value={buttonVars.buttonBackgroundColor} 
               onChange={(e) => setButtonVars({...buttonVars, buttonBackgroundColor: e.target.value})}
-              className="flex-1 px-2 py-1 border rounded text-sm"
+              className="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
             />
           </div>
         </div>
         <div>
           <Tooltip title={sdkTooltips.button.buttonTextColor.title} description={sdkTooltips.button.buttonTextColor.description}>
-            <label className="block text-sm text-gray-500 mb-1">Text Color</label>
+            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Text Color</label>
           </Tooltip>
           <div className="flex gap-2">
             <input 
@@ -949,7 +978,7 @@ paymentElement.mount('#payment-element');`;
               type="text" 
               value={buttonVars.buttonTextColor} 
               onChange={(e) => setButtonVars({...buttonVars, buttonTextColor: e.target.value})}
-              className="flex-1 px-2 py-1 border rounded text-sm"
+              className="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
             />
           </div>
         </div>
@@ -958,75 +987,75 @@ paymentElement.mount('#payment-element');`;
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Tooltip title={sdkTooltips.button.buttonHeight.title} description={sdkTooltips.button.buttonHeight.description}>
-            <label className="block text-sm text-gray-500 mb-1">Height</label>
+            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Height</label>
           </Tooltip>
           <div className="flex items-center">
             <button
               onClick={() => setButtonVars({...buttonVars, buttonHeight: (parseInt(buttonVars.buttonHeight) - 1) + 'px'})}
-              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+              className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-l-lg border-y border-l border-gray-300 dark:border-gray-600 dark:text-gray-300"
             >-</button>
             <input
               type="text"
               value={buttonVars.buttonHeight}
               onChange={(e) => setButtonVars({...buttonVars, buttonHeight: e.target.value})}
-              className="w-full px-2 py-2 border-y text-center text-sm"
+              className="w-full px-2 py-2 border-y border-gray-300 dark:border-gray-600 text-center text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
             />
             <button
               onClick={() => setButtonVars({...buttonVars, buttonHeight: (parseInt(buttonVars.buttonHeight) + 1) + 'px'})}
-              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+              className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-r-lg border-y border-r border-gray-300 dark:border-gray-600 dark:text-gray-300"
             >+</button>
           </div>
         </div>
         <div>
           <Tooltip title={sdkTooltips.button.buttonWidth.title} description={sdkTooltips.button.buttonWidth.description}>
-            <label className="block text-sm text-gray-500 mb-1">Width</label>
+            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Width</label>
           </Tooltip>
           <input
             type="text"
             value={buttonVars.buttonWidth}
             onChange={(e) => setButtonVars({...buttonVars, buttonWidth: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
           />
         </div>
         <div>
           <Tooltip title={sdkTooltips.button.buttonBorderRadius.title} description={sdkTooltips.button.buttonBorderRadius.description}>
-            <label className="block text-sm text-gray-500 mb-1">Border Radius</label>
+            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Border Radius</label>
           </Tooltip>
           <div className="flex items-center">
             <button
               onClick={() => setButtonVars({...buttonVars, buttonBorderRadius: (parseInt(buttonVars.buttonBorderRadius) - 1) + 'px'})}
-              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+              className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-l-lg border-y border-l border-gray-300 dark:border-gray-600 dark:text-gray-300"
             >-</button>
             <input
               type="text"
               value={buttonVars.buttonBorderRadius}
               onChange={(e) => setButtonVars({...buttonVars, buttonBorderRadius: e.target.value})}
-              className="w-full px-2 py-2 border-y text-center text-sm"
+              className="w-full px-2 py-2 border-y border-gray-300 dark:border-gray-600 text-center text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
             />
             <button
               onClick={() => setButtonVars({...buttonVars, buttonBorderRadius: (parseInt(buttonVars.buttonBorderRadius) + 1) + 'px'})}
-              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+              className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-r-lg border-y border-r border-gray-300 dark:border-gray-600 dark:text-gray-300"
             >+</button>
           </div>
         </div>
         <div>
           <Tooltip title={sdkTooltips.button.buttonBorderWidth.title} description={sdkTooltips.button.buttonBorderWidth.description}>
-            <label className="block text-sm text-gray-500 mb-1">Border Width</label>
+            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Border Width</label>
           </Tooltip>
           <div className="flex items-center">
             <button
               onClick={() => setButtonVars({...buttonVars, buttonBorderWidth: (parseInt(buttonVars.buttonBorderWidth) - 1) + 'px'})}
-              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+              className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-l-lg border-y border-l border-gray-300 dark:border-gray-600 dark:text-gray-300"
             >-</button>
             <input
               type="text"
               value={buttonVars.buttonBorderWidth}
               onChange={(e) => setButtonVars({...buttonVars, buttonBorderWidth: e.target.value})}
-              className="w-full px-2 py-2 border-y text-center text-sm"
+              className="w-full px-2 py-2 border-y border-gray-300 dark:border-gray-600 text-center text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
             />
             <button
               onClick={() => setButtonVars({...buttonVars, buttonBorderWidth: (parseInt(buttonVars.buttonBorderWidth) + 1) + 'px'})}
-              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+              className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-r-lg border-y border-r border-gray-300 dark:border-gray-600 dark:text-gray-300"
             >+</button>
           </div>
         </div>
@@ -1034,7 +1063,7 @@ paymentElement.mount('#payment-element');`;
       
       <div>
         <Tooltip title={sdkTooltips.button.buttonBorderColor.title} description={sdkTooltips.button.buttonBorderColor.description}>
-          <label className="block text-sm text-gray-500 mb-1">Border Color</label>
+          <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Border Color</label>
         </Tooltip>
         <div className="flex gap-2">
           <input 
@@ -1047,7 +1076,7 @@ paymentElement.mount('#payment-element');`;
             type="text" 
             value={buttonVars.buttonBorderColor} 
             onChange={(e) => setButtonVars({...buttonVars, buttonBorderColor: e.target.value})}
-            className="flex-1 px-3 py-2 border rounded-lg text-sm"
+            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
           />
         </div>
       </div>
@@ -1055,43 +1084,43 @@ paymentElement.mount('#payment-element');`;
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Tooltip title={sdkTooltips.button.buttonTextFontSize.title} description={sdkTooltips.button.buttonTextFontSize.description}>
-            <label className="block text-sm text-gray-500 mb-1">Text Size</label>
+            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Text Size</label>
           </Tooltip>
           <div className="flex items-center">
             <button
               onClick={() => setButtonVars({...buttonVars, buttonTextFontSize: (parseInt(buttonVars.buttonTextFontSize) - 1) + 'px'})}
-              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+              className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-l-lg border-y border-l border-gray-300 dark:border-gray-600 dark:text-gray-300"
             >-</button>
             <input
               type="text"
               value={buttonVars.buttonTextFontSize}
               onChange={(e) => setButtonVars({...buttonVars, buttonTextFontSize: e.target.value})}
-              className="w-full px-2 py-2 border-y text-center text-sm"
+              className="w-full px-2 py-2 border-y border-gray-300 dark:border-gray-600 text-center text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
             />
             <button
               onClick={() => setButtonVars({...buttonVars, buttonTextFontSize: (parseInt(buttonVars.buttonTextFontSize) + 1) + 'px'})}
-              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+              className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-r-lg border-y border-r border-gray-300 dark:border-gray-600 dark:text-gray-300"
             >+</button>
           </div>
         </div>
         <div>
           <Tooltip title={sdkTooltips.button.buttonTextFontWeight.title} description={sdkTooltips.button.buttonTextFontWeight.description}>
-            <label className="block text-sm text-gray-500 mb-1">Text Weight</label>
+            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Text Weight</label>
           </Tooltip>
           <div className="flex items-center">
             <button
               onClick={() => setButtonVars({...buttonVars, buttonTextFontWeight: (parseInt(buttonVars.buttonTextFontWeight) - 100).toString()})}
-              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-l-lg border-y border-l"
+              className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-l-lg border-y border-l border-gray-300 dark:border-gray-600 dark:text-gray-300"
             >-</button>
             <input
               type="text"
               value={buttonVars.buttonTextFontWeight}
               onChange={(e) => setButtonVars({...buttonVars, buttonTextFontWeight: e.target.value})}
-              className="w-full px-2 py-2 border-y text-center text-sm"
+              className="w-full px-2 py-2 border-y border-gray-300 dark:border-gray-600 text-center text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
             />
             <button
               onClick={() => setButtonVars({...buttonVars, buttonTextFontWeight: (parseInt(buttonVars.buttonTextFontWeight) + 100).toString()})}
-              className="px-2 py-2 bg-gray-100 hover:bg-gray-200 rounded-r-lg border-y border-r"
+              className="px-2 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-r-lg border-y border-r border-gray-300 dark:border-gray-600 dark:text-gray-300"
             >+</button>
           </div>
         </div>
@@ -1103,12 +1132,12 @@ paymentElement.mount('#payment-element');`;
     <div className="space-y-3">
       <div>
         <Tooltip title={sdkTooltips.currency.title} description={sdkTooltips.currency.description}>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">Transaction Currency</label>
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">Transaction Currency</label>
         </Tooltip>
         <select 
           value={currency} 
           onChange={(e) => setCurrency(e.target.value)}
-          className="w-full px-3 py-2 border rounded-lg text-sm"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
         >
           {currencies.map(c => (
             <option key={c.code} value={c.code}>
@@ -1116,7 +1145,7 @@ paymentElement.mount('#payment-element');`;
             </option>
           ))}
         </select>
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
           Changing currency will reload the SDK with payment methods that support {currency}
         </p>
       </div>
@@ -1126,16 +1155,16 @@ paymentElement.mount('#payment-element');`;
   const renderLanguageSection = () => (
     <div>
       <Tooltip title={sdkTooltips.locale.title} description={sdkTooltips.locale.description}>
-        <label className="block text-sm font-medium text-gray-600 mb-1.5">Locale</label>
+        <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">Locale</label>
       </Tooltip>
       <select 
         value={locale} 
         onChange={(e) => setLocale(e.target.value)}
-        className="w-full px-3 py-2 border rounded-lg text-sm"
+        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
       >
         {locales.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
       </select>
-      <p className="text-sm text-gray-500 mt-2">
+      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
         The SDK will auto-detect the browser locale if set to "Auto-detect"
       </p>
     </div>
@@ -1145,12 +1174,12 @@ paymentElement.mount('#payment-element');`;
     <div className="space-y-3">
       <div>
         <Tooltip title={sdkTooltips.moreConfig.branding.title} description={sdkTooltips.moreConfig.branding.description}>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">Branding</label>
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">Branding</label>
         </Tooltip>
         <select 
           value={moreConfig.branding} 
           onChange={(e) => setMoreConfig({...moreConfig, branding: e.target.value})}
-          className="w-full px-3 py-2 border rounded-lg text-sm"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
         >
           <option value="always">Always Show</option>
           <option value="never">Never Show</option>
@@ -1159,33 +1188,33 @@ paymentElement.mount('#payment-element');`;
       
       <div>
         <Tooltip title={sdkTooltips.moreConfig.paymentMethodsHeaderText.title} description={sdkTooltips.moreConfig.paymentMethodsHeaderText.description}>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Methods Header</label>
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">Payment Methods Header</label>
         </Tooltip>
         <input 
           type="text" 
           value={moreConfig.paymentMethodsHeaderText} 
           onChange={(e) => setMoreConfig({...moreConfig, paymentMethodsHeaderText: e.target.value})}
           placeholder="Select Payment Method"
-          className="w-full px-3 py-2 border rounded-lg text-sm"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
         />
       </div>
       
       <div>
         <Tooltip title={sdkTooltips.moreConfig.savedPaymentMethodsHeaderText.title} description={sdkTooltips.moreConfig.savedPaymentMethodsHeaderText.description}>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">Saved Methods Header</label>
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">Saved Methods Header</label>
         </Tooltip>
         <input 
           type="text" 
           value={moreConfig.savedPaymentMethodsHeaderText} 
           onChange={(e) => setMoreConfig({...moreConfig, savedPaymentMethodsHeaderText: e.target.value})}
           placeholder="Saved Payment Methods"
-          className="w-full px-3 py-2 border rounded-lg text-sm"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
         />
       </div>
       
       <div>
         <Tooltip title={sdkTooltips.moreConfig.paymentMethodOrder.title} description={sdkTooltips.moreConfig.paymentMethodOrder.description}>
-          <label className="block text-sm font-medium text-gray-600 mb-1.5">Payment Method Order</label>
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">Payment Method Order</label>
         </Tooltip>
         <input 
           type="text" 
@@ -1194,7 +1223,7 @@ paymentElement.mount('#payment-element');`;
           placeholder="card, ideal, sepaDebit, sofort, bancontact"
           className="w-full px-3 py-2 border rounded-lg text-sm font-mono"
         />
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Comma-separated values. Card must be first. Available methods:
         </p>
         <div className="flex flex-wrap gap-1.5 mt-2">
@@ -1211,8 +1240,8 @@ paymentElement.mount('#payment-element');`;
               disabled={paymentMethodOrder.includes(method)}
               className={`px-2 py-1 rounded text-xs border transition-colors ${
                 paymentMethodOrder.includes(method)
-                  ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-default'
-                  : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400 hover:text-blue-600'
+                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-600 cursor-default'
+                  : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:text-blue-600'
               }`}
             >
               + {method}
@@ -1296,16 +1325,16 @@ paymentElement.mount('#payment-element');`;
 
     return (
       <div className="space-y-3">
-        <p className="text-sm text-gray-500">Customize checkout appearance</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Customize checkout appearance</p>
         
         {Object.entries(rules).map(([selector, styles]) => {
           const def = ruleDefinitions[selector];
           
           return (
-            <div key={selector} className="border rounded-lg p-3 bg-white">
+            <div key={selector} className="border border-gray-200 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-700">
               <div className="mb-2">
-                <p className="text-sm font-medium text-gray-800">{def?.label || selector}</p>
-                <p className="text-xs text-gray-500">{def?.desc}</p>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{def?.label || selector}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{def?.desc}</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {Object.entries(styles).map(([prop, value]) => (
@@ -1330,7 +1359,7 @@ paymentElement.mount('#payment-element');`;
                             [selector]: { ...styles, [prop]: e.target.value }
                           })}
                           placeholder="#0066FF"
-                          className="flex-1 px-2 py-1 border rounded text-sm"
+                          className="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
                         />
                       </div>
                     ) : (
@@ -1361,11 +1390,11 @@ paymentElement.mount('#payment-element');`;
       <div className="grid grid-cols-2 gap-3">
         {Object.entries(terms).map(([key, value]) => (
           <div key={key}>
-            <label className="block text-sm text-gray-600 mb-1 capitalize">{key.replace(/_/g, ' ')}</label>
+            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1 capitalize">{key.replace(/_/g, ' ')}</label>
             <select
               value={value}
               onChange={(e) => setTerms({...terms, [key]: e.target.value})}
-              className="w-full px-3 py-2 border rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-300"
             >
               {termOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
@@ -1380,7 +1409,7 @@ paymentElement.mount('#payment-element');`;
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Initializing Hyperswitch SDK...</p>
+          <p className="text-gray-600 dark:text-gray-400">Initializing Hyperswitch SDK...</p>
         </div>
       </div>
     );
@@ -1389,20 +1418,20 @@ paymentElement.mount('#payment-element');`;
   return (
     <div className="h-[calc(100vh-80px)] flex flex-col">
       <div className="flex-1 flex overflow-hidden">
-        <div className="w-[28rem] flex flex-col bg-white border-r">
-          <div className="p-3 border-b bg-gray-50">
-            <h2 className="text-sm font-semibold flex items-center gap-2">
+        <div className="w-[28rem] flex flex-col bg-white dark:bg-gray-800 border-r dark:border-gray-700">
+          <div className="p-3 border-b bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
+            <h2 className="text-sm font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
               <Settings size={16} />
               SDK Customization
             </h2>
-            <p className="text-sm text-gray-500 mt-0.5">100+ options to customize your checkout</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">100+ options to customize your checkout</p>
           </div>
           
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
             <div>
               <SectionHeader title="Layout" icon={Layout} section="layout" />
               {expandedSections.layout && (
-                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                   {renderLayoutSection()}
                 </div>
               )}
@@ -1411,7 +1440,7 @@ paymentElement.mount('#payment-element');`;
             <div>
               <SectionHeader title="Wallets" icon={Wallet} section="wallets" />
               {expandedSections.wallets && (
-                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                   {renderWalletSection()}
                 </div>
               )}
@@ -1420,7 +1449,7 @@ paymentElement.mount('#payment-element');`;
             <div>
               <SectionHeader title="Appearance" icon={Palette} section="appearance" />
               {expandedSections.appearance && (
-                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                   {renderAppearanceSection()}
                 </div>
               )}
@@ -1429,7 +1458,7 @@ paymentElement.mount('#payment-element');`;
             <div>
               <SectionHeader title="Language" icon={Languages} section="language" />
               {expandedSections.language && (
-                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                   {renderLanguageSection()}
                 </div>
               )}
@@ -1438,7 +1467,7 @@ paymentElement.mount('#payment-element');`;
             <div>
               <SectionHeader title="More Configurations" icon={Settings} section="more" />
               {expandedSections.more && (
-                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                   {renderMoreSection()}
                 </div>
               )}
@@ -1447,7 +1476,7 @@ paymentElement.mount('#payment-element');`;
             <div>
               <SectionHeader title="CSS Rules" icon={Code} section="rules" />
               {expandedSections.rules && (
-                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                   {renderRulesSection()}
                 </div>
               )}
@@ -1455,15 +1484,15 @@ paymentElement.mount('#payment-element');`;
           </div>
         </div>
 
-        <div className="flex-1 bg-gray-50 flex flex-col">
-          <div className="p-4 border-b bg-white">
-            <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg max-w-xs">
+        <div className="flex-1 bg-gray-50 dark:bg-gray-900 flex flex-col">
+          <div className="p-4 border-b bg-white dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg max-w-xs">
               <button
                 onClick={() => setShowCode(false)}
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all ${
                   !showCode 
-                    ? 'bg-white text-gray-900 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                 }`}
               >
                 <Eye size={16} />
@@ -1473,8 +1502,8 @@ paymentElement.mount('#payment-element');`;
                 onClick={() => setShowCode(true)}
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all ${
                   showCode 
-                    ? 'bg-white text-gray-900 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                 }`}
               >
                 <Code size={16} />
@@ -1485,9 +1514,9 @@ paymentElement.mount('#payment-element');`;
           
           <div className="flex-1 overflow-y-auto p-6">
             {error && (
-              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{error}</p>
-                <button onClick={() => window.location.reload()} className="mt-2 text-sm text-red-600 underline">Retry</button>
+              <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                <button onClick={() => window.location.reload()} className="mt-2 text-sm text-red-600 dark:text-red-400 underline">Retry</button>
               </div>
             )}
             
@@ -1498,7 +1527,7 @@ paymentElement.mount('#payment-element');`;
             ) : (
               <div className="space-y-4 w-full max-w-2xl mx-auto">
                 <form onSubmit={handleSubmit}>
-                  <div id="sdk-customization-payment-element" className="bg-white rounded-lg border border-gray-200 p-4" />
+                  <div id="sdk-customization-payment-element" className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4" />
 
                   {clientSecret && (
                     <button

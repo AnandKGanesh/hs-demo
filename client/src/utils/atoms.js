@@ -46,9 +46,18 @@ export const hyperState = atom({
   default: null,
 });
 
+const getStoredTheme = () => {
+  try {
+    const stored = localStorage.getItem('hyperswitch_demo_theme');
+    return stored === 'dark' ? 'dark' : 'light';
+  } catch {
+    return 'light';
+  }
+};
+
 export const themeState = atom({
   key: 'themeState',
-  default: 'light',
+  default: getStoredTheme(),
 });
 
 export const paymentStatusState = atom({

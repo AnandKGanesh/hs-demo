@@ -10,8 +10,8 @@ const mechanismIcons = {
 
 const MechanismBar = ({ mechanisms, activeMechanisms }) => {
   return (
-    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-      <h3 className="text-xs font-medium text-gray-500 uppercase mb-3">
+    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+      <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-3">
         Mechanisms in this flow
       </h3>
       <div className="flex gap-2">
@@ -25,7 +25,7 @@ const MechanismBar = ({ mechanisms, activeMechanisms }) => {
               className={`flex items-center gap-2 px-3 py-2 rounded-md border text-xs whitespace-nowrap ${
                 isActive
                   ? 'bg-primary text-white border-primary'
-                  : 'bg-white text-gray-500 border-gray-200'
+                  : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600'
               }`}
             >
               <Icon className="w-3 h-3" />

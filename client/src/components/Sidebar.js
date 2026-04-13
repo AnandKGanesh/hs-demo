@@ -122,8 +122,7 @@ const getCategoryForFlow = (flowId) => {
   return null;
 };
 
-const Sidebar = ({ onFlowSelect, currentFlow }) => {
-  // Initialize with current flow's category expanded
+const Sidebar = ({ onFlowSelect, currentFlow, isOpen, onClose }) => {
   const [expandedCategories, setExpandedCategories] = useState(() => {
     const currentCategory = currentFlow ? getCategoryForFlow(currentFlow.id) : null;
     return {
@@ -190,72 +189,87 @@ const Sidebar = ({ onFlowSelect, currentFlow }) => {
   };
 
   return (
-    <aside className="fixed left-0 top-16 bottom-0 w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
-      <div className="p-4">
-        <button
-          onClick={() => handleFlowClick({ id: 'readme', name: 'Overview' })}
-          className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm mb-3 transition-colors ${
-            currentFlow?.id === 'readme'
-              ? 'bg-primary/10 text-primary border border-primary/20'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-transparent'
-          }`}
-        >
-          <Home size={18} className={currentFlow?.id === 'readme' ? 'text-primary' : 'text-gray-500'} />
-          <span className="font-medium">Overview</span>
-        </button>
+    <>
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
 
-        <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-          Flow Categories
-        </h2>
-        
-        {flowCategories.map((category) => {
-          const Icon = category.icon;
-          const isExpanded = expandedCategories[category.id];
+      <aside
+        className={`fixed left-0 top-16 bottom-0 w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto z-40
+          transform transition-transform duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          lg:translate-x-0`}
+      >
+        <div className="p-4">
+          <button
+            onClick={() => handleFlowClick({ id: 'readme', name: 'Overview' })}
+            className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm mb-3 transition-colors ${
+              currentFlow?.id === 'readme'
+                ? 'bg-primary/10 text-primary border border-primary/20'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-transparent'
+            }`}
+          >
+            <Home size={18} className={currentFlow?.id === 'readme' ? 'text-primary' : 'text-gray-500'} />
+            <span className="font-medium">Overview</span>
+          </button>
+
+          <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+            Flow Categories
+          </h2>
           
-          return (
-            <div key={category.id} className="mb-4">
-              <button
-                onClick={() => toggleCategory(category.id)}
-                className="w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  {Icon && <Icon size={18} className="text-gray-500 dark:text-gray-400" />}
-                  <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">
-                    {category.name}
-                  </span>
-                </div>
-                {isExpanded ? (
-                  <ChevronUp size={16} className="text-gray-400" />
-                ) : (
-                  <ChevronDown size={16} className="text-gray-400" />
+          {flowCategories.map((category) => {
+            const Icon = category.icon;
+            const isExpanded = expandedCategories[category.id];
+            
+            return (
+              <div key={category.id} className="mb-4">
+                <button
+                  onClick={() => toggleCategory(category.id)}
+                  className="w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    {Icon && <Icon size={18} className="text-gray-500 dark:text-gray-400" />}
+                    <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">
+                      {category.name}
+                    </span>
+                  </div>
+                  {isExpanded ? (
+                    <ChevronUp size={16} className="text-gray-400" />
+                  ) : (
+                    <ChevronDown size={16} className="text-gray-400" />
+                  )}
+                </button>
+                
+                {isExpanded && (
+                  <div className="mt-2 space-y-1 pl-2">
+                    {category.flows.map((flow) => (
+                      <button
+                        key={flow.id}
+                        onClick={() => handleFlowClick(flow)}
+                        disabled={flow.disabled}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                          flow.disabled 
+                            ? 'opacity-50 cursor-not-allowed text-gray-400 dark:text-gray-600' 
+                            : currentFlow?.id === flow.id
+                              ? 'bg-primary text-white'
+                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        <span className="break-words leading-tight">{flow.name}</span>
+                      </button>
+                    ))}
+                  </div>
                 )}
-              </button>
-              
-              {isExpanded && (
-                <div className="mt-2 space-y-1 pl-2">
-                  {category.flows.map((flow) => (
-                    <button
-                      key={flow.id}
-                      onClick={() => handleFlowClick(flow)}
-                      disabled={flow.disabled}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                        flow.disabled 
-                          ? 'opacity-50 cursor-not-allowed text-gray-400 dark:text-gray-600' 
-                          : currentFlow?.id === flow.id
-                            ? 'bg-primary text-white'
-                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      <span className="break-words leading-tight">{flow.name}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </aside>
+              </div>
+            );
+          })}
+        </div>
+      </aside>
+    </>
   );
 };
 
