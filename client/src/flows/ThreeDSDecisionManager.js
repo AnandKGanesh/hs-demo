@@ -284,15 +284,15 @@ const ThreeDSDecisionManager = () => {
   };
 
   return (
-    <div className="w-full h-full">
-      <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 md:gap-6 h-full">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-t-lg">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Rule Assignment Template</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Define rules to determine 3DS authentication requirements</p>
+    <div className="w-full">
+      <div className="flex flex-col xl:grid xl:grid-cols-2 gap-4 md:gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col max-h-[60vh] xl:max-h-none">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-t-lg flex-shrink-0">
+            <h2 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Rule Assignment Template</h2>
+            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Define rules to determine 3DS authentication requirements</p>
           </div>
           
-          <div className="p-3 md:p-6 space-y-4 overflow-y-auto flex-1">
+          <div className="p-3 md:p-4 space-y-3 overflow-y-auto flex-1">
             {rules.map((rule, index) => {
               const isEvaluating = evaluatingRuleId === rule.id;
               const isMatched = matchedRuleId === rule.id;
@@ -483,21 +483,21 @@ const ThreeDSDecisionManager = () => {
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 md:p-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Simulation</h3>
+          <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-4">Simulation</h3>
           
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
               <button
                 onClick={runScenario}
                 disabled={isRunning}
-                className="flex items-center justify-center gap-2 px-6 py-3 min-h-[44px] bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium disabled:opacity-50"
+                className="flex items-center justify-center gap-2 px-4 md:px-6 py-3 min-h-[44px] bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium text-sm disabled:opacity-50"
               >
-                {isRunning ? <RotateCcw className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />}
-                Run Scenario {currentScenario + 1}/{SIMULATION_SCENARIOS.length}
+                {isRunning ? <RotateCcw className="w-4 h-4 md:w-5 md:h-5 animate-spin" /> : <Play className="w-4 h-4 md:w-5 md:h-5" />}
+                <span className="whitespace-nowrap">Run Scenario {currentScenario + 1}/{SIMULATION_SCENARIOS.length}</span>
               </button>
               {simulationResults.length > 0 && (
-                <button onClick={resetAll} className="min-h-[44px] md:min-h-0 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 flex items-center justify-center sm:justify-start gap-1">
-                  <RotateCcw className="w-4 h-4" /> Reset All
+                <button onClick={resetAll} className="min-h-[44px] text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 flex items-center justify-center sm:justify-start gap-1 px-2">
+                  <RotateCcw className="w-4 h-4" /> Reset
                 </button>
               )}
             </div>
