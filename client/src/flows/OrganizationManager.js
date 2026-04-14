@@ -134,7 +134,7 @@ const OrganizationManager = () => {
     <div className="space-y-3">
       <div>
         <div className="flex flex-col gap-3 mb-4">
-          <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-lg p-3 border border-slate-200 dark:border-slate-700" style={{ maxWidth: '700px' }}>
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-lg p-3 border border-slate-200 dark:border-slate-700 w-full md:max-w-[700px]">
             <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
               <Info size={14} />
               {currentElement ? currentElement.title : 'Element Details'}
@@ -162,7 +162,7 @@ const OrganizationManager = () => {
           <div className="flex justify-start">
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-primary hover:bg-primary-dark text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap"
+              className="bg-primary hover:bg-primary-dark text-white font-medium px-4 py-2 min-h-[44px] rounded-lg flex items-center gap-2 whitespace-nowrap"
             >
               <Plus size={18} />
               Add New Merchant
@@ -171,16 +171,16 @@ const OrganizationManager = () => {
         </div>
         
         <div className="flex flex-col items-center pt-2">
-          <div 
-            className="bg-orange-100 dark:bg-orange-900/30 border-2 border-orange-300 dark:border-orange-700 rounded-lg px-16 py-3 mb-4 cursor-pointer hover:ring-4 hover:ring-orange-200 dark:hover:ring-orange-900 transition-all"
+            <div 
+              className="bg-orange-100 dark:bg-orange-900/30 border-2 border-orange-300 dark:border-orange-700 rounded-lg px-8 md:px-16 py-3 mb-4 cursor-pointer hover:ring-4 hover:ring-orange-200 dark:hover:ring-orange-900 transition-all"
             onMouseEnter={() => handleMouseEnter('operator')}
             onMouseLeave={handleMouseLeave}
           >
             <span className="font-bold text-lg text-orange-800 dark:text-orange-300">Operator</span>
           </div>
           <div className="w-0.5 h-6 bg-gray-300 mb-4"></div>
-          <div 
-            className="bg-green-100 dark:bg-green-900/30 border-2 border-green-300 dark:border-green-700 rounded-lg px-10 py-2 mb-6 cursor-pointer hover:ring-4 hover:ring-green-200 dark:hover:ring-green-900 transition-all"
+            <div 
+              className="bg-green-100 dark:bg-green-900/30 border-2 border-green-300 dark:border-green-700 rounded-lg px-6 md:px-10 py-2 mb-6 cursor-pointer hover:ring-4 hover:ring-green-200 dark:hover:ring-green-900 transition-all"
             onMouseEnter={() => handleMouseEnter('organization')}
             onMouseLeave={handleMouseLeave}
           >
@@ -188,7 +188,7 @@ const OrganizationManager = () => {
           </div>
           <div className="w-0.5 h-6 bg-gray-300"></div>
           
-          <div className="relative w-full min-w-max">
+          <div className="hidden md:block relative w-full min-w-max">
             <div className="absolute top-0 left-0 right-0 h-4">
               <div className="absolute top-0 left-[25%] right-[35%] h-0.5 bg-gray-300"></div>
               <div className="absolute top-0 left-[25%] w-0.5 h-4 bg-gray-300"></div>
@@ -196,16 +196,16 @@ const OrganizationManager = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-[3fr_2fr] gap-6 w-full min-w-max pt-3">
+          <div className="flex flex-col gap-6 w-full md:grid md:grid-cols-[3fr_2fr] md:min-w-max pt-3">
             <div className="border-2 border-blue-300 dark:border-blue-700 rounded-xl p-4 bg-blue-50/20 dark:bg-blue-900/10">
               <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-6 text-center border-b border-blue-200 dark:border-blue-800 pb-2">
                 Shared Customers and Payment methods
               </h4>
               
               <div className="flex flex-col gap-6">
-                <div className="flex justify-center gap-8">
+                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-8">
                   <div 
-                    className="bg-cyan-100 dark:bg-cyan-900/30 border-2 border-cyan-400 dark:border-cyan-700 rounded-full px-10 py-4 cursor-pointer hover:ring-4 hover:ring-cyan-200 dark:hover:ring-cyan-900 transition-all"
+                    className="bg-cyan-100 dark:bg-cyan-900/30 border-2 border-cyan-400 dark:border-cyan-700 rounded-full px-6 sm:px-10 py-3 cursor-pointer hover:ring-4 hover:ring-cyan-200 dark:hover:ring-cyan-900 transition-all"
                     onMouseEnter={() => handleMouseEnter('sharedCustomers')}
                     onMouseLeave={handleMouseLeave}
                   >
@@ -215,7 +215,7 @@ const OrganizationManager = () => {
                     </div>
                   </div>
                   <div 
-                    className="bg-cyan-100 dark:bg-cyan-900/30 border-2 border-cyan-400 dark:border-cyan-700 rounded-full px-10 py-4 cursor-pointer hover:ring-4 hover:ring-cyan-200 dark:hover:ring-cyan-900 transition-all"
+                    className="bg-cyan-100 dark:bg-cyan-900/30 border-2 border-cyan-400 dark:border-cyan-700 rounded-full px-6 sm:px-10 py-3 cursor-pointer hover:ring-4 hover:ring-cyan-200 dark:hover:ring-cyan-900 transition-all"
                     onMouseEnter={() => handleMouseEnter('sharedCardvault')}
                     onMouseLeave={handleMouseLeave}
                   >

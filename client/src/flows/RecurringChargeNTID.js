@@ -83,44 +83,43 @@ const RecurringChargeNTID = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4">
         <h3 className="font-medium text-blue-900 dark:text-blue-300 mb-2">
           Server-Side Recurring Charge with Network Transaction ID
         </h3>
-        <p className="text-sm text-blue-700 dark:text-blue-400">
+        <p className="text-sm text-blue-700 dark:text-blue-400 break-words">
           This flow charges using a Network Transaction ID (NTID) with card details.
-          <br />
-          <strong>Customer ID:</strong> {STATIC_CUSTOMER_ID}
-          <br />
-          <strong>Network Transaction ID:</strong> {STATIC_NTID}
-          <br />
-          <strong>Card:</strong> 4111111111111111 | Exp: 03/30 | CVC: 737
         </p>
+        <div className="mt-2 text-sm text-blue-700 dark:text-blue-400 space-y-1">
+          <p className="break-all"><strong>Customer ID:</strong> {STATIC_CUSTOMER_ID}</p>
+          <p className="break-all"><strong>Network Transaction ID:</strong> {STATIC_NTID}</p>
+          <p className="break-all"><strong>Card:</strong> 4111111111111111 | Exp: 03/30 | CVC: 737</p>
+        </div>
       </div>
 
       <button
         onClick={handleRecurringCharge}
         disabled={isLoading || hasClicked}
-        className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
+        className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 px-4 sm:px-6 rounded-lg transition-colors disabled:opacity-50 min-h-[44px]"
       >
         Execute Recurring Charge with NTID ($100)
       </button>
 
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <div className="p-3 sm:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-sm text-red-600 dark:text-red-400 break-words">{error}</p>
         </div>
       )}
 
       {result && (
-        <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+        <div className="p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           <h4 className="font-medium text-green-900 dark:text-green-300 mb-2">Success!</h4>
           <div className="text-sm text-green-700 dark:text-green-400 space-y-1">
-            <p><strong>Payment ID:</strong> {result.payment_id}</p>
+            <p className="break-all"><strong>Payment ID:</strong> {result.payment_id}</p>
             <p><strong>Status:</strong> {result.status}</p>
-            <p><strong>Payment Method ID:</strong> {result.payment_method_id || 'N/A'}</p>
-            <p><strong>Connector Mandate ID:</strong> {result.connector_mandate_id || 'N/A'}</p>
-            <p><strong>Network Transaction ID:</strong> {result.network_transaction_id || 'N/A'}</p>
+            <p className="break-all"><strong>Payment Method ID:</strong> {result.payment_method_id || 'N/A'}</p>
+            <p className="break-all"><strong>Connector Mandate ID:</strong> {result.connector_mandate_id || 'N/A'}</p>
+            <p className="break-all"><strong>Network Transaction ID:</strong> {result.network_transaction_id || 'N/A'}</p>
           </div>
         </div>
       )}

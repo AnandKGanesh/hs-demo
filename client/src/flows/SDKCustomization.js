@@ -584,8 +584,11 @@ paymentElement.mount('#payment-element');`;
     const handleEnter = () => {
       if (ref.current) {
         const rect = ref.current.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        let xPos = rect.left + rect.width / 2;
+        xPos = Math.max(140, Math.min(xPos, viewportWidth - 140));
         setPos({
-          x: rect.left + rect.width / 2,
+          x: xPos,
           y: rect.top
         });
       }
@@ -599,9 +602,10 @@ paymentElement.mount('#payment-element');`;
           className="inline-flex items-center gap-1 cursor-help"
           onMouseEnter={handleEnter}
           onMouseLeave={() => setShow(false)}
+          onClick={() => setShow(!show)}
         >
           {children}
-          <HelpCircle size={14} className="text-gray-400" />
+          <HelpCircle size={14} className="text-gray-400 flex-shrink-0" />
         </span>
         {show && (
           <div
@@ -612,7 +616,7 @@ paymentElement.mount('#payment-element');`;
               transform: 'translate(-50%, -100%) translateY(-8px)'
             }}
           >
-            <div className="w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl">
+            <div className="w-56 sm:w-64 p-2.5 sm:p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl">
               <p className="font-semibold mb-1">{title}</p>
               <p className="text-gray-300 leading-relaxed">{description}</p>
             </div>
@@ -626,7 +630,7 @@ paymentElement.mount('#payment-element');`;
   const SectionHeader = ({ title, icon: Icon, section }) => (
     <button
       onClick={() => toggleSection(section)}
-      className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+      className="w-full flex items-center justify-between p-3 min-h-[44px] bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
     >
       <div className="flex items-center gap-2">
         <Icon size={18} className="text-gray-600 dark:text-gray-400" />
@@ -671,7 +675,7 @@ paymentElement.mount('#payment-element');`;
       )}
       
       <div className="space-y-2">
-        <label className="flex items-center justify-between py-1.5">
+        <label className="flex items-center justify-between py-2.5 min-h-[44px] cursor-pointer">
           <Tooltip title={sdkTooltips.layout.defaultCollapsed.title} description={sdkTooltips.layout.defaultCollapsed.description}>
             <span className="text-sm">Default Collapsed</span>
           </Tooltip>
@@ -679,10 +683,10 @@ paymentElement.mount('#payment-element');`;
             type="checkbox" 
             checked={layout.defaultCollapsed} 
             onChange={(e) => setLayout({...layout, defaultCollapsed: e.target.checked})} 
-            className="w-4 h-4 rounded" 
+            className="w-5 h-5 rounded" 
           />
         </label>
-        <label className="flex items-center justify-between py-1.5">
+        <label className="flex items-center justify-between py-2.5 min-h-[44px] cursor-pointer">
           <Tooltip title={sdkTooltips.layout.radios.title} description={sdkTooltips.layout.radios.description}>
             <span className="text-sm">Show Radios</span>
           </Tooltip>
@@ -690,10 +694,10 @@ paymentElement.mount('#payment-element');`;
             type="checkbox" 
             checked={layout.radios} 
             onChange={(e) => setLayout({...layout, radios: e.target.checked})} 
-            className="w-4 h-4 rounded" 
+            className="w-5 h-5 rounded" 
           />
         </label>
-        <label className="flex items-center justify-between py-1.5">
+        <label className="flex items-center justify-between py-2.5 min-h-[44px] cursor-pointer">
           <Tooltip title={sdkTooltips.layout.spacedAccordionItems.title} description={sdkTooltips.layout.spacedAccordionItems.description}>
             <span className="text-sm">Spaced Items</span>
           </Tooltip>
@@ -701,7 +705,7 @@ paymentElement.mount('#payment-element');`;
             type="checkbox" 
             checked={layout.spacedAccordionItems} 
             onChange={(e) => setLayout({...layout, spacedAccordionItems: e.target.checked})} 
-            className="w-4 h-4 rounded" 
+            className="w-5 h-5 rounded" 
           />
         </label>
       </div>
@@ -710,7 +714,7 @@ paymentElement.mount('#payment-element');`;
 
   const renderWalletSection = () => (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <Tooltip title={sdkTooltips.wallets.applePay.title} description={sdkTooltips.wallets.applePay.description}>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">Apple Pay</label>
@@ -756,7 +760,7 @@ paymentElement.mount('#payment-element');`;
         <Tooltip title={sdkTooltips.wallets.style.title} description={sdkTooltips.wallets.style.description}>
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Wallet Button Style</p>
         </Tooltip>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <Tooltip title={sdkTooltips.wallets.theme.title} description={sdkTooltips.wallets.theme.description}>
               <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Theme</label>
@@ -803,7 +807,7 @@ paymentElement.mount('#payment-element');`;
     <div className="space-y-4">
       <div>
         <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Colors</p>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {[
             ['colorPrimary', 'Primary', sdkTooltips.appearance.colorPrimary],
             ['colorBackground', 'Background', sdkTooltips.appearance.colorBackground],
@@ -852,7 +856,7 @@ paymentElement.mount('#payment-element');`;
               <option value="Courier New, monospace">Courier New</option>
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <Tooltip title={sdkTooltips.typography.fontSizeBase.title} description={sdkTooltips.typography.fontSizeBase.description}>
                 <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Base Size</label>
@@ -943,7 +947,7 @@ paymentElement.mount('#payment-element');`;
 
   const renderButtonSection = () => (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <Tooltip title={sdkTooltips.button.buttonBackgroundColor.title} description={sdkTooltips.button.buttonBackgroundColor.description}>
             <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Background</label>
@@ -984,7 +988,7 @@ paymentElement.mount('#payment-element');`;
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <Tooltip title={sdkTooltips.button.buttonHeight.title} description={sdkTooltips.button.buttonHeight.description}>
             <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Height</label>
@@ -1081,7 +1085,7 @@ paymentElement.mount('#payment-element');`;
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <Tooltip title={sdkTooltips.button.buttonTextFontSize.title} description={sdkTooltips.button.buttonTextFontSize.description}>
             <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Text Size</label>
@@ -1250,8 +1254,8 @@ paymentElement.mount('#payment-element');`;
         </div>
       </div>
       
-      <div className="space-y-2 pt-2 border-t">
-        <label className="flex items-center justify-between py-1">
+      <div className="space-y-1 pt-2 border-t">
+        <label className="flex items-center justify-between py-2.5 min-h-[44px] cursor-pointer">
           <Tooltip title={sdkTooltips.moreConfig.hideCardNicknameField.title} description={sdkTooltips.moreConfig.hideCardNicknameField.description}>
             <span className="text-sm">Hide Card Nickname</span>
           </Tooltip>
@@ -1259,10 +1263,10 @@ paymentElement.mount('#payment-element');`;
             type="checkbox" 
             checked={moreConfig.hideCardNicknameField} 
             onChange={(e) => setMoreConfig({...moreConfig, hideCardNicknameField: e.target.checked})}
-            className="w-4 h-4 rounded" 
+            className="w-5 h-5 rounded" 
           />
         </label>
-        <label className="flex items-center justify-between py-1">
+        <label className="flex items-center justify-between py-2.5 min-h-[44px] cursor-pointer">
           <Tooltip title={sdkTooltips.moreConfig.hideExpiredPaymentMethods.title} description={sdkTooltips.moreConfig.hideExpiredPaymentMethods.description}>
             <span className="text-sm">Hide Expired Methods</span>
           </Tooltip>
@@ -1270,10 +1274,10 @@ paymentElement.mount('#payment-element');`;
             type="checkbox" 
             checked={moreConfig.hideExpiredPaymentMethods} 
             onChange={(e) => setMoreConfig({...moreConfig, hideExpiredPaymentMethods: e.target.checked})}
-            className="w-4 h-4 rounded" 
+            className="w-5 h-5 rounded" 
           />
         </label>
-        <label className="flex items-center justify-between py-1">
+        <label className="flex items-center justify-between py-2.5 min-h-[44px] cursor-pointer">
           <Tooltip title={sdkTooltips.moreConfig.displaySavedPaymentMethods.title} description={sdkTooltips.moreConfig.displaySavedPaymentMethods.description}>
             <span className="text-sm">Display Saved Methods</span>
           </Tooltip>
@@ -1281,10 +1285,10 @@ paymentElement.mount('#payment-element');`;
             type="checkbox" 
             checked={moreConfig.displaySavedPaymentMethods} 
             onChange={(e) => setMoreConfig({...moreConfig, displaySavedPaymentMethods: e.target.checked})}
-            className="w-4 h-4 rounded" 
+            className="w-5 h-5 rounded" 
           />
         </label>
-        <label className="flex items-center justify-between py-1">
+        <label className="flex items-center justify-between py-2.5 min-h-[44px] cursor-pointer">
           <Tooltip title={sdkTooltips.moreConfig.displaySavedPaymentMethodsCheckbox.title} description={sdkTooltips.moreConfig.displaySavedPaymentMethodsCheckbox.description}>
             <span className="text-sm">Show Save Checkbox</span>
           </Tooltip>
@@ -1292,10 +1296,10 @@ paymentElement.mount('#payment-element');`;
             type="checkbox" 
             checked={moreConfig.displaySavedPaymentMethodsCheckbox} 
             onChange={(e) => setMoreConfig({...moreConfig, displaySavedPaymentMethodsCheckbox: e.target.checked})}
-            className="w-4 h-4 rounded" 
+            className="w-5 h-5 rounded" 
           />
         </label>
-        <label className="flex items-center justify-between py-1">
+        <label className="flex items-center justify-between py-2.5 min-h-[44px] cursor-pointer">
           <Tooltip title={sdkTooltips.moreConfig.savedPaymentMethodsCheckboxCheckedByDefault.title} description={sdkTooltips.moreConfig.savedPaymentMethodsCheckboxCheckedByDefault.description}>
             <span className="text-sm">Checkbox Checked by Default</span>
           </Tooltip>
@@ -1303,7 +1307,7 @@ paymentElement.mount('#payment-element');`;
             type="checkbox" 
             checked={moreConfig.savedPaymentMethodsCheckboxCheckedByDefault} 
             onChange={(e) => setMoreConfig({...moreConfig, savedPaymentMethodsCheckboxCheckedByDefault: e.target.checked})}
-            className="w-4 h-4 rounded" 
+            className="w-5 h-5 rounded" 
           />
         </label>
       </div>
@@ -1336,7 +1340,7 @@ paymentElement.mount('#payment-element');`;
                 <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{def?.label || selector}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{def?.desc}</p>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {Object.entries(styles).map(([prop, value]) => (
                   <div key={prop}>
                     <label className="block text-xs text-gray-600 mb-1 capitalize">{prop.replace(/([A-Z])/g, ' $1').trim()}</label>
@@ -1387,7 +1391,7 @@ paymentElement.mount('#payment-element');`;
   const renderTermsSection = () => (
     <div className="space-y-3">
       <p className="text-sm text-gray-500 mb-2">Configure when to display terms for each payment method</p>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {Object.entries(terms).map(([key, value]) => (
           <div key={key}>
             <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1 capitalize">{key.replace(/_/g, ' ')}</label>
@@ -1417,8 +1421,8 @@ paymentElement.mount('#payment-element');`;
 
   return (
     <div className="h-[calc(100vh-80px)] flex flex-col">
-      <div className="flex-1 flex overflow-hidden">
-        <div className="w-[28rem] flex flex-col bg-white dark:bg-gray-800 border-r dark:border-gray-700">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        <div className="w-full lg:w-[28rem] flex flex-col bg-white dark:bg-gray-800 border-b lg:border-b-0 lg:border-r dark:border-gray-700 max-h-[50vh] lg:max-h-none">
           <div className="p-3 border-b bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
             <h2 className="text-sm font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
               <Settings size={16} />
@@ -1484,9 +1488,9 @@ paymentElement.mount('#payment-element');`;
           </div>
         </div>
 
-        <div className="flex-1 bg-gray-50 dark:bg-gray-900 flex flex-col">
-          <div className="p-4 border-b bg-white dark:bg-gray-800 dark:border-gray-700">
-            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg max-w-xs">
+        <div className="flex-1 min-h-0 bg-gray-50 dark:bg-gray-900 flex flex-col">
+          <div className="p-3 lg:p-4 border-b bg-white dark:bg-gray-800 dark:border-gray-700">
+            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg max-w-xs mx-auto lg:mx-0">
               <button
                 onClick={() => setShowCode(false)}
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all ${
@@ -1512,7 +1516,7 @@ paymentElement.mount('#payment-element');`;
             </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
             {error && (
               <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
@@ -1541,7 +1545,7 @@ paymentElement.mount('#payment-element');`;
                 </form>
 
                 {showCode && (
-                  <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto mt-6">
+                  <div className="bg-gray-900 rounded-lg p-3 sm:p-4 overflow-x-auto mt-6 max-w-[calc(100vw-2rem)] lg:max-w-none">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-gray-400">JavaScript</span>
                       <button

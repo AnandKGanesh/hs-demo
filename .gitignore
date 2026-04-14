@@ -149,4 +149,7 @@ chat_history.md
 FLOW_MAPPINGS_V2.md
 
 # Deployment docs
-*DEPLOY*.md.playwright-mcp/
+*DEPLOY*.md
+
+# Playwright MCP
+.playwright-mcp/

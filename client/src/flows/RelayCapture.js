@@ -154,15 +154,18 @@ const RelayCapture = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <h3 className="font-medium text-blue-900 dark:text-blue-300 mb-2">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4">
+        <h3 className="font-medium text-blue-900 dark:text-blue-300 mb-1 sm:mb-2 text-base sm:text-lg">
           Relay - Capture
         </h3>
-        <p className="text-sm text-blue-700 dark:text-blue-400">
+        <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-400">
           Two-step flow: Adyen Authorization → Relay Capture
-          <br />
-          <strong>Card:</strong> {CARD_DATA.card_number} | Exp: {CARD_DATA.card_exp_month}/{CARD_DATA.card_exp_year}
+        </p>
+        <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-400 mt-1 font-mono break-all">
+          <strong>Card:</strong> {CARD_DATA.card_number}
+          <span className="mx-1">|</span>
+          <strong>Exp:</strong> {CARD_DATA.card_exp_month}/{CARD_DATA.card_exp_year}
         </p>
       </div>
 
@@ -170,29 +173,29 @@ const RelayCapture = () => {
         <button
           onClick={handleStep1}
           disabled={isLoading || hasClicked}
-          className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
+          className="w-full min-h-[44px] bg-primary hover:bg-primary-dark text-white font-medium py-3 px-4 sm:px-6 rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base"
         >
           {isLoading ? 'Processing...' : 'Step 1: Adyen Authorization ($100)'}
         </button>
       )}
 
       {step === 2 && (
-        <div className="space-y-4">
-          <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-            <p className="text-sm text-yellow-800 dark:text-yellow-300">
+        <div className="space-y-3 sm:space-y-4">
+          <div className="p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <p className="text-xs sm:text-sm text-yellow-800 dark:text-yellow-300">
               <strong>Adyen Transaction ID (Key Resource):</strong>
             </p>
-            <p className="text-lg font-mono text-yellow-700 dark:text-yellow-400 mt-1 break-all">
+            <p className="text-base sm:text-lg font-mono text-yellow-700 dark:text-yellow-400 mt-1 break-all">
               {adyenTransactionId}
             </p>
-            <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
+            <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1.5 sm:mt-2">
               This Transaction ID is used in the Relay API call to Hyperswitch
             </p>
           </div>
           <button
             onClick={handleStep2}
             disabled={isLoading || hasClicked}
-            className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
+            className="w-full min-h-[44px] bg-primary hover:bg-primary-dark text-white font-medium py-3 px-4 sm:px-6 rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base"
           >
             {isLoading ? 'Processing...' : 'Step 2: Relay Capture via Hyperswitch'}
           </button>
@@ -200,15 +203,15 @@ const RelayCapture = () => {
       )}
 
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <div className="p-3 sm:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-xs sm:text-sm text-red-600 dark:text-red-400 break-words">{error}</p>
         </div>
       )}
 
       {result && (
-        <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-          <h4 className="font-medium text-green-900 dark:text-green-300 mb-2">Relay Capture Complete!</h4>
-          <div className="text-sm text-green-700 dark:text-green-400 space-y-1">
+        <div className="p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+          <h4 className="font-medium text-green-900 dark:text-green-300 mb-2 text-sm sm:text-base">Relay Capture Complete!</h4>
+          <div className="text-xs sm:text-sm text-green-700 dark:text-green-400 space-y-1 break-all">
             <p><strong>Relay ID:</strong> {result.relay_id}</p>
             <p><strong>Status:</strong> {result.status}</p>
             <p><strong>Type:</strong> {result.type}</p>
