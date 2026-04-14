@@ -12,7 +12,7 @@ const flowCategories = [
       { id: 'manual_partial', name: 'Manual Partial Capture', description: 'Capture $50 of $100 authorized' },
       { id: 'repeat_user', name: 'Repeat User', description: 'Use saved customer ID', disabled: true },
       { id: 'payment_links', name: 'Payment Links', description: 'Generate shareable payment links' },
-      { id: 'split_settlement', name: 'Split Settlement', description: 'Distribute funds between accounts', disabled: true },
+      { id: 'split_settlement', name: 'Split Settlement', description: 'Distribute funds between accounts with Stripe Connect' },
     ],
   },
   {

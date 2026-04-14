@@ -821,6 +821,9 @@ app.post('/api/create-intent-3ds', async (req, res) => {
       status: data.status,
       amount: data.amount,
       currency: data.currency,
+      connector: data.connector,
+      split_payments: data.split_payments,
+      publishable_key: 'pk_snd_ad36b97873a04c058daf1ba6dd1b3113'
     });
   } catch (error) {
     console.error('Error creating 3DS payment intent:', error);
@@ -1648,6 +1651,62 @@ app.post('/api/3ds-decision-rules/test', async (req, res) => {
     });
   } catch (error) {
     console.error('Error testing 3DS decision rules:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/create-split-payment', async (req, res) => {
+  try {
+    const { 
+      amount, 
+      currency = 'USD', 
+      routing,
+      split_payments,
+      description
+    } = req.body;
+    
+    // Split Settlement uses a specific profile for Stripe Connect
+    const SPLIT_SETTLEMENT_PROFILE_ID = 'pro_ukJVFiPH0bzYFZwBPi9j';
+    
+    const paymentData = {
+      amount: amount,
+      currency: currency,
+      confirm: false,
+      capture_method: 'automatic',
+      description: description || 'Split Settlement Payment',
+      profile_id: SPLIT_SETTLEMENT_PROFILE_ID,
+      routing: routing || { type: 'single', data: 'stripe' },
+      split_payments: split_payments
+    };
+
+    const response = await fetch(`${process.env.HYPERSWITCH_SERVER_URL}/payments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'api-key': process.env.HYPERSWITCH_SECRET_KEY,
+      },
+      body: JSON.stringify(paymentData),
+    });
+
+    const data = await response.json();
+    
+    if (data.error) {
+      return res.status(400).json({ error: data.error });
+    }
+
+    res.json({
+      client_secret: data.client_secret,
+      payment_id: data.payment_id,
+      status: data.status,
+      amount: data.amount,
+      currency: data.currency,
+      connector: data.connector,
+      split_payments: data.split_payments,
+      profile_id: data.profile_id
+    });
+  } catch (error) {
+    console.error('Error creating split payment:', error);
     res.status(500).json({ error: error.message });
   }
 });

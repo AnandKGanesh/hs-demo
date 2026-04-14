@@ -21,6 +21,7 @@ import ThreeDSDecisionManager from './flows/ThreeDSDecisionManager';
 import OrganizationManager from './flows/OrganizationManager';
 import DecisionEnginePlayground from './flows/decision-engine/DecisionEnginePlayground';
 import SDKCustomization from './flows/SDKCustomization';
+import SplitSettlement from './flows/SplitSettlement';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { currentFlowState, apiResponseState, hyperState, themeState } from './utils/atoms';
 import API_BASE_URL from './config';
@@ -56,6 +57,7 @@ const App = () => {
         { id: 'manual_partial', name: 'Manual Partial Capture', description: 'Capture $50 of $100 authorized' },
         { id: 'repeat_user', name: 'Repeat User', description: 'Use saved customer ID' },
         { id: 'payment_links', name: 'Payment Links', description: 'Generate shareable payment links' },
+        { id: 'split_settlement', name: 'Split Settlement', description: 'Distribute funds between accounts with Stripe Connect' },
         { id: 'zero_setup', name: '$0 Setup Recurring', description: 'Setup recurring with $0 authorization' },
         { id: 'setup_and_charge', name: 'Setup Recurring and Charge', description: 'Charge $100 and setup recurring' },
         { id: 'recurring_charge', name: 'Recurring Charge', description: 'Charge using saved payment method' },
@@ -238,6 +240,8 @@ const App = () => {
                 <Standalone3DS key={currentFlow.id} />
               ) : currentFlow.id === 'payment_links' ? (
                 <PaymentLinks key={currentFlow.id} />
+              ) : currentFlow.id === 'split_settlement' ? (
+                <SplitSettlement key={currentFlow.id} flow={currentFlow} />
               ) : currentFlow.id === 'chargeback_unification' ? (
                 <ChargebackUnification key={currentFlow.id} />
               ) : currentFlow.id === 'relay_capture' ? (
