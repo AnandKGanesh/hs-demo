@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hyperswitch-server
+  namespace: hyperswitch-demo
+  labels:
+    app: hyperswitch-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hyperswitch-server
+  template:
+    metadata:
+      labels:
+        app: hyperswitch-server
+    spec:
+      containers:
+      - name: server
+        image: hyperswitch-demo-server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5252
+          name: http
+        envFrom:
+        - configMapRef:
+            name: hyperswitch-config
+        - secretRef:
+            name: hyperswitch-secrets
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5252
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5252
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hyperswitch-server
+  namespace: hyperswitch-demo
+spec:
+  selector:
+    app: hyperswitch-server
+  ports:
+  - port: 5252
+    targetPort: 5252
+    name: http
+  type: ClusterIP

@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hyperswitch-client
+  namespace: hyperswitch-demo
+  labels:
+    app: hyperswitch-client
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hyperswitch-client
+  template:
+    metadata:
+      labels:
+        app: hyperswitch-client
+    spec:
+      initContainers:
+      - name: build-static
+        image: hyperswitch-demo-client:latest
+        imagePullPolicy: Always
+        command: ['sh', '-c', 'cp -r /output/* /shared/']
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /shared
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+          name: http
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /usr/share/nginx/html
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: shared-volume
+        emptyDir: {}
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hyperswitch-client
+  namespace: hyperswitch-demo
+spec:
+  selector:
+    app: hyperswitch-client
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+  type: ClusterIP

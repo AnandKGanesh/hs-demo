@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hyperswitch-config
+  namespace: hyperswitch-demo
+data:
+  HYPERSWITCH_SERVER_URL: "https://sandbox.hyperswitch.io"
+  HYPERSWITCH_CLIENT_URL: "https://beta.hyperswitch.io/v1"
+  SDK_VERSION: "v1"
+  PORT: "5252"
+  ADYEN_ENVIRONMENT: "test"
+  ADYEN_BASE_URL: "https://pal-test.adyen.com"
