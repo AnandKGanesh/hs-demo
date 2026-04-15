@@ -1,0 +1,51 @@
+name: Make GHCR Images Public
+
+on:
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_SERVER: ${{ github.repository }}/server
+  IMAGE_NAME_CLIENT: ${{ github.repository }}/client
+
+jobs:
+  make-public:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Make Server image public
+        run: |
+          PACKAGE_NAME=$(echo "${{ env.IMAGE_NAME_SERVER }}" | tr '/' '%2F')
+          gh api --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /user/packages/container/${PACKAGE_NAME}/visibility \
+            -f visibility=public || echo "Package may not exist yet"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Make Client image public
+        run: |
+          PACKAGE_NAME=$(echo "${{ env.IMAGE_NAME_CLIENT }}" | tr '/' '%2F')
+          gh api --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /user/packages/container/${PACKAGE_NAME}/visibility \
+            -f visibility=public || echo "Package may not exist yet"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: List package details
+        run: |
+          echo "Images are now public at:"
+          echo "Server: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}"
+          echo "Client: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CLIENT }}"
