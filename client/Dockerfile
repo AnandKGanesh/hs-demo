@@ -8,5 +8,6 @@ RUN npm run build
 FROM busybox:latest
 WORKDIR /app
 COPY --from=builder /app/dist .
+RUN ls -la /app
 EXPOSE 8080
-CMD ["httpd", "-f", "-p", "8080", "-h", "/app"]
+CMD echo "Starting server on port 8080..." && ls -la /app && httpd -f -p 8080 -h /app -vv
