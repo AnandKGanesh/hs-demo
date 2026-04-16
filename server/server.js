@@ -1713,6 +1713,10 @@ app.post('/api/create-split-payment', async (req, res) => {
 
 // ==========================================
 
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 const clientDistPath = path.join(__dirname, '../client/dist');
 const fs = require('fs');
 
