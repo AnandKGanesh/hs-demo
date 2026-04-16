@@ -15,50 +15,32 @@ spec:
       labels:
         app: hyperswitch-client
     spec:
-      initContainers:
-      - name: build-static
-        image: hyperswitch-demo-client:latest
-        imagePullPolicy: Always
-        command: ['sh', '-c', 'cp -r /output/* /shared/']
-        volumeMounts:
-        - name: shared-volume
-          mountPath: /shared
       containers:
-      - name: nginx
-        image: nginx:alpine
+      - name: client
+        image: ghcr.io/anandkganesh/hs-demo/client:latest
+        imagePullPolicy: Always
         ports:
-        - containerPort: 80
+        - containerPort: 8080
           name: http
-        volumeMounts:
-        - name: shared-volume
-          mountPath: /usr/share/nginx/html
-        - name: nginx-config
-          mountPath: /etc/nginx/conf.d
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "50m"
+            memory: "16Mi"
+            cpu: "10m"
           limits:
-            memory: "256Mi"
-            cpu: "200m"
+            memory: "64Mi"
+            cpu: "100m"
         livenessProbe:
           httpGet:
             path: /
-            port: 80
-          initialDelaySeconds: 10
+            port: 8080
+          initialDelaySeconds: 5
           periodSeconds: 30
         readinessProbe:
           httpGet:
             path: /
-            port: 80
-          initialDelaySeconds: 5
+            port: 8080
+          initialDelaySeconds: 3
           periodSeconds: 5
-      volumes:
-      - name: shared-volume
-        emptyDir: {}
-      - name: nginx-config
-        configMap:
-          name: nginx-config
 ---
 apiVersion: v1
 kind: Service
@@ -70,6 +52,6 @@ spec:
     app: hyperswitch-client
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 8080
     name: http
   type: ClusterIP
