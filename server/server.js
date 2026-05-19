@@ -63,6 +63,47 @@ app.get('/urls', (req, res) => {
   });
 });
 
+// Embedded components: token endpoint for hyperswitch-control-center-embedded SDK
+app.get('/api/embedded/hyperswitch', async (req, res) => {
+  try {
+    const apiKey = process.env.HYPERSWITCH_API_KEY;
+    const profileId = process.env.HYPERSWITCH_PROFILE_ID;
+    const baseUrl = process.env.HYPERSWITCH_BASE_URL || 'https://app.hyperswitch.io';
+
+    if (!apiKey || !profileId) {
+      return res.status(500).json({
+        error: 'Missing required environment variables: HYPERSWITCH_API_KEY and HYPERSWITCH_PROFILE_ID',
+      });
+    }
+
+    const upstream = await fetch(`${baseUrl}/api/embedded/token`, {
+      method: 'GET',
+      headers: {
+        'api-key': apiKey,
+        'x-profile-id': profileId,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await upstream.json();
+
+    if (!upstream.ok) {
+      return res.status(upstream.status).json({
+        error: 'Failed to fetch token from Hyperswitch API',
+        details: data,
+      });
+    }
+
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('Error calling Hyperswitch embedded token API:', error.message);
+    return res.status(500).json({
+      error: 'Failed to fetch token from Hyperswitch API',
+      details: error.message,
+    });
+  }
+});
+
 // Create customer endpoint
 app.post('/api/create-customer', async (req, res) => {
   try {
