@@ -22,6 +22,7 @@ import OrganizationManager from './flows/OrganizationManager';
 import DecisionEnginePlayground from './flows/decision-engine/DecisionEnginePlayground';
 import SDKCustomization from './flows/SDKCustomization';
 import SplitSettlement from './flows/SplitSettlement';
+import EmbeddedComponents from './flows/embedded-components/EmbeddedComponents';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { currentFlowState, apiResponseState, hyperState, themeState } from './utils/atoms';
 import API_BASE_URL from './config';
@@ -83,6 +84,7 @@ const App = () => {
         { id: 'organization_manager', name: 'Organization Manager', description: 'Mock organization structure and merchant management' },
         { id: 'decision_engine', name: 'Decision Engine', description: 'Success rate-based dynamic routing simulation' },
         { id: 'sdk_customization', name: 'SDK Customization', description: 'Customize checkout appearance, layout, and behavior' },
+        { id: 'embedded_components', name: 'Connectors Onboarding', description: 'Hyperswitch dashboard components embedded via the embeddable SDK' },
       ];
       
       const flow = allFlows.find(f => f.id === flowId);
@@ -94,6 +96,13 @@ const App = () => {
 
   // Load HyperLoader and initialize
   useEffect(() => {
+    // Skip HyperLoader for flows that don't depend on window.Hyper
+    const flowId = new URLSearchParams(window.location.search).get('flow');
+    if (flowId === 'embedded_components') {
+      setIsLoading(false);
+      return;
+    }
+
     const loadHyper = async () => {
       try {
         console.log('Fetching config and URLs...');
@@ -202,7 +211,7 @@ const App = () => {
 
   return (
     <Layout onFlowSelect={handleFlowSelect} currentFlow={currentFlow}>
-      {currentFlow?.id === 'readme' || currentFlow?.id === 'organization_manager' || currentFlow?.id === 'decision_engine' || currentFlow?.id === 'sdk_customization' ? (
+      {currentFlow?.id === 'readme' || currentFlow?.id === 'organization_manager' || currentFlow?.id === 'decision_engine' || currentFlow?.id === 'sdk_customization' || currentFlow?.id === 'embedded_components' ? (
         <div className="w-full">
           {currentFlow.id === 'readme' ? (
             <Readme key={currentFlow.id} />
@@ -210,6 +219,8 @@ const App = () => {
             <OrganizationManager key={currentFlow.id} />
           ) : currentFlow.id === 'decision_engine' ? (
             <DecisionEnginePlayground key={currentFlow.id} />
+          ) : currentFlow.id === 'embedded_components' ? (
+            <EmbeddedComponents key={currentFlow.id} />
           ) : (
             <SDKCustomization key={currentFlow.id} hyper={hyper} />
           )}

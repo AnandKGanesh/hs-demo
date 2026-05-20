@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, Repeat, Shield, AlertTriangle, Database, ChevronRight, Lock, ChevronDown, ChevronUp, RefreshCw, Zap, GitBranch, Palette, Home } from 'lucide-react';
+import { CreditCard, Repeat, Shield, AlertTriangle, Database, ChevronRight, Lock, ChevronDown, ChevronUp, RefreshCw, Zap, GitBranch, Palette, Home, LayoutDashboard } from 'lucide-react';
 
 const flowCategories = [
   {
@@ -111,6 +111,14 @@ const flowCategories = [
       { id: 'organization_manager', name: 'Organization Manager', description: 'Mock organization structure and merchant management' },
     ],
   },
+  {
+    id: 'embedded',
+    name: 'Embedded',
+    icon: LayoutDashboard,
+    flows: [
+      { id: 'embedded_components', name: 'Connectors Onboarding', description: 'Hyperswitch dashboard components embedded via the embeddable SDK' },
+    ],
+  },
 ];
 
 const getCategoryForFlow = (flowId) => {
@@ -137,6 +145,7 @@ const Sidebar = ({ onFlowSelect, currentFlow, isOpen, onClose }) => {
       intelligent_routing: currentCategory === 'intelligent_routing',
       decision_manager: currentCategory === 'decision_manager',
       organization: currentCategory === 'organization',
+      embedded: currentCategory === 'embedded',
     };
   });
 
@@ -178,6 +187,7 @@ const Sidebar = ({ onFlowSelect, currentFlow, isOpen, onClose }) => {
           intelligent_routing: categoryId === 'intelligent_routing',
           decision_manager: categoryId === 'decision_manager',
           organization: categoryId === 'organization',
+          embedded: categoryId === 'embedded',
         };
       }
       // Just toggle the clicked one when closing
