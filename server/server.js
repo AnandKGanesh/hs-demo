@@ -3,6 +3,13 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
+const proxyUrl = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+if (proxyUrl) {
+  const { ProxyAgent, setGlobalDispatcher } = require('undici');
+  setGlobalDispatcher(new ProxyAgent(proxyUrl));
+  console.log(`Outgoing requests proxied via: ${proxyUrl}`);
+}
+
 const app = express();
 const PORT = process.env.PORT || 5252;
 
