@@ -66,13 +66,13 @@ app.get('/urls', (req, res) => {
 // Embedded components: token endpoint for hyperswitch-control-center-embedded SDK
 app.get('/api/embedded/hyperswitch', async (req, res) => {
   try {
-    const apiKey = process.env.HYPERSWITCH_API_KEY;
-    const profileId = process.env.HYPERSWITCH_PROFILE_ID;
+    const apiKey = process.env.HYPERSWITCH_SECRET_KEY;
+    const profileId = process.env.EMBED_PROFILE_ID;
     const baseUrl = process.env.HYPERSWITCH_BASE_URL || 'https://app.hyperswitch.io';
 
     if (!apiKey || !profileId) {
       return res.status(500).json({
-        error: 'Missing required environment variables: HYPERSWITCH_API_KEY and HYPERSWITCH_PROFILE_ID',
+        error: 'Missing required environment variables: HYPERSWITCH_SECRET_KEY and EMBED_PROFILE_ID',
       });
     }
 
