@@ -185,3 +185,10 @@ pre {
 .ring-primary-light {
   --tw-ring-color: var(--juspay-blue-100);
 }
+
+/* Revenue Recovery — channel flow dash animation */
+@keyframes ccflow {
+  to {
+    stroke-dashoffset: -22;
+  }
+}
