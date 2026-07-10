@@ -229,7 +229,7 @@ const App = () => {
           )}
         </div>
       ) : (
-        <div className={`${currentFlow?.id === 'routing_simulator' || currentFlow?.id === 'three_ds_decision' || currentFlow?.id === 'revenue_recovery_integrations' ? (currentFlow?.id === 'revenue_recovery_integrations' ? 'max-w-[1456px]' : 'max-w-7xl') : 'max-w-4xl'} mx-auto w-full px-2 sm:px-0 overflow-x-hidden ${currentFlow?.id === 'revenue_recovery_integrations' ? 'flex-1 flex flex-col overflow-hidden min-h-0' : ''}`}>
+        <div className={`${currentFlow?.id === 'routing_simulator' || currentFlow?.id === 'three_ds_decision' || currentFlow?.id === 'revenue_recovery_simulator' || currentFlow?.id === 'revenue_recovery_integrations' ? (currentFlow?.id === 'revenue_recovery_integrations' ? 'max-w-[1456px]' : 'max-w-7xl') : 'max-w-4xl'} mx-auto w-full px-2 sm:px-0 overflow-x-hidden ${currentFlow?.id === 'revenue_recovery_integrations' ? 'flex-1 flex flex-col overflow-hidden min-h-0' : ''}`}>
           <div className={`mb-6 ${currentFlow?.id === 'revenue_recovery_integrations' ? 'flex-shrink-0' : ''}`}>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               {currentFlow?.name || 'Select a Flow'}
@@ -242,7 +242,7 @@ const App = () => {
           {currentFlow && (
             <>
               <div
-                className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-6 overflow-hidden ${currentFlow.id === 'chargeback_unification' || currentFlow.id === 'routing_simulator' || currentFlow.id === 'three_ds_decision' || currentFlow.id === 'revenue_recovery_integrations' ? 'w-full max-w-none' : 'max-w-2xl mx-auto w-full'} ${currentFlow.id === 'revenue_recovery_integrations' ? 'flex flex-col flex-1 min-h-0' : ''}`}
+                className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-6 overflow-hidden ${currentFlow.id === 'chargeback_unification' || currentFlow.id === 'routing_simulator' || currentFlow.id === 'three_ds_decision' || currentFlow.id === 'revenue_recovery_simulator' || currentFlow.id === 'revenue_recovery_integrations' ? 'w-full max-w-none' : 'max-w-2xl mx-auto w-full'} ${currentFlow.id === 'revenue_recovery_integrations' ? 'flex flex-col flex-1 min-h-0' : ''}`}
               >
               {currentFlow.id === 'recurring_charge' ? (
                 <RecurringCharge key={currentFlow.id} />

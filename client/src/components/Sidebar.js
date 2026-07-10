@@ -92,7 +92,7 @@ const flowCategories = [
     icon: TrendingUp,
     flows: [
       { id: 'revenue_recovery_integrations', name: 'Integrations', description: 'Configure and manage integrations for revenue recovery' },
-      { id: 'revenue_recovery_simulator', name: 'Recovery Simulator', description: 'Simulate recovery scenarios and visualize dunning strategies', disabled: true },
+      { id: 'revenue_recovery_simulator', name: 'Recovery Simulator', description: 'Simulate recovery scenarios and visualize dunning strategies' },
     ],
   },
   {
