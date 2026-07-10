@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, Repeat, Shield, AlertTriangle, Database, ChevronRight, Lock, ChevronDown, ChevronUp, RefreshCw, Zap, GitBranch, Palette, Home, LayoutDashboard } from 'lucide-react';
+import { CreditCard, Repeat, Shield, AlertTriangle, Database, ChevronRight, Lock, ChevronDown, ChevronUp, RefreshCw, Zap, GitBranch, Palette, Home, LayoutDashboard, TrendingUp } from 'lucide-react';
 
 const flowCategories = [
   {
@@ -87,6 +87,15 @@ const flowCategories = [
     ],
   },
   {
+    id: 'revenue_recovery',
+    name: 'Revenue Recovery',
+    icon: TrendingUp,
+    flows: [
+      { id: 'revenue_recovery_integrations', name: 'Integrations', description: 'Configure and manage integrations for revenue recovery' },
+      { id: 'revenue_recovery_simulator', name: 'Recovery Simulator', description: 'Simulate recovery scenarios and visualize dunning strategies' },
+    ],
+  },
+  {
     id: 'intelligent_routing',
     name: 'Intelligent Routing',
     icon: GitBranch,
@@ -142,6 +151,7 @@ const Sidebar = ({ onFlowSelect, currentFlow, isOpen, onClose }) => {
       vault: currentCategory === 'vault',
       customization: currentCategory === 'customization',
       smart_retry: currentCategory === 'smart_retry',
+      revenue_recovery: currentCategory === 'revenue_recovery',
       intelligent_routing: currentCategory === 'intelligent_routing',
       decision_manager: currentCategory === 'decision_manager',
       organization: currentCategory === 'organization',
@@ -184,6 +194,7 @@ const Sidebar = ({ onFlowSelect, currentFlow, isOpen, onClose }) => {
           vault: categoryId === 'vault',
           customization: categoryId === 'customization',
           smart_retry: categoryId === 'smart_retry',
+          revenue_recovery: categoryId === 'revenue_recovery',
           intelligent_routing: categoryId === 'intelligent_routing',
           decision_manager: categoryId === 'decision_manager',
           organization: categoryId === 'organization',
@@ -261,7 +272,7 @@ const Sidebar = ({ onFlowSelect, currentFlow, isOpen, onClose }) => {
                         key={flow.id}
                         onClick={() => handleFlowClick(flow)}
                         disabled={flow.disabled}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors relative group ${
                           flow.disabled 
                             ? 'opacity-50 cursor-not-allowed text-gray-400 dark:text-gray-600' 
                             : currentFlow?.id === flow.id
@@ -270,6 +281,11 @@ const Sidebar = ({ onFlowSelect, currentFlow, isOpen, onClose }) => {
                         }`}
                       >
                         <span className="break-words leading-tight">{flow.name}</span>
+                        {flow.disabled && (
+                          <span className="ml-1.5 text-[10px] font-semibold text-gray-400 dark:text-gray-500">
+                            (Coming Soon)
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>
