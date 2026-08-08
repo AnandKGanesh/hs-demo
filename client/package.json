@@ -8,9 +8,9 @@
     "build": "webpack --mode production"
   },
   "dependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.29.0",
-    "@babel/preset-react": "^7.28.5",
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
+    "@babel/preset-react": "^8.0.1",
     "@juspay-tech/hyperswitch-control-center-embed-core": "^1.1.2",
     "@juspay-tech/hyperswitch-control-center-embed-react": "^1.1.2",
     "@juspay-tech/react-hyper-js": "^1.3.0",
