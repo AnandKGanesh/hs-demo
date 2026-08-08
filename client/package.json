@@ -8,9 +8,9 @@
     "build": "webpack --mode production"
   },
   "dependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.29.0",
-    "@babel/preset-react": "^7.28.5",
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
+    "@babel/preset-react": "^8.0.1",
     "@juspay-tech/hyperswitch-control-center-embed-core": "^1.1.2",
     "@juspay-tech/hyperswitch-control-center-embed-react": "^1.1.2",
     "@juspay-tech/react-hyper-js": "^1.3.0",
@@ -22,7 +22,7 @@
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.6.6",
     "lucide-react": "^0.577.0",
-    "postcss": "^8.5.8",
+    "postcss": "^8.5.16",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-is": "^18.3.1",
@@ -32,7 +32,7 @@
     "tailwindcss": "^4.2.1",
     "url-loader": "^4.1.1",
     "webpack": "^5.105.4",
-    "webpack-cli": "^7.0.0",
-    "webpack-dev-server": "^5.0.0"
+    "webpack-cli": "^7.2.1",
+    "webpack-dev-server": "^6.0.0"
   }
 }
